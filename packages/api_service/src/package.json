@@ -1,0 +1,18 @@
+{
+    "name": "@dating-app/api",
+    "version": "0.1.0",
+    "private": true,
+    "type": "module",
+    "main": "src/server.js",
+    "scripts": {
+      "dev": "node --watch src/server.js",
+      "start": "node src/server.js"
+    },
+    "dependencies": {
+      "@dating-app/shared": "*",
+      "fastify": "^4.28.1",
+      "@fastify/cors": "^9.0.1",
+      "@fastify/helmet": "^12.0.1",
+      "@fastify/rate-limit": "^9.1.0"
+    }
+  }

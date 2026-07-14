@@ -1,0 +1,5 @@
+import { PrismaClient} from "@prisma/client"
+
+// we use singleton pattern cause after hot reload every prisma client connection is created/ so we make a common instance on globalthis
+
+const globalForPrisma = globalThis;

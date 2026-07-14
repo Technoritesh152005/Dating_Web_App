@@ -1,0 +1,20 @@
+{
+    "name": "dating-app",
+    "private": true,
+    "version": "0.1.0",
+    "description": "Portfolio project - modular monolith dating app (api / realtime / worker processes sharing one repo)",
+    "workspaces": [
+      "packages/*"
+    ],
+    "scripts": {
+      "dev:api": "npm run dev --workspace=@dating-app/api",
+      "dev:realtime": "npm run dev --workspace=@dating-app/realtime",
+      "dev:worker": "npm run dev --workspace=@dating-app/worker",
+      "prisma:generate": "npm run prisma:generate --workspace=@dating-app/shared",
+      "prisma:migrate": "npm run prisma:migrate --workspace=@dating-app/shared",
+      "prisma:studio": "npm run prisma:studio --workspace=@dating-app/shared"
+    },
+    "engines": {
+      "node": ">=20.0.0"
+    }
+  }
