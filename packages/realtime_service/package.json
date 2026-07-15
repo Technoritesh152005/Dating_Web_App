@@ -1,0 +1,16 @@
+{
+  "name": "@dating-app/realtime",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "src/server.js",
+  "scripts": {
+    "dev": "node --watch src/server.js",
+    "start": "node src/server.js"
+  },
+  "dependencies": {
+    "@dating-app/shared": "*",
+    "socket.io": "^4.7.5",
+    "@socket.io/redis-adapter": "^8.3.0"
+  }
+}

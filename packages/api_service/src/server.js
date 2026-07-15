@@ -10,7 +10,7 @@ const apiconfig = loadConfig('api')
 async function main (){
     const app = Fastify({
         // fastify also has its own built in logger which we dont need
-        logger:false;
+        logger:false,
     })
 
     await app.register(cors,{

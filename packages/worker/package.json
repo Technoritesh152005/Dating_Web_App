@@ -1,0 +1,16 @@
+{
+    "name": "@dating-app/worker",
+    "version": "0.1.0",
+    "private": true,
+    "type": "module",
+    "main": "src/index.js",
+    "scripts": {
+      "dev": "node --watch src/index.js",
+      "start": "node src/index.js",
+      "test:enqueue": "node src/enqueuTestJobs.js"
+    },
+    "dependencies": {
+      "@dating-app/shared": "*",
+      "bullmq": "^5.12.15"
+    }
+  }

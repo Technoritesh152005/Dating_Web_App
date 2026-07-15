@@ -18,12 +18,12 @@ export const prisma = globalForPrisma.__prisma ??
                       }        
 
                       
-export const connectDb(logger){
+export async function connectDb(logger) {
     await prisma.$connect();
     logger.info('Postgres Connected')
     return prisma
 }
 
-export async disconnectDb(){
-    await prisma.$disconnect
+export async function disconnectDb() {
+    await prisma.$disconnect();
 }

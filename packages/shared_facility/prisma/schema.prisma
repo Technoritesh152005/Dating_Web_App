@@ -1,0 +1,212 @@
+//as we were creating multiple files for models in mongo here in 1 single prisma file u make all  models in one place
+// before writing any model u need to define generator nd which db to connect
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db{
+  provider = "postgresql"
+url = env("DATABASE_URL")
+}
+
+
+// 
+
+model User{
+  id String @id @default(uuid())
+  email String @unique
+  phone String? @unique
+  passwordHash String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+
+  // one to one relation
+  profile  Profile?
+  preference Preference?
+
+
+  // one to many relation
+
+  sentSwipes   Swipe[]     @relation("SwipeSent")
+  receivedSwipes   Swipe[]   @relation("SwipesReceived")
+  matchesAsUserA    Match[]    @relation("MatchUserA")
+  matchesAsUserB    Match[]              @relation("MatchUserB")
+  sentMessages      Message[]
+  verificationReqs  VerificationRequest[]
+  reportsFiled      Report[]             @relation("ReportsFiled")
+  reportsReceived   Report[]             @relation("ReportsReceived")
+  blocksInitiated   Block[]              @relation("BlocksInitiated")
+  blocksReceived    Block[]              @relation("BlocksReceived")
+
+  @@map("users")
+ }
+
+// Location note: `location` is a PostGIS geography column. Prisma's schema
+// language doesn't have a native geography type, so we declare it as
+// Unsupported() here - Prisma will skip generating a typed field for it,
+// and we write raw SQL (see migration.sql below) to actually create the
+// column + index. We also keep plain latitude/longitude floats as a
+// simple fallback/display value.
+ enum Gender{
+  MALE
+  FEMALE
+  NON_BINARY
+  OTHER
+  PREFERED_NOT_TO_SAY
+ }
+
+ enum ProfessionCategory {
+  STUDENT
+  ENGINEER
+  DOCTOR
+  BUSINESS
+  GOVERNMENT
+  ARTIST
+  OTHER
+}
+
+enum VerificationStatus {
+  PENDING       // just signed up, verification job not yet run
+  UNDER_REVIEW  // job ran, borderline result, needs manual check
+  VERIFIED
+  REJECTED
+}
+
+// Profile is also a user data but what other user usually see data of other user
+// natural grouping and sensitive inform r not show
+
+model Profile {
+  id String @id @default(uuid())
+  userId String @unique
+  user User   @relation(fields: [userId], references: [id], onDelete: Cascade )
+
+  displayName String 
+  dateOfBirth DateTime
+  gender Gender
+  bio String @default("")
+  interests   String[] // Postgres native array - fine for a bounded list of tags
+  profession  ProfessionCategory @default(OTHER)
+
+  religion String?
+  caste String?
+  showReligionCaste Boolean @default(false)
+
+  latitude Float?
+  longitude Float?
+
+  // we use geography as it help to do distance calculation
+  // prisma ignores this code 
+  location Unsupported("geography(Point, 4326)")?
+
+  verificationStatus VerificationStatus @default(PENDING)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  photos Photo[]
+
+  @@map("profiles")
+}
+
+model Photo {
+  id    String @id @default(uuid())
+  profileId String
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  url String //stored in S3 or in cloudfare
+  position  Int      @default(0) // display order in the carousel
+  isPrimary Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([profileId])
+  @@map("photos")
+}
+
+// Prefernce
+// what user likes
+model Prference {
+  id String @id @default(uuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  minAge Int @default(18)
+  maxAge Int @default(99)
+  maxDistanceKm Int @default(50)
+  genderPreference Gender[]
+
+  professionFilter ProfessionCategory[]
+  religionFilter   String[]
+  casteFilter      String[]
+
+  updatedAt DateTime @updatedAt
+
+  @@map("preferences")
+
+}
+
+enum SwipeAction {
+  PASS
+  LIKE
+  FIRE_LIKE
+}
+
+// Swipe means ike action from one end to other end
+model Swipe{
+   id         String      @id @default(uuid())
+  fromUserId String
+  fromUser   User        @relation("SwipesSent", fields: [fromUserId], references: [id], onDelete: Cascade)
+  toUserId   String
+  toUser     User        @relation("SwipesReceived", fields: [toUserId], references: [id], onDelete: Cascade)
+
+  action     SwipeAction
+  createdAt DateTime @default(now())
+
+  // we create a index entry to check for mutual lie detetction whether user b has like user a?
+  @@index([toUserId, fromUserId])
+  // suppose a user like user b a unique entry will be created , further user a liked user b another entry will not be created
+  @@unique([fromUserId, toUserId])
+  @@map("swipes")
+}
+
+enum MatchStatus {
+  ACTIVE
+  UNMATCHED
+}
+
+model Match {
+  id        String      @id @default(uuid())
+  userAId   String
+  userA     User        @relation("MatchUserA", fields: [userAId], references: [id], onDelete: Cascade)
+  userBId   String
+  userB     User        @relation("MatchUserB", fields: [userBId], references: [id], onDelete: Cascade)
+
+  status MatchStatus @default(UNMATCHED)
+  matchedAt   DateTime    @default(now())
+  unmatchedAt DateTime?
+  unmatchedBy String?     // userId of whoever unmatched, if applicable
+
+  messages Message[]
+
+  @@unique([userAId, userBId])
+  @@index([userAId])
+  @@index([userBId])
+  @@map("matches")
+}
+
+model Message {
+  id        String   @id @default(uuid())
+  matchId   String
+  match     Match    @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  senderId  String
+  sender    User     @relation(fields: [senderId], references: [id], onDelete: Cascade)
+
+  content   String
+  createdAt DateTime @default(now())
+  readAt    DateTime?
+
+  // Fetching "all messages in this match, newest first" is the single most
+  // frequent chat query - this index makes it fast even with millions of rows.
+  @@index([matchId, createdAt])
+  @@map("messages")
+}
