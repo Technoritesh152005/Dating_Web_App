@@ -6,7 +6,7 @@ import Redis from "ioredis"
 // one ioredis instance across very different usage patterns (pub/sub vs
 // blocking commands) can cause subtle bugs. Cheap to create, so we don't
 // force a singleton here like we do for Prisma.
-export function createredisClient (){
+export function createRedisClient (){
     const url = process.env.REDIS_URL || 'redis://localhost:6379';
 
     const client = new Redis( url, {
