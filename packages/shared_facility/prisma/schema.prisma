@@ -38,10 +38,23 @@ model User{
   reportsReceived   Report[]             @relation("ReportsReceived")
   blocksInitiated   Block[]              @relation("BlocksInitiated")
   blocksReceived    Block[]              @relation("BlocksReceived")
-
+  refreshToken     RefreshTokens[]
   @@map("users")
  }
 
+
+model RefreshToken {
+  id        String    @id @default(uuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String    @unique
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
+  @@map("refresh_tokens")
+}
 // Location note: `location` is a PostGIS geography column. Prisma's schema
 // language doesn't have a native geography type, so we declare it as
 // Unsupported() here - Prisma will skip generating a typed field for it,
@@ -210,3 +223,58 @@ model Message {
   @@index([matchId, createdAt])
   @@map("messages")
 }
+
+model verificationStatus {
+  id String @id @default(uuid())
+  userId String
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  selfieUrl String 
+  idDocumentUrl String
+  comparePhotoId String
+  faceMatchScore Float?
+
+  status VerificationStatus @default(PENDING)
+  rejectionReason String?
+  reviewedAt      DateTime?
+  createdAt       DateTime @default(now())
+
+  @@index([userId])
+  @@map("verification_requests")
+
+}
+
+enum ReportStatus {
+  OPEN
+  REVIEWED
+  ACTIONED
+}
+
+model Report {
+  id String @id @default(uuid())
+  reporterId     String
+  reporter       User         @relation("ReportsFiled", fields: [reporterId], references: [id], onDelete: Cascade)
+  reportedUserId String
+  reportedUser   User         @relation("ReportsReceived", fields: [reportedUserId], references: [id], onDelete: Cascade)
+
+  reason String
+  evidenceUrl String?
+  status ReportStatus @default(OPEN)
+  createdAt DateTime  @default(now())
+  @@index([reportedUserId])
+  @@map("reports")
+}
+
+model Block {
+  id        String   @id @default(uuid())
+  blockerId String
+  blocker   User     @relation("BlocksInitiated", fields: [blockerId], references: [id], onDelete: Cascade)
+  blockedId String
+  blocked   User     @relation("BlocksReceived", fields: [blockedId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([blockerId, blockedId])
+  @@map("blocks")
+}
+

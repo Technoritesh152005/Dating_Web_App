@@ -3,6 +3,8 @@ import cors from '@fastify/cors'
 import helmet from '@fastify/helmet'
 import rateLimit from '@fastify/rateLimit'
 import {loadConfig , createLogger, prisma , connectDb , disconnectDb , createredisClient} from '@dating-app/shared'
+import { registerAuthDecorator } from "./plugins/authenticator_middleware"
+import { registerAuthRoutes } from "./routes/auth"
 
 const logger = createLogger('api')
 const apiconfig = loadConfig('api')
@@ -31,6 +33,10 @@ async function main (){
     app.decorate('redis',redis)
     app.decorate('db',prisma)
 
+    // like a middleware
+    registerAuthDecorator(app,config)
+
+    registerAuthRoutes(app,config)
 
     const shutdown = async (signal) => {
         logger.info(`Received ${signal}, shutting down gracefully...`);
