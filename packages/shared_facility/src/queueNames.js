@@ -6,4 +6,5 @@
 
 export const QUEUE_NAMES = {
     HEALTH_CHECK: 'health-check', // Level 0 placeholder only
+    VERIFICATION_STATUS :'verification-check'
   };
