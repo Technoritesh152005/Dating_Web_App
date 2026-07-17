@@ -1,22 +1,25 @@
 {
-    "name": "@dating-app/shared",
-    "version": "0.1.0",
-    "private": true,
-    "type": "module",
-    "main": "src/index.js",
-    "scripts": {
-      "prisma:generate": "prisma generate",
-      "prisma:migrate": "prisma migrate dev",
-      "prisma:studio": "prisma studio"
-    },
-    "dependencies": {
-      "@prisma/client": "^5.20.0",
-      "ioredis": "^5.4.1",
-      "pino": "^9.4.0",
-      "dotenv": "^16.4.5"
-    },
-    "devDependencies": {
-      "prisma": "^5.20.0",
-      "pino-pretty": "^11.2.2"
-    }
+  "name": "@dating-app/shared",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "src/index.js",
+  "scripts": {
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:studio": "prisma studio"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.20.0",
+    "ioredis": "^5.4.1",
+    "pino": "^9.4.0",
+    "dotenv": "^16.4.5",
+    "bullmq": "^5.12.15",
+    "@aws-sdk/client-s3": "^3.658.0",
+    "@aws-sdk/s3-request-presigner": "^3.658.0"
+  },
+  "devDependencies": {
+    "prisma": "^5.20.0",
+    "pino-pretty": "^11.2.2"
   }
+}
