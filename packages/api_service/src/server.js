@@ -5,6 +5,9 @@ import rateLimit from '@fastify/rateLimit'
 import {loadConfig , createLogger, prisma , connectDb , disconnectDb , createredisClient} from '@dating-app/shared'
 import { registerAuthDecorator } from "./plugins/authenticator_middleware"
 import { registerAuthRoutes } from "./routes/auth"
+import { registerProfileRoutes } from "./routes/profile"
+import { generateMediaRoutes} from './routes/media.js'
+import { registerVerificationRoutes } from "./routes/verification_selfie"
 
 const logger = createLogger('api')
 const apiconfig = loadConfig('api')
@@ -37,6 +40,9 @@ async function main (){
     registerAuthDecorator(app,config)
 
     registerAuthRoutes(app,config)
+    registerAuthRoutes(app,config)
+    generateMediaRoutes(app,config)
+    registerVerificationRoutes(app,config)
 
     const shutdown = async (signal) => {
         logger.info(`Received ${signal}, shutting down gracefully...`);
