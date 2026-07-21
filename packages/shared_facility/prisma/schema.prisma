@@ -224,24 +224,29 @@ model Message {
   @@map("messages")
 }
 
-model verificationStatus {
+model VerificationRequest {
   id String @id @default(uuid())
+
   userId String
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  selfieUrl String 
+  selfieUrl String
   idDocumentUrl String
   comparePhotoId String
+
   faceMatchScore Float?
 
   status VerificationStatus @default(PENDING)
+
   rejectionReason String?
-  reviewedAt      DateTime?
-  createdAt       DateTime @default(now())
+
+  reviewedAt DateTime?
+
+  createdAt DateTime @default(now())
 
   @@index([userId])
-  @@map("verification_requests")
 
+  @@map("verification_requests")
 }
 
 enum ReportStatus {
