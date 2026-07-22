@@ -2,6 +2,7 @@ import {Worker} from 'bullmq'
 import {loadConfig , createRedisClient, createLogger, connectDb, disconnectDb} from '@dating-app/shared'
 import {QUEUE_NAMES} from './queueNames.js'
 import {startVerificationWorker} from './workers/verificationWorkers.js'
+import { startMatchNotificationWorker } from './workers/matchNotificationWorker.js';
 
 const logger = createLogger('worker')
 const config = loadConfig('worker')
@@ -27,7 +28,9 @@ async function main(){
 
     // during shutdoen we need to even close their wrker and prisma redis cobnectiin
     const { worker: verificationWorker, connection: verificationConnection } = startVerificationWorker(logger);
- 
+    const { worker: matchNotificationWorker, connection: matchNotificationConnection } =
+    startMatchNotificationWorker(logger);
+
     logger.info('Worker process started, listening for jobs on: health-check, verification-check');
 
     worker.on('completed',(job )=>{
@@ -43,6 +46,7 @@ async function main(){
         await workerConnection.quit()
         await verificationWorker.close();
         await verificationConnection.quit();
+        await matchNotificationConnection.quit();
         await disconnectDb()
         process.exit(0)
     }
