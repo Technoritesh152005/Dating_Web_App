@@ -2,6 +2,7 @@ import {createServer} from 'node:http'
 import {Server} from 'socket.io'
 import {createAdapter} from '@socket.io/redis-adapter'
 import {loadConfig,createLogger,redisClient} from '@dating-app/shared'
+import { registerChatHandlers } from './chatHandlers.js';
 
 const logger = createLogger('realtime')
 const config = loadConfig('realtime')
