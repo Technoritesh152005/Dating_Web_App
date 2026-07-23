@@ -31,7 +31,7 @@ async function main(){
         }
     })
 
-
+    await connectDb(logger);
     // we use adapter for scaling
     // we use redis pub sub adapter cause this help us realtime server to communicate with each other
     // Without this, if you run 2+ realtime server instances behind a load
@@ -47,10 +47,14 @@ async function main(){
 
     io.adapter(createAdapter(pubclient,subclient))
 
+    const presenceRedis = createRedisClient(logger, 'realtime-presence');
+    // / --- Auth: every connection must present a valid accessToken cookie ---
+  io.use(createSocketAuthMiddleware(config, logger));
     // on connection
     // when a new client enters socket is created
     io.on('connection', (socket) => {
     logger.info({ socketId: socket.id }, 'Client connected');
+    registerChatHandlers(io, socket, {db:prisma , redis:presenceRedis, logger})
 
     // Level 0 placeholder - proves the wiring works end to end.
     // Real chat-room join logic (per match_id) arrives in Level 6.

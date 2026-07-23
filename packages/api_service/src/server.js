@@ -11,6 +11,7 @@ import { registerVerificationRoutes } from "./routes/verification_selfie"
 import { registerPreferenceRoutes } from './routes/preferences.js';
 import { registerDiscoveryRoutes } from './routes/discovery.js';
 import {registerSwipeRoutes} from './routes/swipe.js'
+import {registerGetMessageRoutes} from './routes/messages.js'
 
 const logger = createLogger('api')
 const apiconfig = loadConfig('api')
@@ -48,7 +49,8 @@ async function main (){
     registerVerificationRoutes(app,config)
     registerPreferenceRoutes(app.config)
     registerDiscoveryRoutes(app.config)
-    registerSwipeRoutes(app); // Level 5
+    registerSwipeRoutes(app); 
+    registerGetMessageRoutes(app)
 
     const shutdown = async (signal) => {
         logger.info(`Received ${signal}, shutting down gracefully...`);

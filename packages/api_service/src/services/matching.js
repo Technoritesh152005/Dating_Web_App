@@ -4,7 +4,7 @@ function orderedPair(userId1, userId2) {
     return userId1 < userId2 ? [userId1, userId2] : [userId2, userId1]
 }
 
-export function recordSwipeAndCheckMatch(db, redis, { fromUserId, toUserId, action }) {
+export async function recordSwipeAndCheckMatch(db, redis, { fromUserId, toUserId, action }) {
 
     // first we try to record the swipe created
     // if already exist the swipe bwn usera to userb we defined in schema that \
