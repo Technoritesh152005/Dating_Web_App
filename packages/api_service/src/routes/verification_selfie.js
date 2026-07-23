@@ -3,7 +3,7 @@ export function registerVerificationRoutes(app) {
 
     // we submit a live selfie this just make a entry of lsfie in db and put the job in worker
     app.post('/verification/selfie', { preHandler: app.authentiacte }, async (request, reply) => {
-        const { selfieUrl } = request.body ?? {}
+        const { selfieKey } = request.body ?? {}
 
         if (!selfieUrl) return reply.code(400).send({ error: "Please send the SelfieUrl" })
 
@@ -18,7 +18,7 @@ export function registerVerificationRoutes(app) {
         const verificationRequest = await app.db.verificationStatus.create({
             data: {
                 userId: request.userId,
-                selfieUrl,
+                selfieKey,
                 comparePhotoId: profile.photos[0].id,
                 status: 'PENDING'
             }
@@ -36,7 +36,7 @@ export function registerVerificationRoutes(app) {
             verificationRequestId: verificationRequest.id,
             // passing other details to reduce database query
             userId: request.userId,
-            selfieUrl,
+            selfieKey,
             profilePhotoUrl: profile.photos[0].id
         })
 
@@ -56,14 +56,14 @@ export function registerVerificationRoutes(app) {
 
     app.get('/verification/status', { preHandler: app.authenticate }, async (request, reply) => {
         const profile = await app.db.profile.findUnique({
-          where: { userId: request.userId },
-          select: { verificationStatus: true },
+            where: { userId: request.userId },
+            select: { verificationStatus: true },
         });
-     
+
         if (!profile) {
-          return reply.code(404).send({ error: 'Profile not found' });
+            return reply.code(404).send({ error: 'Profile not found' });
         }
-     
+
         return reply.send({ status: profile.verificationStatus });
-      });
+    });
 }   

@@ -44,7 +44,7 @@ export function generateMediaRoutes(app) {
 
         // if a user gave a img to make that image a primary image we update that image to primary by revoking old primary image
         if (isPrimary) {
-            await app.db.photo.findUnique({
+            await app.db.photo.updateMany({
                 where: { profileId: profile.id, isPrimary: true },
                 // make it to false
                 data: { isPrimary: false },

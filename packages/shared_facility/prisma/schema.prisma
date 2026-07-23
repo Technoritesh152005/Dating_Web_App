@@ -43,7 +43,7 @@ model User{
  }
 
 
-model RefreshToken {
+model RefreshTokens {
   id        String    @id @default(uuid())
   userId    String
   user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -119,6 +119,8 @@ model Profile {
 
   photos Photo[]
 
+  bioEmbedding Unsupported("vector(1024)")?
+
   @@map("profiles")
 }
 
@@ -128,6 +130,7 @@ model Photo {
   profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
 
   url String //stored in S3 or in cloudfare
+  key String
   position  Int      @default(0) // display order in the carousel
   isPrimary Boolean  @default(false)
   createdAt DateTime @default(now())
@@ -138,7 +141,7 @@ model Photo {
 
 // Prefernce
 // what user likes
-model Prference {
+model Prefernce {
   id String @id @default(uuid())
   userId String @unique
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -230,7 +233,9 @@ model VerificationRequest {
   userId String
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  selfieUrl String
+  selfieKey String
+
+
   idDocumentUrl String
   comparePhotoId String
 

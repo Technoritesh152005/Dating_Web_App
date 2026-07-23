@@ -26,7 +26,7 @@ export function registerDiscoveryRoutes(app) {
         const candidatePool = await buildCandidatePool(app.db, {
             userId: request.userId,
             ownProfile,
-            prefs,
+            resolvedPrefs,
             page,
             pageSize: PAGE_SIZE,
         })

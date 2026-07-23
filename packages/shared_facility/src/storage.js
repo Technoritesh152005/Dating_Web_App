@@ -4,13 +4,16 @@ import crypto from 'node:crypto'
 
 function getS3Clinet(){
 
+    const usingR2Credentials = process.env.S3_ACCESS_KEY_ID && process.env.S3_SECRET_ACCESS_KEY
     return new S3Client({
-        region:process.env.S3_REGION || 'auto',
+        region:process.env.S3_REGION || process.env.AWS_REGION ||'auto',
         endpoint : process.env.S3_ENDPOINT || undefined, //url where ur app send request
+       ...(usingR2Credentials && {
         credentials:{
             accessKeyId: process.env.S3_ACCESS_KEY_ID,
-            secretAccessKey: process.env.S3_SECRET_ACCESS_KEY,
+            secretAccessKey : process.env.S3_SECRET_ACCESS_KEY
         }
+       })
     })
 }
 

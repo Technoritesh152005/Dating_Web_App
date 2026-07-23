@@ -8,10 +8,10 @@ export function startVerificationWorker(logger) {
 
     const worker = new Worker(QUEUE_NAMES.VERIFICATION_STATUS, async (job) => {
 
-        const { selfieUrl, userId, profilePhotoUrl, verificationRequestId } = job.data
+        const { selfieKey, userId, profilePhotoKey, verificationRequestId } = job.data
         logger.info({ verificationRequestId }, 'Processing verification job')
 
-        const { matchScore } = await compareFace(selfieUrl, profilePhotoUrl)
+        const { matchScore } = await compareFace(selfieKey, profilePhotoKey)
 
         const VERIFY_THRESHOLD = 0.85;
         const REVIEW_THRESHOLD = 0.6

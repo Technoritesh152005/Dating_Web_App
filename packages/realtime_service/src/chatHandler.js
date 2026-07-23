@@ -47,7 +47,7 @@ export function registerChatHandlers(io, socket, { db, redis, logger }) {
 
 
     // now let the socket listen on send message
-    socket.on('send-message', async({ matchId, content }, callback => {
+    socket.on('send-message', async({ matchId, content }, callback) => {
 
         try {
             if (!content || !content.trim()) {
@@ -84,7 +84,7 @@ export function registerChatHandlers(io, socket, { db, redis, logger }) {
             logger.error({ err, matchId }, 'Error sending message');
             callback?.({ ok: false, error: 'Failed to send message' });
         }
-    }))
+    })
 
     //   Send to everyone in this room EXCEPT the current socket.
     socket.on('typing', ({ matchId }) => {
