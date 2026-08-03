@@ -1,6 +1,7 @@
 import { QUEUE_NAMES, createQueue } from '@dating-app/shared';
 import { addToSeenFilter } from '@dating-app/shared/src/bloom';
 
+// we always pair the order in linear ascending order
 function orderedPair(userId1, userId2) {
     return userId1 < userId2 ? [userId1, userId2] : [userId2, userId1]
 }

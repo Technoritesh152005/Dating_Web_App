@@ -61,6 +61,13 @@ export function registerSwipesRoutes(app) {
         //     }
         //   ]
         // in matches u get all user id 
+        const matches = await app.db.match.findMany({
+            where: {
+              status: 'ACTIVE',
+              OR: [{ userAId: request.userId }, { userBId: request.userId }],
+            },
+            orderBy: { matchedAt: 'desc' },
+          });
 
         // we take e.userBid this line proves whether the givenloggedin user must not be in userB id
         const otheruserId = matches.map((m) => (

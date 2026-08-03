@@ -8,7 +8,7 @@ REFRESH_TOKEN_LIFE='7d'
 export function signAccessToken (userId , secret){
     return jwt.sign({sub:userId} ,secret, {expiresIn: ACCESS_TOKEN_LIFE})
 }
-
+/* These dont return boolean value but a payload where it have userid */
 export function verifyAccessToken(token , secret){
     return jwt.verify(token,secret)
 }
