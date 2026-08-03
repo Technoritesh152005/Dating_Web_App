@@ -3,6 +3,8 @@ import {loadConfig , createRedisClient, createLogger, connectDb, disconnectDb} f
 import {QUEUE_NAMES} from './queueNames.js'
 import {startVerificationWorker} from './workers/verificationWorkers.js'
 import { startMatchNotificationWorker } from './workers/matchNotificationWorker.js';
+import {startFeedRefilWorker} from './workers/feedRefilWorker.js'
+import {startFeedSchedulerWorker} from './workers/feedSchedulerWorker.js'
 
 const logger = createLogger('worker')
 const config = loadConfig('worker')
@@ -30,6 +32,8 @@ async function main(){
     const { worker: verificationWorker, connection: verificationConnection } = startVerificationWorker(logger);
     const { worker: matchNotificationWorker, connection: matchNotificationConnection } =
     startMatchNotificationWorker(logger);
+    const {worker , connection} = await startFeedRefilWorker(logger)
+    const{worker,connection} = await startFeedSchedulerWorker
 
     logger.info('Worker process started, listening for jobs on: health-check, verification-check');
 

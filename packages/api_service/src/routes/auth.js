@@ -7,7 +7,7 @@ import { signAccessToken ,hashToken} from "../utils/token"
 const accessCookieOpts = (config)=>({
     httpOnly:true ,
     secure:config.NODE_ENV==='production' ,// this tells to use https only when production
-    sameSite:'lax',
+    sameSite:'lax', /* Same site prevent to share http config to other web apps */
     path:'/',
     maxAge: 15*60 //same as access token
 
@@ -26,6 +26,7 @@ const refreshCookiesOpts = (config) = ({
 
 export function registerAuthRoutes (app,config){
 
+    /* 1. SignUp Routes */
     app.post('/auth/signup', async(request,reply)=>{
 
         const {email , password , phone } = request.body?? {}
