@@ -18,3 +18,4 @@ export function registerAuthDecorator(app, config) {
         }
     })
 }
+//it is a middleware

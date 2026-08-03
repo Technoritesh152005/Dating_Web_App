@@ -86,6 +86,19 @@ export function buildCandidatePool(db, { userId, ownProfile, prefs, page, pageSi
         `
         : Prisma.empty;
 
+    // take the best users who have same embeeding feature
+    const ownEmbeddingRows = await db.$queryRaw
+        `
+         SELECT "bioEmbedding"::text AS embeeding FROM profiles WHERE id = ${ownProfile.id}::uuid
+         `
+    console.log(ownEmbeddingRows)
+    const ownEmbeddingText = ownEmbeddingRows[0].embedding ?? null;
+
+    const orderClause = ownEmbeddingText
+        ? Prisma.sql`ORDER BY p."bioEmbedding" <=> ${ownEmbeddingText}::vector ASC, p."updatedAt" DESC`
+        : Prisma.sql`ORDER BY p."updatedAt" DESC`;
+
+
     const candidate = await db.$queryRaw
         `
       SELECT p.id, p."userId",
@@ -96,6 +109,7 @@ export function buildCandidatePool(db, { userId, ownProfile, prefs, page, pageSi
       AND NOT EXISTS (
         SELECT 1 FROM swipes s
         WHERE s."fromUserId" = ${userId} AND s."toUserId" = p."userId"
+         AND (s.action IN ('LIKE', 'SUPER_LIKE') OR s."createdAt" > NOW() - INTERVAL '30 days')
       )
       -- exclude anyone I've blocked, or who has blocked me
       AND NOT EXISTS (
@@ -109,12 +123,46 @@ export function buildCandidatePool(db, { userId, ownProfile, prefs, page, pageSi
       ${religionClause}
       ${casteClause}
       ${distanceClause}
+      ${orderClause}
     ORDER BY p."updatedAt" DESC
     LIMIT ${pageSize}
     OFFSET ${offset}
       `
 
     return candidate;
+}
+MIN_ACCEPTABLE_POOL_SIZE = 5
+export async function buildCandidateFeedWithRelaxation(db, params) {
+    const { prefs } = params
+
+    // attemp 1: exactly what the user asked for
+    let candidate = await buildCandidatePool(db, params)
+    if (candidate.length >= MIN_ACCEPTABLE_POOL_SIZE) {
+
+        return { candidate, relaxed: false }
+    }
+
+    // attempt 2 increasing distance
+    for (const multiplier of [2, 4]) {
+        const widePrefs = { ...prefs, maxDistanceKm: prefs.maxDistanceKm * multiplier }
+        candidate = await buildCandidatePool(db, { ...params, prefs: widePrefs })
+        if (candidates.length >= MIN_ACCEPTABLE_POOL_SIZE) {
+            return { candidates, relaxed: true, relaxedFields: ['distance'] };
+        }
+    }
+
+    // Attempt 3: widen age range too.
+    const widerAgePrefs = {
+        ...prefs,
+        maxDistanceKm: prefs.maxDistanceKm * 4,
+        minAge: Math.max(18, prefs.minAge - 5),
+        maxAge: prefs.maxAge + 5,
+    };
+    candidates = await buildCandidatePool(db, { ...params, prefs: widerAgePrefs });
+    const hasNoOptionalFilters = prefs.professionFilter.length === 0 && prefs.religionFilter.length === 0 && prefs.casteFilter.length === 0;
+    if (candidates.length >= MIN_ACCEPTABLE_POOL_SIZE || hasNoOptionalFilters) {
+        return { candidates, relaxed: true, relaxedFields: ['distance', 'age'] };
+    }
 }
 function calculateAge(dob) {
     const diffMs = Date.now() - new Date(dob).getTime();
