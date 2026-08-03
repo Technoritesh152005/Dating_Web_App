@@ -1,4 +1,5 @@
 import { QUEUE_NAMES, createQueue } from '@dating-app/shared';
+import { addToSeenFilter } from '@dating-app/shared/src/bloom';
 
 function orderedPair(userId1, userId2) {
     return userId1 < userId2 ? [userId1, userId2] : [userId2, userId1]
@@ -46,6 +47,8 @@ export async function recordSwipeAndCheckMatch(db, redis, { fromUserId, toUserId
         }
         throw err;
     }
+
+    await addToSeenFilter(redis, fromUserId, toUserId)
     if (action === 'PASS') {
         return { matched: false, match: null, alreadySwiped: false };
     }

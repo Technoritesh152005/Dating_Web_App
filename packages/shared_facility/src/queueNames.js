@@ -6,5 +6,9 @@
 
 export const QUEUE_NAMES = {
     HEALTH_CHECK: 'health-check', // Level 0 placeholder only
-    VERIFICATION_STATUS :'verification-check'
+    VERIFICATION_STATUS :'verification-check',
+    MATCH_NOTIFICATION: 'match-notification',
+  EMBEDDING_UPDATE: 'embedding-update', // Level 7 - recompute bio embedding on profile create/update
+  FEED_REFILL: 'feed-refill', // Level 7.5 - precompute one user's candidate batch into Redis
+  FEED_SCHEDULER: 'feed-scheduler',
   };
