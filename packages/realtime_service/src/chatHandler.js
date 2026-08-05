@@ -47,7 +47,7 @@ export function registerChatHandlers(io, socket, { db, redis, logger }) {
 
 
     // now let the socket listen on send message
-    socket.on('send-message', async({ matchId, content }, callback) => {
+    socket.on('send-message', async ({ matchId, content }, callback) => {
 
         try {
             if (!content || !content.trim()) {

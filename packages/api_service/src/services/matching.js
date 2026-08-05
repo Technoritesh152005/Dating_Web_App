@@ -1,4 +1,4 @@
-import { QUEUE_NAMES, createQueue } from '@dating-app/shared';
+import { QUEUE_NAMES, connectDb, createQueue } from '@dating-app/shared';
 import { addToSeenFilter } from '@dating-app/shared/src/bloom';
 
 // we always pair the order in linear ascending order
@@ -84,6 +84,9 @@ export async function recordSwipeAndCheckMatch(db, redis, { fromUserId, toUserId
     //   seperate bullmq / redis conn
     const matchQueue = createQueue(QUEUE_NAMES.MATCH_NOTIFICATIONS, redis.duplicate())
     await queue.add('notify-match', { matchId: match.id, userAId, userBId });
+
+    const iceBreakerQueue = createQueue(QUEUE_NAMES.ICEBREAKER_GENERATION, redis.duplicate())
+    await iceBreakerQueue.add('generate.iceBreak',{matchId:match.id, userAId, UserBId})
 
     return { matched: true, match, alreadySwiped: false };
 }

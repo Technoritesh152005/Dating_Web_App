@@ -119,7 +119,7 @@ model Profile {
 
   photos Photo[]
 
-  bioEmbedding Unsupported("vector(1024)")?
+  bioEmbedding Unsupported("vector(768)")?
 
   @@map("profiles")
 }
@@ -141,7 +141,7 @@ model Photo {
 
 // Prefernce
 // what user likes
-model Prefernce {
+model Preference {
   id String @id @default(uuid())
   userId String @unique
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -201,6 +201,13 @@ model Match {
   matchedAt   DateTime    @default(now())
   unmatchedAt DateTime?
   unmatchedBy String?     // userId of whoever unmatched, if applicable
+
+  // icebreaker suggestion:Generated ONCE, asynchronously, right after
+  // the match is created (see matching.js) - never regenerated on repeat
+  // chat opens, both to save cost/latency and because the whole point is a
+  // stable, one-time conversation starter, not a fresh one every visit.
+  // Null until the async job completes.
+  iceBreakerSuggestion String?
 
   messages Message[]
 
