@@ -1,6 +1,8 @@
 // Profile upload routes
 // for profile based update routes a middleware is required means all must be login that is app.authenticate
 
+import { QUEUE_NAMES } from "@dating-app/shared/src/queueNames"
+
 const VALID_GENDER = ['MALE', 'FEMALE', 'NON-BINARY', 'OTHER', 'PREFERED NOT TO SAY']
 const VALID_PROFESSION = ['STUDENT', 'ENGINEER', 'DOCTOR', 'BUSINESS', 'GOVERNMENT', 'ARTIST', 'OTHER']
 
@@ -84,6 +86,11 @@ export function registerProfileRoutes(app) {
             WHERE id = ${profile.id}::uuid
             `
         }
+
+        // now once u created a profile we will create its embedding input 
+        const embeddingInput = await buildEmbeddingInput({ bio: profile.bio, interests: profile.interests })
+        const embeddingQueue = createQueue(QUEUE_NAMES.EMBEDDING_UPDATE, app.redis.duplicate())
+        await embeddingQueue.add('update-embedding', { profileId: profile.id, embeddingInput })
         return reply.code(201).send(profile)
     })
 

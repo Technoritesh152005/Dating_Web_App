@@ -1,8 +1,8 @@
-import {  removeuserPreference, filterOutSeen , createQueue, buildCandidateFeedWithRelaxation} from '@dating-app/shared/src/discoveryFeed.js'
+import { removeuserPreference, filterOutSeen, createQueue, buildCandidateFeedWithRelaxation } from '@dating-app/shared/src/discoveryFeed.js'
 import { QUEUE_NAMES } from '@dating-app/shared/src/queueNames';
 const PAGE_SIZE = 20; // pagination: never return the whole pool in one response
 const REFIL_THRESHOLD = 10
-function feedListKey(userId){
+function feedListKey(userId) {
     return `feed:${userId}`
 }
 
@@ -30,35 +30,35 @@ export function registerDiscoveryRoutes(app) {
         let relaxed = false;
 
         // from the candidate we got from pref based we now filter it out using bloom filter
-        if(candIds && candIds.length > 0){
-            await filterOutSeen(request.userId, candIds,app.redis)
+        if (candIds && candIds.length > 0) {
+            await filterOutSeen(request.userId, candIds, app.redis)
         }
 
         // if the remaining feed list profile is leess than threshold after filtering then we create a new feed where we put in bg queue where bg worker processes it
         const remainingProfiles = await app.redis.llen(listKey)
-        if(remainingProfiles < REFIL_THRESHOLD ){
-        const refillQueue = createQueue(QUEUE_NAMES.FEED_REFILL, app.redis.duplicate())
-        refillQueue.add('reactive-refill', { userId: request.userId }).catch((err) => request.log.error(err));
-    
+        if (remainingProfiles < REFIL_THRESHOLD) {
+            const refillQueue = createQueue(QUEUE_NAMES.FEED_REFILL, app.redis.duplicate())
+            refillQueue.add('reactive-refill', { userId: request.userId }).catch((err) => request.log.error(err));
+
         }
 
         // now u reached here means u dont habe candidate pool in list redis
-        if(!candIds || candIds.length === 0){
+        if (!candIds || candIds.length === 0) {
             // once u have a profile u need to extract the prefernce
             const resolvedPrefs = await removeuserPreference(app.db, request.userId, ownProfile)
             const result = await buildCandidateFeedWithRelaxation(app.db, {
-                userId:request.userId,
+                userId: request.userId,
                 ownProfile,
                 resolvedPrefs,
-                page:1,
-                pageSize:PAGE_SIZE
+                page: 1,
+                pageSize: PAGE_SIZE
             })
-            candIds = result.candidates.map((c)=>{c.id})
-            relaxed= result.relaxed
+            candIds = result.candidates.map((c) => { c.id })
+            relaxed = result.relaxed
         }
-        
-        if(candIds.length === 0){
-            return reply.send({profiles:[], hasMore:false, relaxed})
+
+        if (candIds.length === 0) {
+            return reply.send({ profiles: [], hasMore: false, relaxed })
         }
 
 

@@ -11,4 +11,5 @@ export const QUEUE_NAMES = {
   EMBEDDING_UPDATE: 'embedding-update', // Level 7 - recompute bio embedding on profile create/update
   FEED_REFILL: 'feed-refill', // Level 7.5 - precompute one user's candidate batch into Redis
   FEED_SCHEDULER: 'feed-scheduler',
+  ICEBREAKER_GENERATION: 'icebreaker-generation',
   };
