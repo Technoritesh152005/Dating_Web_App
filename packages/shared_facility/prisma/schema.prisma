@@ -114,6 +114,9 @@ model Profile {
 
   verificationStatus VerificationStatus @default(PENDING)
 
+  safetyFlagged Boolean @default(false)
+  safetyFlagegdAt DateTime? 
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -295,3 +298,29 @@ model Block {
   @@map("blocks")
 }
 
+//  A time-boxed session where a user
+// shares their live location with a trusted contact who does NOT need an
+// account - they access it via an unguessable token link. Deliberately
+// separate from Profile.location (which is a static point used for
+// discovery-feed distance filtering) - this is short-lived, high-frequency-
+// updated, and must auto-expire and be deleted, not retained indefinitely.
+model LocationShare {
+  id String @id @default(uuid())
+  userId String
+    user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  tokenHash String @unique
+  contactName String
+
+  latitude Float?
+  longitude Float?
+  lastUpdatedAt DateTime?
+
+  expiresAt DateTime
+  revokedAt DateTime?
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@map("location_shares")
+}
