@@ -1,9 +1,10 @@
+import { QUEUE_NAMES } from '../../../shared_facility/src/queueNames'
+import { generateOpaqueToken, hashToken } from '../utils/token.js'
+
 const MAX_REPORT_THRESHOLD = 5
 const REPORT_WINDOW_HOURS = 24
 const MAX_SHARE_DURATION_MINUTES = 12 /* U can share max 12 hrs only bro */
 
-import { QUEUE_NAMES } from '../../../shared_facility/src/queueNames'
-import { generateOpaqueToken, hashToken } from '../utils/token.js'
 
 export function registerSafetyRoutes(app) {
 
@@ -145,18 +146,64 @@ export function registerSafetyRoutes(app) {
     })
 
     // only the person who created share can update tjhis
-    app.post('/safety/location-share/:shareId/update',{preHandler:app.authenticate},async(request,reply)=>{
-        const {shareId} = request.params
-        const {latitude, longitude} = request.body??{}
+    app.post('/safety/location-share/:shareId/update', { preHandler: app.authenticate }, async (request, reply) => {
+        const { shareId } = request.params
+        const { latitude, longitude } = request.body ?? {}
 
         if (latitude == null || longitude == null) {
             return reply.code(400).send({ error: 'latitude and longitude are required' });
-          }
+        }
         const shareProfile = await app.db.share.findUnique({
-            where:{id:shareId}
-        }) 
-        if(!shareProfile || shareProfile.userId !== request.userId)return reply.code(400).send({error:'No Share Found of this id'})
-        if(shareProfile.expiresAt < new Date()) return reply.code(400).send({error:'The share link has already ex'})
+            where: { id: shareId }
+        })
+        if (!shareProfile || shareProfile.userId !== request.userId) return reply.code(400).send({ error: 'No Share Found of this id' })
+        if (shareProfile.expiresAt < new Date() || shareProfile.revokedAt) return reply.code(400).send({ error: 'The share link has already ex' })
+
+        await app.db.locationShare.update({
+            where: { id: shareId },
+            data: { latitude, longitude, lastUpdatedAt: new Date() }
+        })
+        return reply.send({ ok: true });
+
     })
+    app.post('/safety/location-share/:shareId/stop', { preHandler: app.authenticate }, async (request, reply) => {
+        const { shareId } = request.params;
+
+        const share = await app.db.locationShare.findUnique({ where: { id: shareId } });
+        if (!share || share.userId !== request.userId) {
+            return reply.code(404).send({ error: 'Location share not found' });
+        }
+
+        await app.db.locationShare.update({ where: { id: shareId }, data: { revokedAt: new Date() } });
+
+        return reply.send({ ok: true });
+    });
+
+    // PUBLIC READ — deliberately NOT behind app.authenticate. The trusted
+    // contact never creates an account; the unguessable token IS their
+    // credential. Looked up by HASH (never store/compare the raw token),
+    // same pattern as refresh token verification in Level 2.
+    // -----------------------------------------------------------------------
+    app.get('/safety/location/:token', async (request, reply) => {
+        const { token } = request.params;
+        const tokenHash = hashToken(token);
+
+        const share = await app.db.locationShare.findUnique({ where: { tokenHash } });
+
+        if (!share || share.revokedAt || share.expiresAt < new Date()) {
+            // Deliberately the same response whether the token is invalid,
+            // expired, or revoked - distinguishing them would let someone probe
+            // for which tokens ONCE existed, a minor but real info leak to avoid.
+            return reply.code(410).send({ error: 'This location share is no longer available' });
+        }
+
+        return reply.send({
+            latitude: share.latitude,
+            longitude: share.longitude,
+            lastUpdatedAt: share.lastUpdatedAt,
+            expiresAt: share.expiresAt,
+            contactName: share.contactName,
+        });
+    });
 
 }

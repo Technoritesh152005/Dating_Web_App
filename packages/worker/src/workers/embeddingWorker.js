@@ -1,10 +1,11 @@
 import { Worker } from 'bullmq'
-import { redisClient, QUEUE_NAMES, createRedisClient } from '@dating-app/shared-facility'
+import { redisClient, QUEUE_NAMES, createRedisClient, circuitBreaker } from '@dating-app/shared-facility'
 import { generateEmbedding } from '../services/embeddingService.js'
 
 export function startEmbeddingWorkerForProfile(logger) {
 
     const connection = createRedisClient(logger, 'embedding-worker')
+    const breakerRedisConnection = createRedisClient(logger, 'embedding-worker-breaker')
 
     const worker = new Worker(
         QUEUE_NAMES.EMBEDDING_UPDATE,
@@ -12,6 +13,9 @@ export function startEmbeddingWorkerForProfile(logger) {
             const { profileId, embeddingInput } = job.data
             logger.info({ profileId }, 'Processing embedding job');
 
+            const { embedding } = await circuitBreaker(breakerRedisConnection, 'gemini-embedding', () =>
+                generateEmbedding(embeddingInput)
+            )
             const { embedding } = generateEmbedding(embeddingInput)
             const vectorLiteral = `[${embedding.join(',')}]`;
 
@@ -33,11 +37,11 @@ export function startEmbeddingWorkerForProfile(logger) {
 
     worker.on('completed', (job, result) => {
         logger.info({ jobId: job.id, result }, 'Embedding job completed');
-      });
-    
-      worker.on('failed', (job, err) => {
+    });
+
+    worker.on('failed', (job, err) => {
         logger.error({ jobId: job?.id, err }, 'Embedding job failed');
-      });
-    
-      return { worker, connection };
+    });
+
+    return { worker, connection };
 }

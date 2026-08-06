@@ -6,6 +6,8 @@ import { startMatchNotificationWorker } from './workers/matchNotificationWorker.
 import { startFeedRefilWorker } from './workers/feedRefilWorker.js'
 import { startFeedSchedulerWorker } from './workers/feedSchedulerWorker.js'
 import { startIceBreakerFunction } from './workers/iceBreakerWorker.js'
+import { startLocationCleanUpWorker } from './workers/locationShareCleanupWorker.js';
+
 
 const logger = createLogger('worker')
 const config = loadConfig('worker')
@@ -36,7 +38,7 @@ async function main() {
     const { worker, connection } = await startFeedRefilWorker(logger)
     const { worker, connection } = await startFeedSchedulerWorker
     const { worker: iceBreakerWorker, connection: iceBreakConnection } = await startIceBreakerFunction(logger)
-
+    const { worker: locationShareCleanupWorker, connection: locationShareCleanupConnection } = startLocationCleanUpWorker(logger);
     logger.info('Worker process started, listening for jobs on: health-check, verification-check');
 
     worker.on('completed', (job) => {
