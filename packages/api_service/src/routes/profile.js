@@ -5,7 +5,7 @@ import { QUEUE_NAMES } from "@dating-app/shared/src/queueNames"
 
 const VALID_GENDER = ['MALE', 'FEMALE', 'NON-BINARY', 'OTHER', 'PREFERED NOT TO SAY']
 const VALID_PROFESSION = ['STUDENT', 'ENGINEER', 'DOCTOR', 'BUSINESS', 'GOVERNMENT', 'ARTIST', 'OTHER']
-
+PROFILE_CACHE_TTL_SECONDS = 60
 export function registerProfileRoutes(app) {
 
     app.put('/profile', { preHandler: app.authenticate }, async (request, reply) => {
@@ -86,16 +86,28 @@ export function registerProfileRoutes(app) {
             WHERE id = ${profile.id}::uuid
             `
         }
+        /* delete the stale copy of profile data cached in redis */
+        await app.redis.del(profileRedisKey(request.userId))
 
         // now once u created a profile we will create its embedding input 
         const embeddingInput = await buildEmbeddingInput({ bio: profile.bio, interests: profile.interests })
         const embeddingQueue = createQueue(QUEUE_NAMES.EMBEDDING_UPDATE, app.redis.duplicate())
-        await embeddingQueue.add('update-embedding', { profileId: profile.id, embeddingInput })
+        // adding each request uniue id hich helps to keep in async or sync with the request
+        await embeddingQueue.add('update-embedding', { profileId: profile.id, embeddingInput, requestId: request.id })
+
+        const feedRefillQueue = createQueue(QUEUE_NAMES.FEED_REFILL, app.redis.duplicate());
+        await feedRefillQueue.add('profile-saved-refill', { userId: request.userId, requestId: request.id });
         return reply.code(201).send(profile)
     })
 
     app.get('/profile/me', { preHandler: app.authenticate }, async (request, reply) => {
 
+        const cachedData = await app.redis.get(profileRedisKey(request.userId))
+
+        if (cachedData) {
+            reply.header('X-Cache', 'HIT');
+            return reply.send(JSON.parse(cached));
+        }
         const profile = await app.db.profile.findUnique({
             where: {
                 userId: request.userId
@@ -108,6 +120,10 @@ export function registerProfileRoutes(app) {
         if (!profile) {
             return reply.code(404).send({ error: "Profile ot Created" })
         }
+
+        // setting the data in cache memory
+        await app.redis.set(profileRedisKey(request.userId), JSON.stringify(profile), 'EX', PROFILE_CACHE_TTL_SECONDS)
+        reply.header('X-Cache', 'MISS');
         return reply.send(profile);
 
     })
@@ -118,4 +134,8 @@ function calculateAge(dob) {
     const ageDate = new Date(diffMs)
     console.log(ageDate)
     return Math.abs(ageDate.getUTCFullYear - 1970)
+}
+
+function profileRedisKey(userid) {
+    return `cache:profile::me:${userid}`
 }

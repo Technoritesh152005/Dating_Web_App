@@ -27,7 +27,11 @@ export function registerSwipesRoutes(app) {
         const result = await recordSwipeAndCheckMatch(app.db, app.redis, {
             fromUserId: request.userId,
             toUserId,
-            action
+            action,
+            requestId : request.id 
+            // Fastify's built-in per-request id - threaded into async jobs for cross-process tracing
+  
+
         })
 
         return reply.code(201).send({
@@ -87,6 +91,7 @@ export function registerSwipesRoutes(app) {
                 matchId: match.id,
                 matchedAt: match.matchedAt,
                 otherUser: profileByUserId.get(otherUserId) ?? null,
+                icebreakerSuggestion: match.icebreakerSuggestion,
             };
         });
 

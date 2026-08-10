@@ -43,5 +43,5 @@ export function startEmbeddingWorkerForProfile(logger) {
         logger.error({ jobId: job?.id, err }, 'Embedding job failed');
     });
 
-    return { worker, connection };
+    return { worker, connection , breakerRedisConnection};
 }

@@ -32,7 +32,7 @@ async function main() {
     )
 
     // during shutdoen we need to even close their wrker and prisma redis cobnectiin
-    const { worker: verificationWorker, connection: verificationConnection } = startVerificationWorker(logger);
+    const { worker: verificationWorker, connection: verificationConnection ,breakerRedisConnection: verificationBreakerRedis } = startVerificationWorker(logger);
     const { worker: matchNotificationWorker, connection: matchNotificationConnection } =
         startMatchNotificationWorker(logger);
     const { worker, connection } = await startFeedRefilWorker(logger)

@@ -72,5 +72,5 @@ export function startVerificationWorker(logger) {
         logger.error({ jobId: job?.id, err })
     })
 
-    return { worker, connection };
+    return { worker, connection, breakerRedisConnection };
 }
