@@ -77,16 +77,41 @@ export async function recordSwipeAndCheckMatch(db, redis, { fromUserId, toUserId
     // Mutual like confirmed - create the match.
     const [userAId, userBId] = orderedPair(fromUserId, toUserId);
 
-    const match = await db.match.create({
-        data: { userAId, userBId, status: 'ACTIVE' },
+    // the below avoids race condition
+    let match;
+    try {
+        match = await db.match.create({ data: { userAId, userBId, status: 'ACTIVE' } })
+    } catch (err) {
+        if (err.code === 'P2002') {
+            match = await db.match.findUnique({ where: { userAId_userBId: { userAId, userBId } } });
+            return { matched: true, match, alreadySwiped: false }
+        }
+        throw err
+    }
+
+    /* Get their emails to send a match notification */
+    const users = await db.user.findMany({
+        where: { id: { in: [userAId, userBId] } },
+        select: { id: true, email: true },
     });
+    const userA = users.find((u) => u.id === userAId)
+    const userB = users.find((u) => u.id === userBId)
+
+    const userAEmail = userA?.email
+    const userBEmail = userN?.email
+    const userADisplayName = userA?.profile?.displayName
+    const userBDisplayName = userB?.profile?.displayName
 
     //   seperate bullmq / redis conn
-    const matchQueue = createQueue(QUEUE_NAMES.MATCH_NOTIFICATIONS, redis.duplicate())
-    await queue.add('notify-match', { matchId: match.id, userAId, userBId });
+    const matchQueue = createQueue(QUEUE_NAMES.MATCH_NOTIFICATION, redis.duplicate())
+    await matchQueue.add('notify-match', { matchId: match.id, userAId, userBId, userAEmail, userBEmail, userADisplayName, userBDisplayName }).catch((err) => {
+        console.error('Failed to enqueue match motification', err)
+    })
 
     const iceBreakerQueue = createQueue(QUEUE_NAMES.ICEBREAKER_GENERATION, redis.duplicate())
-    await iceBreakerQueue.add('generate.iceBreak',{matchId:match.id, userAId, UserBId})
+    await iceBreakerQueue.add('generate.iceBreak', { matchId: match.id, userAId, userBId }).catch((err) => {
+        console.error('Failed to enqueue icebreaker generation', err)
+    })
 
     return { matched: true, match, alreadySwiped: false };
 }

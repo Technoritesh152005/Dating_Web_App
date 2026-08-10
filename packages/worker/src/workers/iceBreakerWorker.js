@@ -1,11 +1,12 @@
 import { generateIceBreaker } from '../services/iceBreakerServices.js'
 import { Worker } from 'bullmq'
-import { QUEUE_NAMES, createRedisClient, prisma } from '@dating-app/shared-facility'
+import { QUEUE_NAMES, createRedisClient, prisma, circuitBreaker } from '@dating-app/shared-facility'
 
 // this is only generated when a match is created . not each times and this job is enqueue in matching.js
 export function startIceBreakerFunction(logger) {
 
     const connection = createRedisClient(logger, 'worker-icebreaker')
+    const breakerRedisConnection = createRedisClient(logger, 'worker-icebreaker-breaker')
 
     const worker = new Worker(
         QUEUE_NAMES.ICEBREAKER_GENERATION,
@@ -23,12 +24,17 @@ export function startIceBreakerFunction(logger) {
                 return { skipped: true }
             }
 
-            const { suggestion } = generateIceBreaker({
-                userABio: profileA.bio,
-                userBBio: profileB.bio,
-                userAInterest: profileA.interests,
-                userBInterest: profileB.interests
-            })
+           const {suggestion} = await circuitBrekaer(breakerRedisConnection, 'groq-icebreaker', () =>
+
+                generateIceBreaker({
+                    userABio: profileA.bio,
+                    userBBio: profileB.bio,
+                    userAInterest: profileA.interests,
+                    userBInterest: profileB.interests
+                })
+
+            )
+
 
             await primsa.match.update({
                 where: { matchId: matchId },
@@ -50,5 +56,5 @@ export function startIceBreakerFunction(logger) {
         // if the worker failed it should not stop the matching flow between the user
         logger.info({ jobId: job.id, err }, `Icebreaker job failed`)
     })
-    return {worker,connection}
+    return { worker, connection , breakerRedisConnection }
 }

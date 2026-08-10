@@ -22,13 +22,14 @@ export function startFeedRefilWorker(logger){
     const worker = new Worker(
     QUEUE_NAMES.FEED_REFILL,
     async(job)=>{
-        const {userId} = job.data
+        const {userId, requestId} = job.data
+        const log = logger.child({requestId})
 
         // check whether profile exist of user before building the feed
         const profile = await prisma.profile.findUnique({
             where:{userId}
         })
-        if(!profile) {logger.warn({userId}, 'Feed Refilled not worked as user profile dont exist')
+        if(!profile) {log.warn({userId}, 'Feed Refilled not worked as user profile dont exist')
         return {skipped:true}
         }
 
@@ -50,7 +51,7 @@ export function startFeedRefilWorker(logger){
             await listRedis.ltrim(feedListKey(userId) , -FEED_LIST_MAX_SIZE , -1)
         }
 
-        logger.info({userId , count:candidateIds.length, relaxed, relaxedFields},'Fields refilled')
+        log.info({userId , count:candidateIds.length, relaxed, relaxedFields},'Fields refilled')
     },
     {
         connection,

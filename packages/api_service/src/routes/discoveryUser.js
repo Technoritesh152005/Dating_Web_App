@@ -38,7 +38,7 @@ export function registerDiscoveryRoutes(app) {
         const remainingProfiles = await app.redis.llen(listKey)
         if (remainingProfiles < REFIL_THRESHOLD) {
             const refillQueue = createQueue(QUEUE_NAMES.FEED_REFILL, app.redis.duplicate())
-            refillQueue.add('reactive-refill', { userId: request.userId }).catch((err) => request.log.error(err));
+            refillQueue.add('reactive-refill', { userId: request.userId , requestId:request.id}).catch((err) => request.log.error(err));
 
         }
 

@@ -37,7 +37,8 @@ export function registerVerificationRoutes(app) {
             // passing other details to reduce database query
             userId: request.userId,
             selfieKey,
-            profilePhotoUrl: profile.photos[0].id
+            profilePhotoUrl: profile.photos[0].id,
+            requestId: request.id
         })
 
         // // Mark the profile as under review immediately - the USER-FACING state
