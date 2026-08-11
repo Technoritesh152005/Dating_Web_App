@@ -33,10 +33,10 @@ async function main() {
 
     // during shutdoen we need to even close their wrker and prisma redis cobnectiin
     const { worker: verificationWorker, connection: verificationConnection ,breakerRedisConnection: verificationBreakerRedis } = startVerificationWorker(logger);
-    const { worker: matchNotificationWorker, connection: matchNotificationConnection } =
+    const { worker: matchNotificationWorker, connection: matchNotificationConnection, breakerRedisConnection:matchNotificationBreakerRedis } =
         startMatchNotificationWorker(logger);
-    const { worker, connection } = await startFeedRefilWorker(logger)
-    const { worker, connection } = await startFeedSchedulerWorker
+    const { worker:feedRefillWorker, connection:feedRefillConnection, listRedis:feedListRedis } = await startFeedRefilWorker(logger)
+    const { worker:worker, connection } = await startFeedSchedulerWorker
     const { worker: iceBreakerWorker, connection: iceBreakConnection } = await startIceBreakerFunction(logger)
     const { worker: locationShareCleanupWorker, connection: locationShareCleanupConnection } = startLocationCleanUpWorker(logger);
     logger.info('Worker process started, listening for jobs on: health-check, verification-check');
