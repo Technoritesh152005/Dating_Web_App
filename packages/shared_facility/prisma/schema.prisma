@@ -16,7 +16,11 @@ model User{
   id String @id @default(uuid())
   email String @unique
   phone String? @unique
-  passwordHash String
+
+  /* Making password hash default as google sign in never gives password */
+  passwordHash String?
+
+  googleId String? @unique 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -310,7 +314,7 @@ model LocationShare {
     user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   
   tokenHash String @unique
-  contactName String
+  contactName String?
 
   latitude Float?
   longitude Float?
