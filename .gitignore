@@ -1,5 +1,10 @@
 node_modules/
 .env
+.env.local
+*.log
 dist/
-coverage/
-.vscode/settings.json
+build/
+.next/
+.DS_Store
+packages/shared/prisma/migrations/dev.db
+.prisma/

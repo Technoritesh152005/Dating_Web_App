@@ -1,5 +1,6 @@
 import { Fraunces, Sora, IBM_Plex_Mono } from 'next/font/google';
 import './globals.css';
+import {Providers} from './providers.jsx'
 
 // Fraunces: warm, high-contrast serif with ink-trap character - carries
 // the display/headline personality. Variable font, so we can lean into
@@ -40,7 +41,11 @@ export default function RootLayout({ children }) {
   return (
     // these all fonts are available in our application and u can use it as needed
     <html lang="en" className={`${fraunces.variable} ${sora.variable} ${plexMono.variable}`}>
-      <body>{children}</body>
+      <body>
+      <Providers>
+        {children}
+      </Providers>
+      </body>
     </html>
   );
 }
