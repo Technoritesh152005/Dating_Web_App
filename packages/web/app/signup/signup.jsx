@@ -87,7 +87,7 @@ export default function signUpPage(){
   
         <Divider>or continue with</Divider>
   
-        <GoogleSignInButton />
+        <googleSignInButton />
   
         <p className="mt-6 text-center text-[14px] text-cream-dim">
           Already have an account?{' '}
