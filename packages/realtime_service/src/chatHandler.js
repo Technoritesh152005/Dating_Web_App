@@ -1,4 +1,4 @@
-import { markOnline } from './userPresence.js'
+import { markOnline ,isOnline , markOffline} from './userPresence.js'
 
 function MatchRoom(matchId) {
     return `match:${matchId}`
@@ -37,7 +37,11 @@ export function registerChatHandlers(io, socket, { db, redis, logger }) {
             socket.join(matchRoom(matchId))
             logger.info({ userId: socket.userId, matchId }, 'User joined match room');
 
-            callback?.({ ok: true })
+
+            const otherUserId = match.userAId === socket.userId ? match.userBId : match.userAId;
+            const partnerOnline = await isOnline(redis, otherUserId);
+
+            callback?.({ ok: true , partnerOnline })
 
         } catch (err) {
             logger.error({ err, matchId }, 'Error joining match room');
