@@ -72,7 +72,7 @@ export function registerChatHandlers(io, socket, { db, redis, logger }) {
             // now broadcast msg to everyone // Broadcast to EVERYONE in the room (including the sender - simplest
             // way for the sender's own UI to get the server-confirmed message
             // with its real id/timestamp, rather than trusting its own optimistic copy).
-            io.to(matchRoom(matchId)).emit('new-msg', {
+            io.to(matchRoom(matchId)).emit('new-message', {
                 id: message.id,
                 matchId: message.matchId,
                 senderId: message.senderId,
