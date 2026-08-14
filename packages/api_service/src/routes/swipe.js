@@ -96,6 +96,35 @@ export function registerSwipesRoutes(app) {
         });
 
     })
+
+    app.get('/matches/:matchId', { preHandler: app.authenticate }, async (request, reply) => {
+        const { matchId } = request.params;
+
+        const match = await app.db.match.findUnique({
+            where: { id: matchId },
+        });
+        if (!match) {
+            return reply.code(404).send({ error: 'No match found for this matchId' });
+        }
+        if (match.userAId !== request.userId && match.userBId !== request.userId) {
+            return reply.code(403).send({ error: 'You are not part of this match' });
+        }
+
+        const otherUserId = match.userAId === request.userId ? match.userBId : match.userAId;
+        const otherUser = await app.db.profile.findUnique({
+            where: { userId: otherUserId },
+            include: { photos: { where: { isPrimary: true }, take: 1 } },
+        });
+
+        return reply.send({
+            ok: true,
+            matchId: match.id,
+            otherUserId,
+            otherUser,
+            matchedAt: match.matchedAt,
+            iceBreakerSuggestion: match.iceBreakerSuggestion,
+        });
+    })
     app.post('/matches/:matchId/unmatch', { preHandler: app.authenticate }, async (request, reply) => {
 
         const { matchId } = request.body ?? {}
