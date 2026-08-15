@@ -62,3 +62,12 @@ export async function generatePresignedReadUrl(key, expiresInSeconds = 300) {
     return getSignedUrl(client, command, { expiresIn: expiresInSeconds });
   }
   
+  /* deleteing s3 image  */
+export async function deleteObject(key){
+    const client = getS3Clinet()
+    const command = new DeleteObjectCommand({
+        Bucket:process.env.S3_BUCKET_NAME,
+        Key: key
+    })
+    await client.send(command)
+}
