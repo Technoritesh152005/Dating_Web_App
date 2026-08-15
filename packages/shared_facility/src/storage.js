@@ -31,7 +31,7 @@ function getS3Clinet(){
 // API server is only involved for a split second to generate the permission
 // slip - never touches the actual file bytes.
 
-export async function assignPresignedUploadUrl ({userId , fileExtension,folder}){
+export async function generatePresignedUploadUrl ({userId , fileExtension,folder}){
 
     const client = getS3Clinet()
     const key = `${folder}/${userId}/${crypto.randomUUID()}.${fileExtension}`;

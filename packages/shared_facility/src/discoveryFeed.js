@@ -15,6 +15,7 @@
 
 import { Prisma } from '@prisma/client'
 
+//this sets the user prefernce or get the preference
 export async function removeuserPreference(db, userId, ownProfile) {
 
     const saved = await db.preference.findUnique(
@@ -132,6 +133,7 @@ export function buildCandidatePool(db, { userId, ownProfile, prefs, page, pageSi
     return candidate;
 }
 MIN_ACCEPTABLE_POOL_SIZE = 5
+
 export async function buildCandidateFeedWithRelaxation(db, params) {
     const { prefs } = params
 
