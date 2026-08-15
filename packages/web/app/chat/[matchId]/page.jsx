@@ -7,8 +7,13 @@ import { api } from '@/lib/api'
 import { useRouter } from 'next/navigation'
 import { connectSocket } from '@/lib/conneckSocket'
 import { Button } from '@/components/user_interface/Button'
+import { ActionMenu, ActionMenuItem } from 'components/ActionMenu'
+import { ConfirmModal } from '@/components/ConfirmModal'
+import { ReportModal } from '@/components/ReportModal'
+import { LocationShareModal } from '@/components/LocationShareModal'
 
-const TYPINF_DEBOUNCE = 1500
+
+const TYPING_DEBOUNCE_MS = 1500
 
 export default function chatPage() {
     const { matchId } = useParams()
@@ -25,6 +30,13 @@ export default function chatPage() {
     const [partnerOnline, setPartnerOnline] = useState(false)
     const [partnerTyping, setPartnerTyping] = useState(false)
     const [connectionError, setConnectionError] = useState(null)
+    const [confirmBlock, setConfirmBlock] = useState(false)
+    const [confirmUnmatch, setConfirmUnmatch] = useState(false)
+    const [reportOpen, setReportOpen] = useState(false)
+    const [locationShareOpen, setLocationShareOpen] = useState(false)
+
+
+
 
     // Keep the same socket instance available across renders without causing renders.
     const socketRef = useRef(null)
@@ -163,6 +175,13 @@ export default function chatPage() {
         setIceBreaker(null);
     };
 
+
+    /* Handle Block */
+    const handleBlock = async () => {
+        /* When Blocked it ends the match also from backend side */
+        await api.post('/safety/block', { userId: otherUser.userId })
+        router.push('/matches')
+    }
     if (loading) {
         return (
             <main className="flex min-h-screen items-center justify-center">
@@ -187,12 +206,25 @@ export default function chatPage() {
                         </div>
                     )}
                 </div>
-                <div>
+                <div className="flex-1">
                     <p className="font-display text-[16px] text-cream">{otherUser?.displayName ?? 'Loading…'}</p>
                     <p className="font-mono text-[11px] text-cream-dim">
                         {partnerTyping ? 'typing…' : partnerOnline ? 'online' : ''}
                     </p>
                 </div>
+
+                <ActionMenu
+                    trigger={
+                        <button aria-label="More options" className="flex h-9 w-9 items-center justify-center rounded-full text-cream-dim hover:text-cream">
+                            ⋯
+                        </button>
+                    }
+                >
+                    <ActionMenuItem onClick={() => setLocationShareOpen(true)}>Share my location</ActionMenuItem>
+                    <ActionMenuItem onClick={() => setReportOpen(true)}>Report</ActionMenuItem>
+                    <ActionMenuItem onClick={() => setConfirmBlock(true)} danger>Block</ActionMenuItem>
+                    <ActionMenuItem onClick={() => setConfirmUnmatch(true)} danger>Unmatch</ActionMenuItem>
+                </ActionMenu>
             </header>
 
             {connectionError && (
@@ -224,7 +256,7 @@ export default function chatPage() {
                         );
                     })}
                 </div>
-                <div ref={messagesEndRef} />
+                <div ref={messageEndRef} />
             </div>
 
             {icebreaker && (
@@ -248,6 +280,29 @@ export default function chatPage() {
                     Send
                 </Button>
             </form>
+
+            <ConfirmModal
+                open={confirmBlock}
+                title={`Block ${otherUser?.displayName ?? 'this person'}?`}
+                description="They won't be able to see your profile or message you again. This also ends your current match."
+                confirmLabel="Block"
+                onConfirm={() => { setConfirmBlock(false); handleBlock(); }}
+                onCancel={() => setConfirmBlock(false)}
+            />
+            <ConfirmModal
+                open={confirmUnmatch}
+                title="Unmatch?"
+                description="This ends your conversation. You won't see each other in Discover again."
+                confirmLabel="Unmatch"
+                onConfirm={() => { setConfirmUnmatch(false); handleUnmatch(); }}
+                onCancel={() => setConfirmUnmatch(false)}
+            />
+            <ReportModal
+                open={reportOpen}
+                reportedUserId={otherUser?.userId}
+                onClose={() => setReportOpen(false)}
+            />
+            <LocationShareModal open={locationShareOpen} onClose={() => setLocationShareOpen(false)} />
         </main>
     );
 }
