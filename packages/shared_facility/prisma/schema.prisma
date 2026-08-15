@@ -4,48 +4,46 @@ generator client {
   provider = "prisma-client-js"
 }
 
-datasource db{
+datasource db {
   provider = "postgresql"
-url = env("DATABASE_URL")
+  url      = env("DATABASE_URL")
 }
-
 
 // 
 
-model User{
-  id String @id @default(uuid())
-  email String @unique
+model User {
+  id    String  @id @default(uuid())
+  email String  @unique
   phone String? @unique
 
-  /* Making password hash default as google sign in never gives password */
+  // Making password hash optional because Google sign-in never gives a password.
   passwordHash String?
 
-  googleId String? @unique 
+  googleId  String?  @unique
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-
   // one to one relation
-  profile  Profile?
+  profile    Profile?
   preference Preference?
-
 
   // one to many relation
 
-  sentSwipes   Swipe[]     @relation("SwipeSent")
-  receivedSwipes   Swipe[]   @relation("SwipesReceived")
-  matchesAsUserA    Match[]    @relation("MatchUserA")
-  matchesAsUserB    Match[]              @relation("MatchUserB")
-  sentMessages      Message[]
-  verificationReqs  VerificationRequest[]
-  reportsFiled      Report[]             @relation("ReportsFiled")
-  reportsReceived   Report[]             @relation("ReportsReceived")
-  blocksInitiated   Block[]              @relation("BlocksInitiated")
-  blocksReceived    Block[]              @relation("BlocksReceived")
+  sentSwipes       Swipe[]               @relation("SwipesSent")
+  receivedSwipes   Swipe[]               @relation("SwipesReceived")
+  matchesAsUserA   Match[]               @relation("MatchUserA")
+  matchesAsUserB   Match[]               @relation("MatchUserB")
+  sentMessages     Message[]
+  verificationReqs VerificationRequest[]
+  reportsFiled     Report[]              @relation("ReportsFiled")
+  reportsReceived  Report[]              @relation("ReportsReceived")
+  blocksInitiated  Block[]               @relation("BlocksInitiated")
+  blocksReceived   Block[]               @relation("BlocksReceived")
+  locationShares   LocationShare[]
   refreshToken     RefreshTokens[]
-  @@map("users")
- }
 
+  @@map("users")
+}
 
 model RefreshTokens {
   id        String    @id @default(uuid())
@@ -59,21 +57,22 @@ model RefreshTokens {
   @@index([userId])
   @@map("refresh_tokens")
 }
+
 // Location note: `location` is a PostGIS geography column. Prisma's schema
 // language doesn't have a native geography type, so we declare it as
 // Unsupported() here - Prisma will skip generating a typed field for it,
 // and we write raw SQL (see migration.sql below) to actually create the
 // column + index. We also keep plain latitude/longitude floats as a
 // simple fallback/display value.
- enum Gender{
+enum Gender {
   MALE
   FEMALE
   NON_BINARY
   OTHER
   PREFERED_NOT_TO_SAY
- }
+}
 
- enum ProfessionCategory {
+enum ProfessionCategory {
   STUDENT
   ENGINEER
   DOCTOR
@@ -84,8 +83,8 @@ model RefreshTokens {
 }
 
 enum VerificationStatus {
-  PENDING       // just signed up, verification job not yet run
-  UNDER_REVIEW  // job ran, borderline result, needs manual check
+  PENDING // just signed up, verification job not yet run
+  UNDER_REVIEW // job ran, borderline result, needs manual check
   VERIFIED
   REJECTED
 }
@@ -94,22 +93,22 @@ enum VerificationStatus {
 // natural grouping and sensitive inform r not show
 
 model Profile {
-  id String @id @default(uuid())
+  id     String @id @default(uuid())
   userId String @unique
-  user User   @relation(fields: [userId], references: [id], onDelete: Cascade )
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  displayName String 
+  displayName String
   dateOfBirth DateTime
-  gender Gender
-  bio String @default("")
+  gender      Gender
+  bio         String             @default("")
   interests   String[] // Postgres native array - fine for a bounded list of tags
   profession  ProfessionCategory @default(OTHER)
 
-  religion String?
-  caste String?
+  religion          String?
+  caste             String?
   showReligionCaste Boolean @default(false)
 
-  latitude Float?
+  latitude  Float?
   longitude Float?
 
   // we use geography as it help to do distance calculation
@@ -118,8 +117,8 @@ model Profile {
 
   verificationStatus VerificationStatus @default(PENDING)
 
-  safetyFlagged Boolean @default(false)
-  safetyFlagegdAt DateTime? 
+  safetyFlagged   Boolean   @default(false)
+  safetyFlagegdAt DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -132,12 +131,12 @@ model Profile {
 }
 
 model Photo {
-  id    String @id @default(uuid())
+  id        String  @id @default(uuid())
   profileId String
-  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  profile   Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
 
-  url String //stored in S3 or in cloudfare
-  key String
+  url       String //stored in S3 or in cloudfare
+  key       String
   position  Int      @default(0) // display order in the carousel
   isPrimary Boolean  @default(false)
   createdAt DateTime @default(now())
@@ -149,13 +148,13 @@ model Photo {
 // Prefernce
 // what user likes
 model Preference {
-  id String @id @default(uuid())
+  id     String @id @default(uuid())
   userId String @unique
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  minAge Int @default(18)
-  maxAge Int @default(99)
-  maxDistanceKm Int @default(50)
+  minAge           Int      @default(18)
+  maxAge           Int      @default(99)
+  maxDistanceKm    Int      @default(50)
   genderPreference Gender[]
 
   professionFilter ProfessionCategory[]
@@ -165,7 +164,6 @@ model Preference {
   updatedAt DateTime @updatedAt
 
   @@map("preferences")
-
 }
 
 enum SwipeAction {
@@ -175,20 +173,20 @@ enum SwipeAction {
 }
 
 // Swipe means ike action from one end to other end
-model Swipe{
-   id         String      @id @default(uuid())
+model Swipe {
+  id         String @id @default(uuid())
   fromUserId String
-  fromUser   User        @relation("SwipesSent", fields: [fromUserId], references: [id], onDelete: Cascade)
+  fromUser   User   @relation("SwipesSent", fields: [fromUserId], references: [id], onDelete: Cascade)
   toUserId   String
-  toUser     User        @relation("SwipesReceived", fields: [toUserId], references: [id], onDelete: Cascade)
+  toUser     User   @relation("SwipesReceived", fields: [toUserId], references: [id], onDelete: Cascade)
 
-  action     SwipeAction
-  createdAt DateTime @default(now())
+  action    SwipeAction
+  createdAt DateTime    @default(now())
 
-  // we create a index entry to check for mutual lie detetction whether user b has like user a?
-  @@index([toUserId, fromUserId])
   // suppose a user like user b a unique entry will be created , further user a liked user b another entry will not be created
   @@unique([fromUserId, toUserId])
+  // we create a index entry to check for mutual lie detetction whether user b has like user a?
+  @@index([toUserId, fromUserId])
   @@map("swipes")
 }
 
@@ -198,16 +196,17 @@ enum MatchStatus {
 }
 
 model Match {
-  id        String      @id @default(uuid())
-  userAId   String
-  userA     User        @relation("MatchUserA", fields: [userAId], references: [id], onDelete: Cascade)
-  userBId   String
-  userB     User        @relation("MatchUserB", fields: [userBId], references: [id], onDelete: Cascade)
+  id      String @id @default(uuid())
+  userAId String
+  userA   User   @relation("MatchUserA", fields: [userAId], references: [id], onDelete: Cascade)
+  userBId String
+  userB   User   @relation("MatchUserB", fields: [userBId], references: [id], onDelete: Cascade)
 
-  status MatchStatus @default(UNMATCHED)
-  matchedAt   DateTime    @default(now())
-  unmatchedAt DateTime?
-  unmatchedBy String?     // userId of whoever unmatched, if applicable
+  status        MatchStatus @default(UNMATCHED)
+  matchedAt     DateTime    @default(now())
+  unmatchedAt   DateTime?
+  unmatchedBy   String? // userId of whoever unmatched, if applicable
+  lastMessageAt DateTime?
 
   // icebreaker suggestion:Generated ONCE, asynchronously, right after
   // the match is created (see matching.js) - never regenerated on repeat
@@ -225,14 +224,14 @@ model Match {
 }
 
 model Message {
-  id        String   @id @default(uuid())
-  matchId   String
-  match     Match    @relation(fields: [matchId], references: [id], onDelete: Cascade)
-  senderId  String
-  sender    User     @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  id       String @id @default(uuid())
+  matchId  String
+  match    Match  @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  senderId String
+  sender   User   @relation(fields: [senderId], references: [id], onDelete: Cascade)
 
   content   String
-  createdAt DateTime @default(now())
+  createdAt DateTime  @default(now())
   readAt    DateTime?
 
   // Fetching "all messages in this match, newest first" is the single most
@@ -245,12 +244,11 @@ model VerificationRequest {
   id String @id @default(uuid())
 
   userId String
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   selfieKey String
 
-
-  idDocumentUrl String
+  idDocumentUrl  String?
   comparePhotoId String
 
   faceMatchScore Float?
@@ -264,7 +262,6 @@ model VerificationRequest {
   createdAt DateTime @default(now())
 
   @@index([userId])
-
   @@map("verification_requests")
 }
 
@@ -275,26 +272,27 @@ enum ReportStatus {
 }
 
 model Report {
-  id String @id @default(uuid())
+  id             String @id @default(uuid())
   reporterId     String
-  reporter       User         @relation("ReportsFiled", fields: [reporterId], references: [id], onDelete: Cascade)
+  reporter       User   @relation("ReportsFiled", fields: [reporterId], references: [id], onDelete: Cascade)
   reportedUserId String
-  reportedUser   User         @relation("ReportsReceived", fields: [reportedUserId], references: [id], onDelete: Cascade)
+  reportedUser   User   @relation("ReportsReceived", fields: [reportedUserId], references: [id], onDelete: Cascade)
 
-  reason String
+  reason      String
   evidenceUrl String?
-  status ReportStatus @default(OPEN)
-  createdAt DateTime  @default(now())
+  status      ReportStatus @default(OPEN)
+  createdAt   DateTime     @default(now())
+
   @@index([reportedUserId])
   @@map("reports")
 }
 
 model Block {
-  id        String   @id @default(uuid())
+  id        String @id @default(uuid())
   blockerId String
-  blocker   User     @relation("BlocksInitiated", fields: [blockerId], references: [id], onDelete: Cascade)
+  blocker   User   @relation("BlocksInitiated", fields: [blockerId], references: [id], onDelete: Cascade)
   blockedId String
-  blocked   User     @relation("BlocksReceived", fields: [blockedId], references: [id], onDelete: Cascade)
+  blocked   User   @relation("BlocksReceived", fields: [blockedId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
 
@@ -309,16 +307,18 @@ model Block {
 // discovery-feed distance filtering) - this is short-lived, high-frequency-
 // updated, and must auto-expire and be deleted, not retained indefinitely.
 model LocationShare {
-  id String @id @default(uuid())
+  id     String @id @default(uuid())
   userId String
-    user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  tokenHash String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  tokenHash   String  @unique
   contactName String?
 
-  latitude Float?
-  longitude Float?
-  lastUpdatedAt DateTime?
+  latitude       Float?
+  longitude      Float?
+  accuracyMeters Float?
+  note           String?
+  lastUpdatedAt  DateTime?
 
   expiresAt DateTime
   revokedAt DateTime?
