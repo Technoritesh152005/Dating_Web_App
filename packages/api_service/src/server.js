@@ -1,21 +1,23 @@
 import Fastify from "fastify"
 import cors from '@fastify/cors'
 import helmet from '@fastify/helmet'
-import rateLimit from '@fastify/rateLimit'
-import { loadConfig, createLogger, prisma, connectDb, disconnectDb, createredisClient } from '@dating-app/shared'
-import { registerAuthDecorator } from "./plugins/authenticator_middleware"
-import { registerAuthRoutes } from "./routes/auth"
-import { registerProfileRoutes } from "./routes/profile"
+import rateLimit from '@fastify/rate-limit'
+import cookie from '@fastify/cookie'
+import { loadConfig, createLogger, prisma, connectDb, disconnectDb, createRedisClient } from '@dating-app/shared'
+import { registerAuthDecorator } from "./plugins/authenticator_middleware.js"
+import { registerAuthRoutes } from "./routes/auth.js"
+import { registerProfileRoutes } from "./routes/profile.js"
 import { generateMediaRoutes } from './routes/media.js'
-import { registerVerificationRoutes } from "./routes/verification_selfie"
-import { registerPreferenceRoutes } from './routes/preferences.js';
-import { registerDiscoveryRoutes } from './routes/discovery.js';
-import { registerSwipeRoutes } from './routes/swipe.js'
+import { registerVerificationRoutes } from "./routes/verification_selfie.js"
+import { registerPreferencesRoutes } from './routes/prefernces.js';
+import { registerDiscoveryRoutes } from './routes/discoveryUser.js';
+import { registerSwipesRoutes } from './routes/swipe.js'
+import { registerSafetyRoutes } from './routes/safety.js'
 import { registerGetMessageRoutes } from './routes/messages.js'
 import { registerMetricsHook, registerMetricsRoutes } from './routes/metrics.js'
 
 const logger = createLogger('api')
-const apiconfig = loadConfig('api')
+const config = loadConfig('api')
 
 async function main() {
   const app = Fastify({
@@ -26,9 +28,11 @@ async function main() {
   })
 
   await app.register(cors, {
+    origin:'http://localhost:5174',
     credentials: true
   })
   await app.register(helmet)
+  await app.register(cookie)
 
   await app.register(rateLimit, {
     max: 80,
@@ -54,12 +58,12 @@ async function main() {
   registerAuthDecorator(app, config)
 
   registerAuthRoutes(app, config)
-  registerAuthRoutes(app, config)
   generateMediaRoutes(app, config)
   registerVerificationRoutes(app, config)
-  registerPreferenceRoutes(app.config)
-  registerDiscoveryRoutes(app.config)
-  registerSwipeRoutes(app);
+  registerPreferencesRoutes(app)
+  registerDiscoveryRoutes(app)
+  registerSwipesRoutes(app);
+  registerSafetyRoutes(app)
   registerGetMessageRoutes(app)
   registerMetricsRoutes(app)
 
