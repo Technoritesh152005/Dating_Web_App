@@ -8,3 +8,4 @@ build/
 .DS_Store
 packages/shared/prisma/migrations/dev.db
 .prisma/
+.claude/settings.local.json
