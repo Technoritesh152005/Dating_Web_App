@@ -15,6 +15,10 @@
 
 import { Prisma } from '@prisma/client'
 
+const DEFAULT_AGE_PADDING_YEARS = 5
+const DEFAULT_MAX_DISTANCE_KM = 50
+const MIN_ACCEPTABLE_POOL_SIZE = 5
+
 //this sets the user prefernce or get the preference
 export async function removeuserPreference(db, userId, ownProfile) {
 
@@ -50,7 +54,8 @@ export async function removeuserPreference(db, userId, ownProfile) {
 }
 
 // this file has no connection with db so they explicitly provide app.db
-export function buildCandidatePool(db, { userId, ownProfile, prefs, page, pageSize }) {
+//it takes out or returns candidate based on user preference and not filter here itself that whom he saw or not
+export async function buildCandidatePool(db, { userId, ownProfile, prefs, page = 1, pageSize = 20 }) {
 
     const offset = (page - 1) * pageSize
 
@@ -77,7 +82,6 @@ export function buildCandidatePool(db, { userId, ownProfile, prefs, page, pageSi
 
     const distanceClause = ownProfile.latitude != null && ownProfile.longitude != null
         ? Prisma.sql`
-      // this says dont take rofile which dont have locn
           AND p.location IS NOT NULL
           AND ST_DWithin(
             p.location,
@@ -90,10 +94,9 @@ export function buildCandidatePool(db, { userId, ownProfile, prefs, page, pageSi
     // take the best users who have same embeeding feature
     const ownEmbeddingRows = await db.$queryRaw
         `
-         SELECT "bioEmbedding"::text AS embeeding FROM profiles WHERE id = ${ownProfile.id}::uuid
+         SELECT "bioEmbedding"::text AS embedding FROM profiles WHERE id = ${ownProfile.id}::uuid
          `
-    console.log(ownEmbeddingRows)
-    const ownEmbeddingText = ownEmbeddingRows[0].embedding ?? null;
+    const ownEmbeddingText = ownEmbeddingRows[0]?.embedding ?? null;
 
     const orderClause = ownEmbeddingText
         ? Prisma.sql`ORDER BY p."bioEmbedding" <=> ${ownEmbeddingText}::vector ASC, p."updatedAt" DESC`
@@ -125,29 +128,27 @@ export function buildCandidatePool(db, { userId, ownProfile, prefs, page, pageSi
       ${casteClause}
       ${distanceClause}
       ${orderClause}
-    ORDER BY p."updatedAt" DESC
     LIMIT ${pageSize}
     OFFSET ${offset}
       `
 
     return candidate;
 }
-MIN_ACCEPTABLE_POOL_SIZE = 5
 
 export async function buildCandidateFeedWithRelaxation(db, params) {
     const { prefs } = params
 
     // attemp 1: exactly what the user asked for
-    let candidate = await buildCandidatePool(db, params)
-    if (candidate.length >= MIN_ACCEPTABLE_POOL_SIZE) {
+    let candidates = await buildCandidatePool(db, params)
+    if (candidates.length >= MIN_ACCEPTABLE_POOL_SIZE) {
 
-        return { candidate, relaxed: false }
+        return { candidates, relaxed: false, relaxedFields: [] }
     }
 
     // attempt 2 increasing distance
     for (const multiplier of [2, 4]) {
         const widePrefs = { ...prefs, maxDistanceKm: prefs.maxDistanceKm * multiplier }
-        candidate = await buildCandidatePool(db, { ...params, prefs: widePrefs })
+        candidates = await buildCandidatePool(db, { ...params, prefs: widePrefs })
         if (candidates.length >= MIN_ACCEPTABLE_POOL_SIZE) {
             return { candidates, relaxed: true, relaxedFields: ['distance'] };
         }
@@ -165,6 +166,8 @@ export async function buildCandidateFeedWithRelaxation(db, params) {
     if (candidates.length >= MIN_ACCEPTABLE_POOL_SIZE || hasNoOptionalFilters) {
         return { candidates, relaxed: true, relaxedFields: ['distance', 'age'] };
     }
+
+    return { candidates, relaxed: true, relaxedFields: ['distance', 'age'] };
 }
 function calculateAge(dob) {
     const diffMs = Date.now() - new Date(dob).getTime();

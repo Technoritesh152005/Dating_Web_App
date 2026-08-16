@@ -1,4 +1,4 @@
-import {S3Client, PutObjectCommand , GetObjectCommand} from '@aws-sdk/client-s3'
+import {S3Client, PutObjectCommand , GetObjectCommand, DeleteObjectCommand} from '@aws-sdk/client-s3'
 import {getSignedUrl} from '@aws-sdk/s3-request-presigner'
 import crypto from 'node:crypto'
 
@@ -15,6 +15,21 @@ function getS3Clinet(){
         }
        })
     })
+}
+// it sanitize or makes the path name safe
+function sanitizePathSegment(value, fieldName) {
+    const safeValue = String(value || '').replace(/[^a-zA-Z0-9_-]/g, '')
+    if (!safeValue) {
+        throw new Error(`${fieldName} is required`)
+    }
+    return safeValue
+}
+
+function requireBucketName() {
+    if (!process.env.S3_BUCKET_NAME) {
+        throw new Error('S3_BUCKET_NAME is required')
+    }
+    return process.env.S3_BUCKET_NAME
 }
 
 
@@ -34,29 +49,29 @@ function getS3Clinet(){
 export async function generatePresignedUploadUrl ({userId , fileExtension,folder}){
 
     const client = getS3Clinet()
-    const key = `${folder}/${userId}/${crypto.randomUUID()}.${fileExtension}`;
-
-    console.log(key)
+    const safeFolder = sanitizePathSegment(folder, 'folder')
+    const safeExtension = sanitizePathSegment(fileExtension, 'fileExtension').toLowerCase()
+    const key = `${safeFolder}/${userId}/${crypto.randomUUID()}.${safeExtension}`;
 
     // creates an upload req
     const command = new PutObjectCommand({
-        Bucket : process.env.S3_BUCKET_NAME,
+        Bucket : requireBucketName(),
         Key:key
     })
 
     // creates cryptographic signed  url 
     const uploadUrl = await getSignedUrl(client , command , {expiresIn : 300})
 
-    const publicUrl = process.env.S3_PUBLIC_URL ? `${process.env.S3_PUBLIC_URL}/${key} ` : key
+    const publicUrl = process.env.S3_PUBLIC_URL ? `${process.env.S3_PUBLIC_URL.replace(/\/$/, '')}/${key}` : key
     return { uploadUrl, key, publicUrl };
 }
 
 // For private objects (like a raw selfie you don't want publicly guessable),
 // generate a short-lived READ url instead of relying on a permanently public bucket.
 export async function generatePresignedReadUrl(key, expiresInSeconds = 300) {
-    const client = getS3Client();
+    const client = getS3Clinet();
     const command = new GetObjectCommand({
-      Bucket: process.env.S3_BUCKET_NAME,
+      Bucket: requireBucketName(),
       Key: key,
     });
     return getSignedUrl(client, command, { expiresIn: expiresInSeconds });
@@ -66,7 +81,7 @@ export async function generatePresignedReadUrl(key, expiresInSeconds = 300) {
 export async function deleteObject(key){
     const client = getS3Clinet()
     const command = new DeleteObjectCommand({
-        Bucket:process.env.S3_BUCKET_NAME,
+        Bucket:requireBucketName(),
         Key: key
     })
     await client.send(command)
