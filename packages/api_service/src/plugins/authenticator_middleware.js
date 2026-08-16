@@ -18,4 +18,5 @@ export function registerAuthDecorator(app, config) {
         }
     })
 }
-//it is a middleware
+//it is a middleware where we put request id to user
+//token ke andar hi user ka maal hota hai yani (userId)

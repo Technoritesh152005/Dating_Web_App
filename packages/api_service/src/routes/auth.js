@@ -1,19 +1,19 @@
-import { comparePassword, hashPassword } from "../utils/password"
-import { signAccessToken, hashToken } from "../utils/token"
+import { comparePassword, hashPassword } from "../utils/password.js"
+import { signAccessToken, hashToken, generateRefreshToken } from "../utils/token.js"
 import { OAuth2Client } from "google-auth-library"
 
 
 // Configuration setting for access token and refresh token to be stored in cookies
 const accessCookieOpts = (config) => ({
     httpOnly: true,
-    secure: config.NODE_ENV === 'production',// this tells to use https only when production
+    secure: config.nodeEnv === 'production',// this tells to use https only when production
     sameSite: 'lax', /* Same site prevent to share http config to other web apps */
     path: '/',
     maxAge: 15 * 60 //same as access token
 
 })
 
-const refreshCookiesOpts = (config) = ({
+const refreshCookiesOpts = (config) => ({
     httpOnly: true,
     secure: config.nodeEnv === 'production',
     sameSite: 'lax',
@@ -42,15 +42,18 @@ export function registerAuthRoutes(app, config) {
                 error: 'Password cannot be less than 8 characters'
             })
         }
+        if(phone && phone.length != 10){
+            return reply.code(400).send({error:'Phone number must be of 10 digits laadle'})
+        }
 
         // app.db came from decorate as prisma client is created of schema it provides multiple methods
         const existinguser = await app.db.user.findUnique({ where: { email } })
 
-        if (existing) {
+        if (existinguser) {
             return reply.code(409).send({ error: "An Account already exist with this credentials" })
         }
         const passwordHash = await hashPassword(password)
-        await app.db.user.create({
+        const user = await app.db.user.create({
             data: {
                 email, passwordHash, phone
             }
@@ -61,18 +64,19 @@ export function registerAuthRoutes(app, config) {
         return reply.code(201).send({ id: user.id, email: user.email });
     })
 
+    //google based login / signup
     app.post('/auth/google', async (request, reply) => {
 
         const { idToken } = request.body ?? {}
         if (!idToken) return reply.code(400).send({ error: 'idToken is required for Google sign in' })
 
-        if (!config.googleclientId) return reply.code(503).send({ error: 'Google Sign-in is not configured with server' })
+        if (!config.googleClientId) return reply.code(503).send({ error: 'Google Sign-in is not configured with server' })
 
-        const client = new OAuth2Client(config.googleclientId)
+        const client = new OAuth2Client(config.googleClientId)
 
         let payload
         try {
-            const ticket = client.verifyIdToken({ idToken, audience: config.googleclientId })
+            const ticket = await client.verifyIdToken({ idToken, audience: config.googleClientId })
             payload = ticket.getPayload()
         } catch (err) {
             return reply.code(401).send({ error: 'Invalid Google token' });
@@ -92,7 +96,7 @@ export function registerAuthRoutes(app, config) {
         // no google account sign in linked... now check whether pass - email acc exist in our system
         if (!user) {
 
-            const existingEmail = app.db.users.findUnique({
+            const existingEmail = await app.db.user.findUnique({
                 where: {
                     email
                 }
@@ -101,13 +105,14 @@ export function registerAuthRoutes(app, config) {
             // if u got the user with system with pass account and then u update users google id with this id as user tried to sign with google sign-in
             if (existingEmail) user = await app.db.user.update({ where: { id: existingEmail.id }, data: { googleId } })
             // else u didnt find pass acc also u create the account only (new))
-            else user = app.db.user.create({ data: { googleId } })
+            else user = await app.db.user.create({ data: { googleId, email } })
 
         }
 
         await issueTokenPair(app, reply, config, user.id)
         return reply.send({ id: user.id, email: user.email, name })
     })
+    /* login through email and password */
     app.post('/auth/login', async (request, reply) => {
 
         const { email, password } = request.body ?? {}
@@ -138,17 +143,17 @@ export function registerAuthRoutes(app, config) {
 
         const rawRefresh = request.cookies?.refreshToken
         if (!rawRefresh) {
-            return reply.code(401).send('Invalid EmailOr Password')
+            return reply.code(401).send('Refresh Token is not provided')
         }
 
         const hashRefresh = hashToken(rawRefresh)
-        const stored = await app.db.refreshToken({ where: { hashRefresh } })
+        const stored = await app.db.refreshTokens.findUnique({ where: { tokenHash: hashRefresh } })
 
-        if (!stored || stored.expiresAt < Date.now() || stored.revoked) {
+        if (!stored || stored.expiresAt < new Date() || stored.revokedAt) {
             return reply.code(401).send({ error: 'Refresh Token invalid or expired' })
         }
 
-        await app.db.refreshToken.update({
+        await app.db.refreshTokens.update({
             where: { id: stored.id },
             data: { revokedAt: new Date() },
         });
@@ -161,10 +166,10 @@ export function registerAuthRoutes(app, config) {
     app.post('/auth/logout', async (request, reply) => {
 
         const rawRefresh = request.cookies?.refreshToken
-        if (!rawRefresh) {
-            return reply.code(401).send({ error: 'Refresh Token invalid or expired' })
-            await app.db.refreshToken.updateMany({
-                where: { tokenHash },
+        if (rawRefresh) {
+            const tokenHash = hashToken(rawRefresh)
+            await app.db.refreshTokens.updateMany({
+                where: { tokenHash, revokedAt: null },
                 data: { revokedAt: new Date() },
             });
         }
@@ -191,7 +196,7 @@ export async function issueTokenPair(app, reply, config, userId) {
     // once u created set the tokens in cookies and send it with reply
     // reply represents the HTTP response that will be sent to the browser.
 
-    reply.setCookies('accessToken', accessToken, accessCookieOpts(config))
-    reply.setCookies('refreshToken', raw, refreshCookiesOpts(config))
+    reply.setCookie('accessToken', accessToken, accessCookieOpts(config))
+    reply.setCookie('refreshToken', raw, refreshCookiesOpts(config))
 
 }
