@@ -1,4 +1,4 @@
-import redis from 'ioredis'
+import Redis from 'ioredis'
 
 function seenFilterKey(userId) {
     return `seen:${userId}`
@@ -17,11 +17,11 @@ export async function isInSeenFilter(redis, userId, targetUserId) {
 }
 
 // this is when u need to check a batch of ids whether they exist in bloom filter
-export async function filterOutSeen(userId, targetUserId, redis) {
-    if (targetUserId.length === 0) return []
+export async function filterOutSeen(userId, targetUserIds, redis) {
+    if (targetUserIds.length === 0) return []
 
-    const result =
-        await redis.sendCommand(new Redis.Command('BF.MEXISTS', [seenFilterKey(userId), ...targetUserId]))
+    const results =
+        await redis.sendCommand(new Redis.Command('BF.MEXISTS', [seenFilterKey(userId), ...targetUserIds]))
 
     // return the ids which have been not seen
     return targetUserIds.filter((_, index) => results[index] === 0);

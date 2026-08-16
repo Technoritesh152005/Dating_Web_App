@@ -1,5 +1,5 @@
 export async function incrementCounter(redis , name , labels = {}){
-    const key = counterKey(name,redis)
+    const key = counterKey(name,labels)
     await redis.incr(key)
 }
 /* It can be said a metrics file */
