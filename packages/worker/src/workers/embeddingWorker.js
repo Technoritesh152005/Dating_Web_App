@@ -19,12 +19,12 @@ export function startEmbeddingWorkerForProfile(logger) {
             const { embedding } = generateEmbedding(embeddingInput)
             const vectorLiteral = `[${embedding.join(',')}]`;
 
-            await prisma.$executeRaw
+            await prisma.$executeRaw(Prisma.sql
                 `
         UPDATE profiles
         set "bioEmbedding" = ${vectorLiteral}::vector
         WHERE id = ${profileId}::uuid
-        `
+        `)
             logger.info({ profileId }, 'Embedding stored');
             return { profileId, dimensions: embedding.length };
 

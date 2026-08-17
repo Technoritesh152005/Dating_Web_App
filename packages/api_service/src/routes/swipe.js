@@ -5,7 +5,7 @@ const VALID_ACTIONS = ['PASS', 'LIKE', 'FIRE_LIKE']
 export function registerSwipesRoutes(app) {
 
     // first swipe route
-    app.post('/swipe', { preHandler: app.authenticate }, async (request, reply) => {
+    app.post('/swipe', { preHandler: app.authenticate, config: { authenticated: true } }, async (request, reply) => {
 
         const { toUserId, action } = request.body ?? {}
 
@@ -127,7 +127,7 @@ export function registerSwipesRoutes(app) {
             iceBreakerSuggestion: match.iceBreakerSuggestion,
         });
     })
-    app.post('/matches/:matchId/unmatch', { preHandler: app.authenticate }, async (request, reply) => {
+    app.post('/matches/:matchId/unmatch', { preHandler: app.authenticate, config: { authenticated: true } }, async (request, reply) => {
 
         const { matchId } = request.body ?? {}
 

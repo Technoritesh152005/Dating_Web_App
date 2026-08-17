@@ -221,7 +221,7 @@ Live location shares are intentionally separate from profile location. Profile l
 
 Queue used:
 
-- `LOACTION_SHARE_CLEANUP`
+- `LOCATION_SHARE_CLEANUP`
 
 Note: the queue name currently contains the spelling `LOACTION` in code and should be treated as the active constant name until it is renamed consistently across services.
 

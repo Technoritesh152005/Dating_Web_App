@@ -11,7 +11,7 @@ export function registerAuthDecorator(app, config) {
 
         try {
 
-            const payload = verifyAccessToken(token, config.jwtSecret)
+            const payload = verifyAccessToken(token, config.jwtSecrets || config.jwtSecret)
             request.userId = payload.sub
         } catch (error) {
             return reply.code(401).send({ error: 'Invalid or expired token' });

@@ -9,13 +9,11 @@ export function createSocketAuthMiddleware(config, logger) {
 
         try {
             const rawcookie = socket.handshake.headers.cookie
-            console.log(rawcookie)
             if (!rawcookie) {
                 return next(new Error('Authentication required - no cookies sent'))
             }
 
             const parsed = cookie.parse(rawcookie)
-            console.log(parsed)
             const token = parsed.accessToken
 
             if (!token) {

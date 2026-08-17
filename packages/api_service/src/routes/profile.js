@@ -1,6 +1,7 @@
 // Profile upload routes
 // for profile based update routes a middleware is required means all must be login that is app.authenticate
 
+import { Prisma } from '@prisma/client'
 import { QUEUE_NAMES } from "@dating-app/shared/src/queueNames.js"
 import { createQueue } from "@dating-app/shared/src/queue.js"
 import { buildEmbeddingInput } from "@dating-app/shared/src/buildEmbeddingInput.js"
@@ -10,7 +11,7 @@ const VALID_PROFESSION = ['STUDENT', 'ENGINEER', 'DOCTOR', 'BUSINESS', 'GOVERNME
 const PROFILE_CACHE_TTL_SECONDS = 60
 export function registerProfileRoutes(app) {
 
-    app.put('/profile', { preHandler: app.authenticate }, async (request, reply) => {
+    app.put('/profile', { preHandler: app.authenticate, config: { authenticated: true, rateLimit: { max: 10, timeWindow: '1 minute' } } }, async (request, reply) => {
 
         const {
             displayName,
@@ -90,11 +91,12 @@ export function registerProfileRoutes(app) {
 
         // postgres is not avalilable to imlicitly sync the postgis geography column. so we do it explicitly
         if (latitude != null && longitude != null) {
-            await app.db.$executeRaw`
-            UPDATE profiles 
+            // Use Prisma.sql tagged template for safe parameter binding (prevents SQL injection)
+            await app.db.$executeRaw(Prisma.sql`
+            UPDATE profiles
             SET location = ST_SetSRID(ST_MakePoint(${longitude}, ${latitude}) , 4326)::geography
             WHERE id = ${profile.id}::uuid
-            `
+            `)
         }
         /* delete the stale copy of profile data cached in redis */
         await app.redis.del(profileRedisKey(request.userId))

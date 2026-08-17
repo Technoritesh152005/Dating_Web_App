@@ -1,6 +1,7 @@
 import { comparePassword, hashPassword } from "../utils/password.js"
 import { signAccessToken, hashToken, generateRefreshToken } from "../utils/token.js"
 import { OAuth2Client } from "google-auth-library"
+import { isValidEmail, sanitizePhone } from "../plugins/validation_middleware.js"
 
 
 // Configuration setting for access token and refresh token to be stored in cookies
@@ -16,7 +17,7 @@ const accessCookieOpts = (config) => ({
 const refreshCookiesOpts = (config) => ({
     httpOnly: true,
     secure: config.nodeEnv === 'production',
-    sameSite: 'lax',
+    sameSite: 'strict',
     // Scoped to ONLY the refresh endpoint - the browser won't even attach this
     // cookie to other requests, shrinking the attack surface if anything on
     // another route were ever compromised.
@@ -27,7 +28,7 @@ const refreshCookiesOpts = (config) => ({
 export function registerAuthRoutes(app, config) {
 
     /* 1. SignUp Routes */
-    app.post('/auth/signup', async (request, reply) => {
+    app.post('/auth/signup', { config: { rateLimit: { max: 5, timeWindow: '1 minute' } } }, async (request, reply) => {
 
         const { email, password, phone } = request.body ?? {}
 
@@ -37,13 +38,22 @@ export function registerAuthRoutes(app, config) {
             })
         }
 
+        if (!isValidEmail(email)) {
+            return reply.code(400).send({
+                error: 'Invalid email format'
+            })
+        }
+
         if (password.length < 8) {
             return reply.code(400).send({
                 error: 'Password cannot be less than 8 characters'
             })
         }
-        if(phone && phone.length != 10){
-            return reply.code(400).send({error:'Phone number must be of 10 digits laadle'})
+        if(phone){
+            const sanitizedPhone = sanitizePhone(phone)
+            if (!sanitizedPhone || sanitizedPhone.length !== 10) {
+                return reply.code(400).send({error:'Phone number must be 10 digits'})
+            }
         }
 
         // app.db came from decorate as prisma client is created of schema it provides multiple methods
@@ -65,7 +75,7 @@ export function registerAuthRoutes(app, config) {
     })
 
     //google based login / signup
-    app.post('/auth/google', async (request, reply) => {
+    app.post('/auth/google', { config: { rateLimit: { max: 5, timeWindow: '1 minute' } } }, async (request, reply) => {
 
         const { idToken } = request.body ?? {}
         if (!idToken) return reply.code(400).send({ error: 'idToken is required for Google sign in' })
@@ -113,12 +123,16 @@ export function registerAuthRoutes(app, config) {
         return reply.send({ id: user.id, email: user.email, name })
     })
     /* login through email and password */
-    app.post('/auth/login', async (request, reply) => {
+    app.post('/auth/login', { config: { rateLimit: { max: 5, timeWindow: '1 minute' } } }, async (request, reply) => {
 
         const { email, password } = request.body ?? {}
 
         if (!email || !password) {
             return reply.code(400).send({ error: 'Email and Password are required' })
+        }
+
+        if (!isValidEmail(email)) {
+            return reply.code(400).send({ error: 'Invalid email format' })
         }
 
         const user = await app.db.user.findUnique({ where: { email } })
@@ -139,7 +153,7 @@ export function registerAuthRoutes(app, config) {
         return reply.send({ id: user.id, email: user.email })
     })
 
-    app.post('/auth/refresh', async (request, reply) => {
+    app.post('/auth/refresh', { config: { rateLimit: { max: 10, timeWindow: '1 minute' } } }, async (request, reply) => {
 
         const rawRefresh = request.cookies?.refreshToken
         if (!rawRefresh) {
@@ -163,7 +177,7 @@ export function registerAuthRoutes(app, config) {
         return reply.send({ ok: true });
     })
 
-    app.post('/auth/logout', async (request, reply) => {
+    app.post('/auth/logout', { config: { rateLimit: { max: 20, timeWindow: '1 minute' } } }, async (request, reply) => {
 
         const rawRefresh = request.cookies?.refreshToken
         if (rawRefresh) {
@@ -175,8 +189,8 @@ export function registerAuthRoutes(app, config) {
         }
 
         // remove both token from cookies
-        reply.clearCookie('accessToken', { path: '/' })
-        reply.clearCookie('refreshToken', { path: '/auth/refresh' });
+        reply.clearCookie('accessToken', { path: '/', httpOnly: true, secure: config.nodeEnv === 'production', sameSite: 'lax' })
+        reply.clearCookie('refreshToken', { path: '/auth/refresh', httpOnly: true, secure: config.nodeEnv === 'production', sameSite: 'strict' });
 
         return reply.send({ ok: true });
     })

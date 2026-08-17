@@ -104,3 +104,24 @@ export async function objectExists(key) {
         throw err
     }
 }
+
+/* get object metadata (size, content type) for validation */
+export async function getObjectMetadata(key) {
+    const client = getS3Clinet()
+    const command = new HeadObjectCommand({
+        Bucket: requireBucketName(),
+        Key: key
+    })
+    try {
+        const response = await client.send(command)
+        return {
+            ContentLength: response.ContentLength,
+            ContentType: response.ContentType,
+        }
+    } catch (err) {
+        if (err.name === 'NotFound' || err.$metadata?.httpStatusCode === 404) {
+            return null
+        }
+        throw err
+    }
+}

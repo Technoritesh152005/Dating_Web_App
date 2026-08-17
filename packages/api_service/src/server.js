@@ -3,8 +3,10 @@ import cors from '@fastify/cors'
 import helmet from '@fastify/helmet'
 import rateLimit from '@fastify/rate-limit'
 import cookie from '@fastify/cookie'
+import csrf from '@fastify/csrf-protection'
 import { loadConfig, createLogger, prisma, connectDb, disconnectDb, createRedisClient } from '@dating-app/shared'
 import { registerAuthDecorator } from "./plugins/authenticator_middleware.js"
+import { registerValidationMiddleware } from "./plugins/validation_middleware.js"
 import { registerAuthRoutes } from "./routes/auth.js"
 import { registerProfileRoutes } from "./routes/profile.js"
 import { generateMediaRoutes } from './routes/media.js'
@@ -27,16 +29,46 @@ async function main() {
     logger: false,
   })
 
+  const allowedOrigins = config.corsOrigin
+    ? config.corsOrigin.split(',').map(o => o.trim())
+    : ['http://localhost:5174'];
+
   await app.register(cors, {
-    origin:'http://localhost:5174',
+    origin: allowedOrigins,
     credentials: true
   })
   await app.register(helmet)
   await app.register(cookie)
 
+  // CSRF protection for state-changing operations
+  // Uses double-submit cookie pattern: csrf token in cookie + header
+  await app.register(csrf, {
+    sessionPlugin: '@fastify/cookie',
+    cookieOpts: {
+      httpOnly: true,
+      secure: config.nodeEnv === 'production',
+      sameSite: 'strict',
+      path: '/'
+    },
+    cookieKey: 'csrf_token',
+    headerName: 'x-csrf-token'
+  })
+
+  // Global rate limit (applies to all routes)
   await app.register(rateLimit, {
-    max: 80,
+    max: 100,
     timeWindow: '1 minute',
+    keyGenerator: (request) => request.ip,
+    errorMessage: 'Too many requests, please try again later'
+  })
+
+  // Stricter rate limit for auth endpoints
+  await app.register(rateLimit, {
+    max: 10,
+    timeWindow: '1 minute',
+    keyGenerator: (request) => request.ip,
+    errorMessage: 'Too many authentication attempts, please try again later',
+    skipOnError: true
   })
 
   // starting the app connection
@@ -56,6 +88,24 @@ async function main() {
 
   // like a middleware
   registerAuthDecorator(app, config)
+
+  // Input validation and sanitization middleware (runs on all routes)
+  registerValidationMiddleware(app)
+
+  // CSRF protection hook - skip for public auth endpoints, require for authenticated state-changing
+  app.addHook('preHandler', async (request, reply) => {
+    // Skip CSRF for safe methods
+    if (['GET', 'HEAD', 'OPTIONS'].includes(request.method)) return;
+
+    // Skip CSRF for public auth endpoints (signup, login, google, refresh, logout)
+    const publicAuthPaths = ['/auth/signup', '/auth/login', '/auth/google', '/auth/refresh', '/auth/logout'];
+    if (publicAuthPaths.some(path => request.url.startsWith(path))) return;
+
+    // For authenticated endpoints, require CSRF token
+    if (request.routeOptions && request.routeOptions.config && request.routeOptions.config.authenticated) {
+      await reply.csrfProtection(); // This will throw if CSRF validation fails
+    }
+  });
 
   registerAuthRoutes(app, config)
   generateMediaRoutes(app, config)

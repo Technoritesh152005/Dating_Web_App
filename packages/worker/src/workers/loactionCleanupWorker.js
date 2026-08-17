@@ -7,7 +7,7 @@ export function startLocationCleanUpWorker(logger) {
 
     const connection = createRedisClient(logger, 'worker-location-clean')
     const worker = new Worker(
-        QUEUE_NAMES.LOACTION_SHARE_CLEANUP,
+        QUEUE_NAMES.LOCATION_SHARE_CLEANUP,
         async (job) => {
             console.log(job)
             const { shareId } = job.data

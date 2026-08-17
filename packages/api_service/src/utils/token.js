@@ -6,11 +6,24 @@ const REFRESH_TOKEN_LIFE_DAYS = 7
 
 // sub mens subject which is identity of user
 export function signAccessToken(userId, secret) {
+    if (!secret) throw new Error('JWT secret is required for signing')
     return jwt.sign({ sub: userId }, secret, { expiresIn: ACCESS_TOKEN_LIFE })
 }
 /* These dont return boolean value but a payload where it have userid */
-export function verifyAccessToken(token, secret) {
-    return jwt.verify(token, secret)
+export function verifyAccessToken(token, secrets) {
+    if (!secrets) throw new Error('JWT secret(s) are required for verification')
+
+    // Support secret rotation: try each available secret version
+    const secretList = typeof secrets === 'string' ? [secrets] : Object.values(secrets)
+    let lastError
+    for (const secret of secretList) {
+        try {
+            return jwt.verify(token, secret)
+        } catch (err) {
+            lastError = err
+        }
+    }
+    throw lastError || new Error('Token verification failed')
 }
 
 export function generateRefreshToken() {
