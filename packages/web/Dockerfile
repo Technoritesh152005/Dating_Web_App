@@ -52,9 +52,9 @@ EXPOSE 3000
 CMD ["node", "packages/web/server.js"]
 
 #Install dependencies
-        ↓
+        #↓
 #uild Next.js
-        ↓
+       # ↓
 #Create small production image
-        ↓
+       # ↓
 #Run Next.js server on :3000
