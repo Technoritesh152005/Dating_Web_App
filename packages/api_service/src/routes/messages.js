@@ -8,7 +8,7 @@ export function registerGetMessageRoutes(app){
         console.log(before)
 
         // check wheter logged in user and mathc user id are same
-        const match = await app.db.match({
+        const match = await app.db.match.findUnique({
             where:{id:matchId}
         })
         if(!match) return reply.code(404).send({error:'No Match Found. You cant get the message'})
@@ -18,7 +18,7 @@ export function registerGetMessageRoutes(app){
         let cursor_date = null
         if(before){
             // this takes the oldest message send by frontend
-            const cursorMessage = await app.db.messages.findUnique({
+            const cursorMessage = await app.db.message.findUnique({
                 where:{id:before}
             })
             // extract timestamp from oldest message
@@ -36,8 +36,8 @@ export function registerGetMessageRoutes(app){
         })
 
         return reply.code(200).send({
-            messages:messages.reverse(),
-            hasMore: messages.length === PAGE_SIZE,
+            messages:message.reverse(),
+            hasMore: message.length === PAGE_SIZE,
         })
     })
 }

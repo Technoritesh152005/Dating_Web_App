@@ -18,8 +18,8 @@ export function startVerificationWorker(logger) {
             logger.info({ verificationRequestId }, 'Processing verification job')
 
             // Implementing circuit breaker
-            const { matchScore, noFaceDetected } = await circuitBreaker(breakerRedisConnection, 'rekognization', () =>
-                compareFace(selfieKey, profilePhotoKey)
+            const { matchScore, noFaceDetected } = await circuitBreaker(breakerRedisConnection, 'rekognition', () =>
+                compareFaces(selfieKey, profilePhotoKey)
             )
 
 

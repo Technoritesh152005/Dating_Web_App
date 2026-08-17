@@ -1,12 +1,15 @@
-import { createQueue, QUEUE_NAMES } from '@dating-app/shared'
+import { createQueue, QUEUE_NAMES , objectExists} from '@dating-app/shared'
+
 export function registerVerificationRoutes(app) {
 
     // we submit a live selfie this just make a entry of lsfie in db and put the job in worker
-    app.post('/verification/selfie', { preHandler: app.authentiacte }, async (request, reply) => {
+    app.post('/verification/selfie', { preHandler: app.authenticate }, async (request, reply) => {
         const { selfieKey } = request.body ?? {}
 
-        if (!selfieUrl) return reply.code(400).send({ error: "Please send the SelfieUrl" })
+        if (!selfieKey) return reply.code(400).send({ error: "Please send the SelfieKey" })
 
+        const exist = await objectExists(selfieKey)
+        if(!exist) return reply.code(400).send({ error: "Selfie not found in S3" })
         // check whether verifying user has a profile
         const profile = await app.db.profile.findUnique({
             where: { userId: request.userId },
@@ -15,7 +18,7 @@ export function registerVerificationRoutes(app) {
         if (!profile) return reply.code(404).send({ error: 'Create profile first before verifying your account' })
         if (profile.photos.length === 0) return reply.code(400).send({ error: 'Upload atleast one profile photo before verifying' })
 
-        const verificationRequest = await app.db.verificationStatus.create({
+        const verificationRequest = await app.db.verificationRequest.create({
             data: {
                 userId: request.userId,
                 selfieKey,
@@ -37,7 +40,7 @@ export function registerVerificationRoutes(app) {
             // passing other details to reduce database query
             userId: request.userId,
             selfieKey,
-            profilePhotoUrl: profile.photos[0].id,
+            profilePhotoKey: profile.photos[0].key,
             requestId: request.id
         })
 

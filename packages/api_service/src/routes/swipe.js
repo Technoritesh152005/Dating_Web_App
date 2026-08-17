@@ -1,5 +1,7 @@
 import { recordSwipeAndCheckMatch } from '../services/matching.js'
 
+const VALID_ACTIONS = ['PASS', 'LIKE', 'FIRE_LIKE']
+
 export function registerSwipesRoutes(app) {
 
     // first swipe route
@@ -30,7 +32,6 @@ export function registerSwipesRoutes(app) {
             action,
             requestId : request.id 
             // Fastify's built-in per-request id - threaded into async jobs for cross-process tracing
-  
 
         })
 
@@ -74,7 +75,7 @@ export function registerSwipesRoutes(app) {
           });
 
         // we take e.userBid this line proves whether the givenloggedin user must not be in userB id
-        const otheruserId = matches.map((m) => (
+        const otherUserIds = matches.map((m) => (
             m.userAId === request.userId
                 ? m.userBId
                 : m.userAId))
@@ -95,6 +96,7 @@ export function registerSwipesRoutes(app) {
             };
         });
 
+        return reply.send({ matches: enrichedMatches });
     })
 
     app.get('/matches/:matchId', { preHandler: app.authenticate }, async (request, reply) => {

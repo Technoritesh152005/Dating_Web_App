@@ -28,10 +28,10 @@ export async function compareFaces(selfieKey , profilePhotoKey){
         result = await client.send(command)
     }catch(error){
 
-        if(error.name = 'InvalidParameterException'){
+        if(error.name === 'InvalidParameterException'){
             return {matchScore : 0 , noFaceDetected:true}
         }
-        throw err
+        throw error
     }
 
     console.log(result)

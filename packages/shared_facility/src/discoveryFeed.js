@@ -113,7 +113,7 @@ export async function buildCandidatePool(db, { userId, ownProfile, prefs, page =
       AND NOT EXISTS (
         SELECT 1 FROM swipes s
         WHERE s."fromUserId" = ${userId} AND s."toUserId" = p."userId"
-         AND (s.action IN ('LIKE', 'SUPER_LIKE') OR s."createdAt" > NOW() - INTERVAL '30 days')
+         AND (s.action IN ('LIKE', 'FIRE_LIKE') OR s."createdAt" > NOW() - INTERVAL '30 days')
       )
       -- exclude anyone I've blocked, or who has blocked me
       AND NOT EXISTS (

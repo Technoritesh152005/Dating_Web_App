@@ -3,7 +3,7 @@ import{
     createRedisClient,
     QUEUE_NAMES,
     prisma,
-    resolveEffectivePreference,
+    removeuserPreference,
     buildCandidateFeedWithRelaxation
 } from '@dating-app/shared'
 

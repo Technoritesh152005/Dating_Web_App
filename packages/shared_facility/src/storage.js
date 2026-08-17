@@ -1,4 +1,4 @@
-import {S3Client, PutObjectCommand , GetObjectCommand, DeleteObjectCommand} from '@aws-sdk/client-s3'
+import {S3Client, PutObjectCommand , GetObjectCommand, DeleteObjectCommand, HeadObjectCommand} from '@aws-sdk/client-s3'
 import {getSignedUrl} from '@aws-sdk/s3-request-presigner'
 import crypto from 'node:crypto'
 
@@ -77,7 +77,7 @@ export async function generatePresignedReadUrl(key, expiresInSeconds = 300) {
     return getSignedUrl(client, command, { expiresIn: expiresInSeconds });
   }
   
-  /* deleteing s3 image  */
+/* deleteing s3 image  */
 export async function deleteObject(key){
     const client = getS3Clinet()
     const command = new DeleteObjectCommand({
@@ -85,4 +85,22 @@ export async function deleteObject(key){
         Key: key
     })
     await client.send(command)
+}
+
+/* check if object exists in S3 */
+export async function objectExists(key) {
+    const client = getS3Clinet()
+    const command = new HeadObjectCommand({
+        Bucket: requireBucketName(),
+        Key: key
+    })
+    try {
+        await client.send(command)
+        return true
+    } catch (err) {
+        if (err.name === 'NotFound' || err.$metadata?.httpStatusCode === 404) {
+            return false
+        }
+        throw err
+    }
 }

@@ -2,6 +2,7 @@ import { removeuserPreference, filterOutSeen, createQueue, buildCandidateFeedWit
 import { QUEUE_NAMES } from '@dating-app/shared/src/queueNames';
 const PAGE_SIZE = 20; // pagination: never return the whole pool in one response
 const REFIL_THRESHOLD = 10
+
 function feedListKey(userId) {
     return `feed:${userId}`
 }
@@ -23,7 +24,7 @@ export function registerDiscoveryRoutes(app) {
         if (!ownProfile) {
             return reply.code(404).send({ error: 'Create Your profile before discovering others' })
         }
-        const listKey = feedListKey(userId)
+        const listKey = feedListKey(request.userId)
 
         // Step 1: First check or pop a batch from precomputed list.. i.e only 20
         let candIds = await app.redis.lpop(listKey, PAGE_SIZE)
@@ -31,7 +32,7 @@ export function registerDiscoveryRoutes(app) {
 
         // from the candidate we got from pref based we now filter it out using bloom filter
         if (candIds && candIds.length > 0) {
-            await filterOutSeen(request.userId, candIds, app.redis)
+            candIds = await filterOutSeen(request.userId, candIds, app.redis)
         }
 
         // if the remaining feed list profile is leess than threshold after filtering then we create a new feed where we put in bg queue where bg worker processes it
@@ -53,7 +54,7 @@ export function registerDiscoveryRoutes(app) {
                 page: 1,
                 pageSize: PAGE_SIZE
             })
-            candIds = result.candidates.map((c) => { c.id })
+            candIds = result.candidates.map((c) => c.id)
             relaxed = result.relaxed
         }
 
@@ -79,7 +80,8 @@ export function registerDiscoveryRoutes(app) {
         return reply.send({
             profiles: orderedProfiles,
             page,
-            hasMore: candidateRows.length === PAGE_SIZE, // if we got a full page, there's likely more
+            hasMore: candIds.length === PAGE_SIZE,
+            relaxed
         })
     })
 }

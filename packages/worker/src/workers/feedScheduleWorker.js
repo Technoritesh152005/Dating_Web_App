@@ -23,7 +23,7 @@ export function startFeedSchedulerWorker(logger){
                 updatedAt: {gte: new Date(Date.now() - ACTIVE_WINDOW_HOURS * 60 *60*1000)}
                 },
                 select:{userId:true},
-                take:{BATCH_LIMIT}
+                take: BATCH_LIMIT
             })
 
             let delay = 0

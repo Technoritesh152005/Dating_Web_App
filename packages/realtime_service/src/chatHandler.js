@@ -77,13 +77,13 @@ export function registerChatHandlers(io, socket, { db, redis, logger }) {
             // way for the sender's own UI to get the server-confirmed message
             // with its real id/timestamp, rather than trusting its own optimistic copy).
             io.to(matchRoom(matchId)).emit('new-message', {
-                id: message.id,
-                matchId: message.matchId,
-                senderId: message.senderId,
-                content: message.content,
-                createdAt: message.createdAt
+                id: msg.id,
+                matchId: msg.matchId,
+                senderId: msg.senderId,
+                content: msg.content,
+                createdAt: msg.createdAt
             })
-            callback?.({ ok: true, message })
+            callback?.({ ok: true, message: msg })
         } catch (err) {
             logger.error({ err, matchId }, 'Error sending message');
             callback?.({ ok: false, error: 'Failed to send message' });
@@ -99,7 +99,7 @@ export function registerChatHandlers(io, socket, { db, redis, logger }) {
     socket.on('mark-read', async ({ matchId }, callback) => {
 
         try {
-            const match = await verifyMatchMembership(db, matchId, socket.userId);
+            const match = await verifyMatchMemberShip(db, matchId, socket.userId);
             if (!match) {
                 return callback?.({ ok: false, error: 'Not authorized' });
             }
