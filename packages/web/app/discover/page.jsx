@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation'
 import { useAuth } from '../../lib/authContext'
 import { api } from '../../lib/api'
 import { ProfileCard } from '../../components/ProfileCard'
-import { MatchBanner } from '../../components/MatchBanner'
+import { MatchBanner } from '../../components/MatchCelebration'
 import { Button } from '../../components/user_interface/Button'
 import { FiltersDrawer } from '@/components/FiltersDrawer';
 import { NavBar } from '@/components/NavBar';

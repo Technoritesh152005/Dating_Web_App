@@ -1,7 +1,7 @@
 /* This file manage the state of auth of user around all the application */
 'use client'
 import { api } from '../lib/api.js'
-import { createContext, useContext, useState, useCallback } from 'react'
+import { createContext, useContext, useState, useCallback, useEffect } from 'react'
 
 const authContext = createContext(null)
 
@@ -15,7 +15,7 @@ export function authProvider({ children }) {
     const checkAuth = useCallback(async () => {
 
         try {
-            const me = api.get('/auth/me')
+            const me = await api.get('/auth/me')
             setUser(me)
         } catch (err) {
             setUser(null)
@@ -31,18 +31,18 @@ export function authProvider({ children }) {
 
     const signup = async (email, password) => {
         const response = await api.post('/auth/signup', { email, password })
-        checkAuth()
+        await checkAuth()
         return response
     }
 
     // u get checkAuth after getting response from backend is because when u get the response u can set the user in ur createcontext
     const login = async (email, password) => {
         const result = await api.post('/auth/login', { email, password })
-        checkAuth()
+        await checkAuth()
         return result
     }
 
-    const loginWithGoogle = async (email, password) => {
+    const loginWithGoogle = async (idToken) => {
         const result = await api.post('/auth/google', { idToken })
         await checkAuth()
         return result
@@ -52,7 +52,7 @@ export function authProvider({ children }) {
         setUser(null);
     };
 
-    //   this returns an component that whichever cild function call will come in the children and use this 
+    //   this returns an component that whichever cild function call will come in the children and use this
     // means ay child inside this can access this value
     // authcontext provides data to authcontext.provider
     return (

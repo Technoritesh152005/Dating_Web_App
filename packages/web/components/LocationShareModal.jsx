@@ -4,9 +4,9 @@ import { useState, useEffect, useRef } from 'react'
 import { api } from '@/lib/api'
 import { Button } from '@/components/user_interface/Button'
 import { Card } from '@/components/user_interface/Card'
-import { ChoicePills } from './user_interface/choicePills'
+import { ChoicePills } from '@/components/user_interface/choicePills'
 
-const DURATION_INTERVAL_MS = [
+const DURATION_OPTIONS = [
     { value: 30, label: '30 min' },
     { value: 60, label: '1 hour' },
     { value: 120, label: '2 hours' },
@@ -21,13 +21,17 @@ export function LocationShareModal({ open, close }) {
     const [contactName, setContactName] = useState('')
     const [share, setShare] = useState(null)
     const [starting, setStarting] = useState(false)
-    const [copied, setCopied] = useState(false);
-    const [error, setError] = useState(null);
-    const intervalRef = useRef(null);
+    const [copied, setCopied] = useState(false)
+    const [error, setError] = useState(null)
+    const intervalRef = useRef(null)
 
     /* when the user leaves the page it cleans the interval */
     useEffect(() => {
-        return () => clearInterval(intervalRef.current)
+        return () => {
+            if (intervalRef.current) {
+                clearInterval(intervalRef.current)
+            }
+        }
     }, [])
 
     /* this handler saves the coordinates in ur db */
@@ -38,7 +42,12 @@ export function LocationShareModal({ open, close }) {
                 api.post(`/safety/location-share/${shareId}/update`, {
                     latitude: position.coords.latitude,
                     longitude: position.coords.longitude
-                }).catch((err) => console.error('Location Updation Failed'))
+                }).catch(() => {
+                    // Silently fail - location updates are best effort
+                })
+            },
+            () => {
+                // Geolocation permission denied or unavailable - silently fail
             }
         )
     }
@@ -56,28 +65,34 @@ export function LocationShareModal({ open, close }) {
             /* now push the location updates to ur db */
             pushLocationUpdate(result.shareId)
             /* also at every 45 seconds update the location */
-            intervalRef.current = setInterval(() => pushLocationUpdate(result.shareId), UPDATE_INTERVAL_MS);
+            intervalRef.current = setInterval(() => pushLocationUpdate(result.shareId), UPDATE_INTERVAL_MS)
         } catch (err) {
-            setError(err.message)
+            setError(err.message || 'Failed to start location sharing')
         } finally {
             setStarting(false)
         }
     }
 
     const stopSharing = async function () {
-        clearInterval(intervalRef.current)
+        if (intervalRef.current) {
+            clearInterval(intervalRef.current)
+            intervalRef.current = null
+        }
         if (share) {
-            api.post(`/safety/location-share/${share.shareId}/stop`)
+            await api.post(`/safety/location-share/${share.shareId}/stop`).catch(() => {})
         }
         setShare(null)
-        onClose()
+        close()
     }
 
     const copyLink = async () => {
-        await navigator.clipboard.writeText(share.shareUrl);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
-    };
+        if (!share) return
+        await navigator.clipboard.writeText(share.shareUrl)
+        setCopied(true)
+        setTimeout(() => setCopied(false), 2000)
+    }
+
+    if (!open) return null
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/70 px-6 backdrop-blur-sm">
@@ -109,7 +124,7 @@ export function LocationShareModal({ open, close }) {
                         {error && <p className="mt-3 text-[13px] text-sindoor-light">{error}</p>}
 
                         <div className="mt-6 flex gap-3">
-                            <Button variant="secondary" onClick={onClose} className="flex-1">Cancel</Button>
+                            <Button variant="secondary" onClick={close} className="flex-1">Cancel</Button>
                             <Button variant="primary" onClick={startSharing} disabled={starting} className="flex-1">
                                 {starting ? 'Starting…' : 'Start sharing'}
                             </Button>
@@ -138,5 +153,5 @@ export function LocationShareModal({ open, close }) {
                 )}
             </Card>
         </div>
-    );
+    )
 }

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { calculateAge } from '@/lib/age';
+import { calculateAge } from '@/lib/calculateAge.js';
 
 export function ProfileDetailModal({ profile, onClose, onLike, onPass }) {
   const [photoIndex, setPhotoIndex] = useState(0);

@@ -2,9 +2,9 @@
 
 import { useState } from 'react'
 import { api } from '@/lib/api'
-import { Button } from './ui/Button';
-import { Card } from './ui/Card';
-import { ChoicePills } from './ui/ChoicePills';
+import { Button } from '@/components/user_interface/Button'
+import { Card } from '@/components/user_interface/Card'
+import { ChoicePills } from '@/components/user_interface/choicePills'
 
 const REASONS = [
     { value: 'Fake profile', label: 'Fake profile' },
@@ -13,27 +13,29 @@ const REASONS = [
     { value: 'Spam or scam', label: 'Spam or scam' },
     { value: 'Underage', label: 'Underage' },
     { value: 'Other', label: 'Other' },
-];
+]
 
 export function ReportModal({ open, reportedUserId, onClose, onSubmitted }) {
 
     const [reason, setReason] = useState(null)
     const [submitting, setSubmitting] = useState(false)
+    const [error, setError] = useState(null)
 
     if (!open) return null
 
     const submit = async () => {
-        if (!reason) return null
+        if (!reason) return
         setSubmitting(true)
+        setError(null)
         try {
             await api.post('/safety/report', { reportedUserId, reason })
             onSubmitted?.()
             onClose()
-        } catch (error) {
-            throw new Error()
+        } catch (err) {
+            setError(err.message || 'Failed to submit report')
         } finally {
             setSubmitting(false)
-            setReason(false)
+            setReason(null)
         }
     }
 
@@ -48,8 +50,10 @@ export function ReportModal({ open, reportedUserId, onClose, onSubmitted }) {
                         <ChoicePills options={REASONS} value={reason} onChange={setReason} />
                     </div>
 
+                    {error && <p className="mt-3 text-[13px] text-sindoor-light">{error}</p>}
+
                     <div className="mt-6 flex gap-3">
-                        <Button variant="secondary" onClick={onClose} className="flex-1">Cancel</Button>
+                        <Button variant="secondary" onClick={onClose} className="flex-1" disabled={submitting}>Cancel</Button>
                         <Button variant="primary" onClick={submit} disabled={!reason || submitting} className="flex-1">
                             {submitting ? 'Submitting…' : 'Submit report'}
                         </Button>
@@ -57,5 +61,5 @@ export function ReportModal({ open, reportedUserId, onClose, onSubmitted }) {
                 </Card>
             </div>
         </div>
-    );
+    )
 }
