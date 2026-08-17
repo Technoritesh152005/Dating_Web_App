@@ -83,9 +83,9 @@ Active queues:
 - `FEED_REFILL`: candidate feed precomputation.
 - `FEED_SCHEDULER`: repeatable feed scheduling ticks.
 - `ICEBREAKER_GENERATION`: match icebreaker generation.
-- `LOACTION_SHARE_CLEANUP`: live location share cleanup.
+- `LOCATION_SHARE_CLEANUP`: live location share cleanup.
 
-Note: `LOACTION_SHARE_CLEANUP` is misspelled in the current constant name. It should remain consistent across producers and consumers until renamed in one coordinated change.
+Note: `LOCATION_SHARE_CLEANUP` is misspelled in the current constant name. It should remain consistent across producers and consumers until renamed in one coordinated change.
 
 ## Worker Startup
 

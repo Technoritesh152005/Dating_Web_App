@@ -1,0 +1,20 @@
+# Caddy automatically provisions and renews Let's Encrypt certificates for
+# every domain listed below - no certbot, no manual cert renewal cron job.
+# Replace yourdomain.com with your actual domain before deploying; each
+# subdomain needs its own DNS A record pointing at this VPS's IP.
+
+yourdomain.com {
+	reverse_proxy web:3000
+}
+
+api.yourdomain.com {
+	reverse_proxy api:4000
+}
+
+realtime.yourdomain.com {
+	# Socket.io needs WebSocket upgrade support through the proxy - Caddy
+	# handles this automatically for reverse_proxy, no special config
+	# needed (unlike nginx, which requires explicit Upgrade/Connection
+	# header forwarding).
+	reverse_proxy realtime:4001
+}

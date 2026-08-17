@@ -1,20 +1,32 @@
-import { markOnline ,isOnline , markOffline} from './userPresence.js'
+import { markOnline, isOnline, markOffline } from './userPresence.js'
+
+const MAX_MESSAGE_LENGTH = 4000
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 
 function MatchRoom(matchId) {
     return `match:${matchId}`
 }
 
-async function verifyMatchMemberShip(db, matchId, userId) {
+function isValidUuid(id) {
+    return UUID_REGEX.test(id)
+}
+
+function sanitizeContent(content) {
+    return content
+        .replace(/[<>]/g, (c) => (c === '<' ? '<' : '>'))
+        .trim()
+}
+
+async function verifyMatchMembership(db, matchId, userId) {
+    if (!isValidUuid(matchId)) return null
 
     const match = await db.match.findUnique({
         where: { id: matchId }
     })
-    // we see if match exist
     if (!match) return null
     if (match.userAId !== userId && match.userBId !== userId) return null
     if (match.status !== 'ACTIVE') return null
     return match
-
 }
 
 export function registerChatHandlers(io, socket, { db, redis, logger }) {
@@ -27,21 +39,20 @@ export function registerChatHandlers(io, socket, { db, redis, logger }) {
     socket.on('join-match', async ({ matchId }, callback) => {
 
         try {
+            if (!matchId || !isValidUuid(matchId)) {
+                return callback?.({ ok: false, error: 'Invalid match ID' })
+            }
             // why do we verify- we verify cause only the match members should enter in match room
-            const match = await verifyMatchMemberShip(db, matchId, socket.userId)
+            const match = await verifyMatchMembership(db, matchId, socket.userId)
             if (!match) return callback?.({ ok: false, error: 'Not authorized to join the chat room' })
 
-            // socket.join() means:
-            // "Add this connected user (socket) to a room."
-            // A room is a group of sockets. Socket.io uses rooms so you can send messages to only a specific set of users instead of everyone.
             socket.join(matchRoom(matchId))
             logger.info({ userId: socket.userId, matchId }, 'User joined match room');
-
 
             const otherUserId = match.userAId === socket.userId ? match.userBId : match.userAId;
             const partnerOnline = await isOnline(redis, otherUserId);
 
-            callback?.({ ok: true , partnerOnline })
+            callback?.({ ok: true, partnerOnline })
 
         } catch (err) {
             logger.error({ err, matchId }, 'Error joining match room');
@@ -54,12 +65,25 @@ export function registerChatHandlers(io, socket, { db, redis, logger }) {
     socket.on('send-message', async ({ matchId, content }, callback) => {
 
         try {
+            if (!matchId || !isValidUuid(matchId)) {
+                return callback?.({ ok: false, error: 'Invalid match ID' })
+            }
+
             if (!content || !content.trim()) {
                 return callback?.({ ok: false, error: 'Message cannot be empty' })
             }
 
+            const sanitized = sanitizeContent(content)
+            if (sanitized.length === 0) {
+                return callback?.({ ok: false, error: 'Message cannot be empty' })
+            }
+            if (sanitized.length > MAX_MESSAGE_LENGTH) {
+                return callback?.({ ok: false, error: `Message exceeds maximum length of ${MAX_MESSAGE_LENGTH}` })
+            }
+
             // we still verify whether the match exist and the sender is auth
-            const match = await verifyMatchMemberShip(db, matchId, socket.userId)
+            // re-verify match status at send time to catch race condition (match unmatched between join and send)
+            const match = await verifyMatchMembership(db, matchId, socket.userId)
             if (!match) {
                 return callback?.({ ok: false, error: 'Not authorized to message in this match' });
             }
@@ -69,14 +93,14 @@ export function registerChatHandlers(io, socket, { db, redis, logger }) {
                 data: {
                     senderId: socket.userId,
                     matchId,
-                    content: content.trim()
+                    content: sanitized
                 }
             })
 
             // now broadcast msg to everyone // Broadcast to EVERYONE in the room (including the sender - simplest
             // way for the sender's own UI to get the server-confirmed message
             // with its real id/timestamp, rather than trusting its own optimistic copy).
-            io.to(matchRoom(matchId)).emit('new-message', {
+            io.to(matchRoom(matchId)).emit('new-msg', {
                 id: msg.id,
                 matchId: msg.matchId,
                 senderId: msg.senderId,
@@ -91,7 +115,11 @@ export function registerChatHandlers(io, socket, { db, redis, logger }) {
     })
 
     //   Send to everyone in this room EXCEPT the current socket.
-    socket.on('typing', ({ matchId }) => {
+    socket.on('typing', async ({ matchId }) => {
+        if (!matchId || !isValidUuid(matchId)) return
+        // verify membership before forwarding typing event
+        const match = await verifyMatchMembership(db, matchId, socket.userId)
+        if (!match) return
         socket.to(matchRoom(matchId)).emit('user-typing', { userId: socket.userId, matchId });
     });
 
@@ -99,7 +127,10 @@ export function registerChatHandlers(io, socket, { db, redis, logger }) {
     socket.on('mark-read', async ({ matchId }, callback) => {
 
         try {
-            const match = await verifyMatchMemberShip(db, matchId, socket.userId);
+            if (!matchId || !isValidUuid(matchId)) {
+                return callback?.({ ok: false, error: 'Invalid match ID' })
+            }
+            const match = await verifyMatchMembership(db, matchId, socket.userId);
             if (!match) {
                 return callback?.({ ok: false, error: 'Not authorized' });
             }
@@ -121,6 +152,10 @@ export function registerChatHandlers(io, socket, { db, redis, logger }) {
 
     socket.on('disconnect', async (reason) => {
         await markOffline(redis, socket.userId);
+        // leave all rooms to clean up stale memberships
+        socket.rooms.forEach(room => {
+            if (room !== socket.id) socket.leave(room)
+        })
         logger.info({ userId: socket.userId, reason }, 'User disconnected');
     });
 

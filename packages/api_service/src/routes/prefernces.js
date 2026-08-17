@@ -3,7 +3,7 @@ const VALID_PROFESSIONS= ['STUDENT', 'ENGINEER', 'DOCTOR', 'BUSINESS', 'GOVERNME
 
 export function registerPreferencesRoutes(app){
 
-    app.put('/preferences', {preHandler:app.authenticate}, async(request,reply)=>{
+    app.put('/preferences', {preHandler:app.authenticate, config:{ authenticated: true }}, async(request,reply)=>{
 
         const {
             minAge,

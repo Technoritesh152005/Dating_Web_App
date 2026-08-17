@@ -3,7 +3,7 @@ import { createQueue, QUEUE_NAMES , objectExists} from '@dating-app/shared'
 export function registerVerificationRoutes(app) {
 
     // we submit a live selfie this just make a entry of lsfie in db and put the job in worker
-    app.post('/verification/selfie', { preHandler: app.authenticate }, async (request, reply) => {
+    app.post('/verification/selfie', { preHandler: app.authenticate, config: { authenticated: true } }, async (request, reply) => {
         const { selfieKey } = request.body ?? {}
 
         if (!selfieKey) return reply.code(400).send({ error: "Please send the SelfieKey" })

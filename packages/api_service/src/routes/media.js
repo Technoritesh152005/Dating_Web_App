@@ -2,14 +2,17 @@ import {
   generatePresignedUploadUrl,
   deleteObject,
   objectExists,
+  getObjectMetadata,
 } from "@dating-app/shared";
 const allowed_extension = ["jpg", "jpeg", "png", "webp"];
+const allowed_mime_types = ["image/jpeg", "image/png", "image/webp"];
+const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024; // 10MB
 export function generateMediaRoutes(app) {
   // we user first ask backend permission that we need to store the images
   // we just receive a presigned url we didnt send image till now
   app.post(
     "/media/photo/presign",
-    { preHandler: app.authenticate },
+    { preHandler: app.authenticate, config: { authenticated: true, rateLimit: { max: 20, timeWindow: '1 minute' } } },
     async (request, reply) => {
       const { fileExtension } = request.body ?? {};
       if (!fileExtension || !allowed_extension.includes(fileExtension)) {
@@ -39,7 +42,7 @@ export function generateMediaRoutes(app) {
   // -----------------------------------------------------------------------
   app.post(
     "/media/photos/confirm",
-    { preHandler: app.authenticate },
+    { preHandler: app.authenticate, config: { authenticated: true, rateLimit: { max: 20, timeWindow: '1 minute' } } },
     async (request, reply) => {
       const { publicUrl, key, isPrimary } = request.body ?? {};
       if (!key || !publicUrl) {
@@ -61,6 +64,19 @@ export function generateMediaRoutes(app) {
       const exists = await objectExists(key);
       if (!exists) {
         return reply.code(400).send({ error: "Image not found in S3" });
+      }
+
+      // Validate file size and content type before storing metadata
+      const metadata = await getObjectMetadata(key);
+      if (metadata) {
+        if (metadata.ContentLength > MAX_FILE_SIZE_BYTES) {
+          await deleteObject(key);
+          return reply.code(400).send({ error: "File exceeds maximum allowed size of 10MB" });
+        }
+        if (metadata.ContentType && !allowed_mime_types.includes(metadata.ContentType.toLowerCase())) {
+          await deleteObject(key);
+          return reply.code(400).send({ error: "Invalid file type. Only images are allowed" });
+        }
       }
 
       // if a user gave a img to make that image a primary image we update that image to primary by revoking old primary image
@@ -102,7 +118,7 @@ export function generateMediaRoutes(app) {
   /* upload a selfie in s3 */
   app.post(
     "/media/selfie/presign",
-    { preHandler: app.authenticate },
+    { preHandler: app.authenticate, config: { authenticated: true, rateLimit: { max: 10, timeWindow: '1 minute' } } },
     async (req, res) => {
       const { fileExtension } = req.body ?? {};
       if (!fileExtension || !allowed_extension.includes(fileExtension)) {
@@ -126,7 +142,7 @@ export function generateMediaRoutes(app) {
 
   app.delete(
     "/media/photos/:photoId",
-    { preHandler: app.authenticate },
+    { preHandler: app.authenticate, config: { authenticated: true, rateLimit: { max: 10, timeWindow: '1 minute' } } },
     async (request, reply) => {
       const { photoId } = request.params;
 
@@ -180,7 +196,7 @@ export function generateMediaRoutes(app) {
 
   app.put(
     "/media/photos/:photoId/primary",
-    { preHandler: app.authenticate },
+    { preHandler: app.authenticate, config: { authenticated: true } },
     async (request, reply) => {
       //photoid is the id which user needs to make primary
       const { photoId } = request.params;

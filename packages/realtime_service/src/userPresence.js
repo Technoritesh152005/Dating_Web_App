@@ -2,8 +2,15 @@
 
 const TTL = 60
 
-export async function markOnline(redis , userId , socketId){
-    await redis.set(`presence:${userId}`, socketId , 'EX', 60)
+export async function markOnline(redis, userId, socketId) {
+    // use SET NX to avoid overwriting existing presence from another tab
+    // if key exists, keep the first socket; still refresh TTL
+    const existing = await redis.get(`presence:${userId}`)
+    if (existing) {
+        await redis.expire(`presence:${userId}`, TTL)
+        return
+    }
+    await redis.set(`presence:${userId}`, socketId, 'EX', TTL)
 }
 
 export async function markOffline(redis, userId) {
