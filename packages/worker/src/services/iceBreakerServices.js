@@ -9,7 +9,7 @@ export async function generateIceBreaker({ userABio, userBBio, userAInterest, us
     const response = await fetch(GROQ_CHAT_URL, {
         method: 'POST',
         headers: {
-            Authorization: `Bearer${apiKey}`,
+            Authorization: `Bearer ${apiKey}`,
             'Content-Type': 'application/json',
         },
         body: JSON.stringify({
@@ -34,21 +34,22 @@ export async function generateIceBreaker({ userABio, userBBio, userAInterest, us
     }
     console.log(response)
     const data = await response.json()
-    const suggestion = data?.choices?.[0]?.messages?.content?.trim
+    const suggestion = data?.choices?.[0]?.message?.content?.trim()
 
     if(!suggestion)throw new Error('Groq returned no icebreaker suggestion')
     return {suggestion}
 
 }
 function buildPrompt({ userABio, userAInterest, userBBio, userBInterest }) {
-    return
-    [
+    
+    return [
     `
     Person A - Bio: ${userABio || 'No Bio Provided'}
     Person B - Bio:${userBBio || 'No Bio provided'}
     //  means if null take []
-    Person A - Interests: ${(userAInterests ?? []).join(', ') || '(none listed)'},
-    Person B - Interests: ${(userBInterests ?? []).join(', ') || '(none listed)'},
+    Person A - Interests: ${(userAInterest ?? []).join(', ') || '(none listed)'},
+    Person B - Interests: ${(userBInterest ?? []).join(', ') || '(none listed)'},
     `
     ].join('\n');
+
 }

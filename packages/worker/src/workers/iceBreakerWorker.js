@@ -1,6 +1,6 @@
 import { generateIceBreaker } from '../services/iceBreakerServices.js'
 import { Worker } from 'bullmq'
-import { QUEUE_NAMES, createRedisClient, prisma, circuitBreaker } from '@dating-app/shared-facility'
+import { QUEUE_NAMES, createRedisClient, prisma, circuitBreaker } from '@dating-app/shared'
 
 // this is only generated when a match is created . not each times and this job is enqueue in matching.js
 export function startIceBreakerFunction(logger) {
@@ -13,18 +13,18 @@ export function startIceBreakerFunction(logger) {
         // whenever u get a job in this queue follow the below working operations
         async (job) => {
             const { matchId, userAId, userBId } = job.data
-            logger.info({ matchId }, 'Started icebreaker suggestion for '`${matchId}`)
+            logger.info({ matchId }, `Started icebreaker suggestion for ${matchId}`)
 
             const [profileA, profileB] = await Promise.all([
-                await prisma.profile.findUnique({ where: { userId: userAId }, select: { bio: true, interests: true } }),
-                await prisma.profile.findUnique({ where: { userId: userAId }, select: { bio: true, interests: true } }),
+                prisma.profile.findUnique({ where: { userId: userAId }, select: { bio: true, interests: true } }),
+                prisma.profile.findUnique({ where: { userId: userBId }, select: { bio: true, interests: true } }),
             ])
             if (!profileA || !profileB) {
                 logger.warn({ matchId }, 'Icebreaker skipped- one or both profile may be not found')
                 return { skipped: true }
             }
 
-           const {suggestion} = await circuitBrekaer(breakerRedisConnection, 'groq-icebreaker', () =>
+           const {suggestion} = await circuitBreaker(breakerRedisConnection, 'groq-icebreaker', () =>
 
                 generateIceBreaker({
                     userABio: profileA.bio,
@@ -36,8 +36,8 @@ export function startIceBreakerFunction(logger) {
             )
 
 
-            await primsa.match.update({
-                where: { matchId: matchId },
+            await prisma.match.update({
+                where: { id: matchId },
                 data: {
                     iceBreakerSuggestion: suggestion
                 }

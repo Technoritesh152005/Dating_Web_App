@@ -14,9 +14,9 @@ export function createSocketAuthMiddleware(config, logger) {
                 return next(new Error('Authentication required - no cookies sent'))
             }
 
-            const cookie = cookie.parse(rawcookie)
-            console.log(cookie)
-            const token = cookie.accessToken
+            const parsed = cookie.parse(rawcookie)
+            console.log(parsed)
+            const token = parsed.accessToken
 
             if (!token) {
                 return next(new Error('Authentication required - no access token'));

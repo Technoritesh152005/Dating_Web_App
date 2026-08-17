@@ -7,7 +7,7 @@ export function startMatchNotificationWorker(logger) {
     const breakerRedisConnection = createRedisClient(logger, 'worker-reis-match-notification')
 
     /* Creating resend client */
-    const redis = new Resend(process.env.REDIS_API_KEY)
+    const resend = new Resend(process.env.RESEND_API_KEY)
 
     const emailFrom = process.env.RESEND_MAIL_FROM ||
         'Melodis <onboarding@resend.dev>'
@@ -20,7 +20,7 @@ export function startMatchNotificationWorker(logger) {
             logger.info('Processing the match send notification in worker ')
 
             const log = logger.child({
-                requestId
+                matchId
             })
             log.info(
                 {
@@ -81,7 +81,7 @@ export function startMatchNotificationWorker(logger) {
                     );
 
                     /* Sending email to user B for a match */
-                    const {data:userB, error:userBError} = await resend.send({
+                    const {data: emailB, error:userBError} = await resend.emails.send({
                         from:emailFrom,
                         to:[userBEmail],
                         subject: "It's a Match! 💕",

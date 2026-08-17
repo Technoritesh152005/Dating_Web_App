@@ -1,8 +1,8 @@
 import {createServer} from 'node:http'
 import {Server} from 'socket.io'
 import {createAdapter} from '@socket.io/redis-adapter'
-import {loadConfig,createLogger,redisClient} from '@dating-app/shared'
-import { registerChatHandlers } from './chatHandlers.js';
+import {loadConfig,createLogger,createRedisClient,connectDb,prisma} from '@dating-app/shared'
+import { registerChatHandlers } from './chatHandler.js';
 
 const logger = createLogger('realtime')
 const config = loadConfig('realtime')
@@ -42,8 +42,8 @@ async function main(){
 
 //   publisher is a redisclient cause u get a normal redis connection
 // Redis says always to use two redis connection one is for publishing and one is for subscribing
-    const pubclient = await redisClient()
-    const subclient = await redisClient()
+    const pubclient = createRedisClient(logger, 'realtime-pub')
+    const subclient = createRedisClient(logger, 'realtime-sub')
 
     io.adapter(createAdapter(pubclient,subclient))
 

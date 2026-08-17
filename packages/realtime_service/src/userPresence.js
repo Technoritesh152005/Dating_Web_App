@@ -3,7 +3,7 @@
 const TTL = 60
 
 export async function markOnline(redis , userId , socketId){
-    await redis.set(`presence${userId}`, socketId , 'EX', 60)
+    await redis.set(`presence:${userId}`, socketId , 'EX', 60)
 }
 
 export async function markOffline(redis, userId) {

@@ -3,7 +3,7 @@ const VALID_PROFESSIONS= ['STUDENT', 'ENGINEER', 'DOCTOR', 'BUSINESS', 'GOVERNME
 
 export function registerPreferencesRoutes(app){
 
-    app.put('/prefernces', {preHandler:app.authenticate}, async(request,reply)=>{
+    app.put('/preferences', {preHandler:app.authenticate}, async(request,reply)=>{
 
         const {
             minAge,
@@ -56,7 +56,7 @@ export function registerPreferencesRoutes(app){
           return reply.send(prefernce)
     })
 
-    app.get('/prefernces',{preHandler:app.authenticate},async(request , reply)=>{
+    app.get('/preferences',{preHandler:app.authenticate},async(request , reply)=>{
 
       const prefernce = await app.db.preference.findUnique({
         where:{userId: request.userId}
