@@ -6,7 +6,7 @@ import { createContext, useContext, useState, useCallback, useEffect } from 'rea
 const authContext = createContext(null)
 
 
-export function authProvider({ children }) {
+export function AuthProvider({ children }) {
 
     const [user, setUser] = useState(null)
     const [loading, setLoading] = useState(true);/* it is true until auth/me check finishes */

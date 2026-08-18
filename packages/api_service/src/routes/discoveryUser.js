@@ -1,5 +1,5 @@
-import { removeuserPreference, filterOutSeen, createQueue, buildCandidateFeedWithRelaxation } from '@dating-app/shared/src/discoveryFeed.js'
-import { QUEUE_NAMES } from '@dating-app/shared/src/queueNames';
+import { removeuserPreference, filterOutSeen, createQueue, buildCandidateFeedWithRelaxation } from '@dating-app/shared'
+import { QUEUE_NAMES } from '@dating-app/shared/src/queueNames.js';
 const PAGE_SIZE = 20; // pagination: never return the whole pool in one response
 const REFIL_THRESHOLD = 10
 

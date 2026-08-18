@@ -48,13 +48,13 @@ export function startFeedSchedulerWorker(logger){
 
 export async function scheduleFeedSchedulerQueueJobRepeatable(logger){
     const connection = createRedisClient(logger,'worker-feed-scheduler-register')
-const queue = createQueue(QUEUE_NAMES.FEED_SCHEDULER, connection)
-await queue.add(
-    'tick',
-    {},
-    {repeat:{every: 5*60*1000},
-    jobId:'feed-scheduler-repeatbale'
-    }
-)
-return connection
+    const queue = createQueue(QUEUE_NAMES.FEED_SCHEDULER, connection)
+    await queue.add(
+        'tick',
+        {},
+        {repeat:{every: 5*60*1000},
+        jobId:'feed-scheduler-repeatbale'
+        }
+    )
+    return connection
 }

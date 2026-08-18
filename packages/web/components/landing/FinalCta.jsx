@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { ScrollReveal } from '@/components/ScrollReveal';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/user_interface/Button';
 
 export function FinalCta() {
   return (

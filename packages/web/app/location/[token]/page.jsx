@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useParams } from 'next/navigation'
 import { API_URL } from '@/lib/api'
-import { Card } from '@/components/ui/Card';
+import { Card } from '@/components/user_interface/Card';
 
 const POLL_INTERVAL = 35_000
 

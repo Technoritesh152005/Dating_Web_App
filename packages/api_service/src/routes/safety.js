@@ -1,4 +1,4 @@
-import { QUEUE_NAMES } from '../../../shared_facility/src/queueNames'
+import { QUEUE_NAMES } from '../../../shared_service/src/queueNames.js'
 import { generateOpaqueToken, hashToken } from '../utils/token.js'
 import { createQueue } from '@dating-app/shared/src/queue.js'
 

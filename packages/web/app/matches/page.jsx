@@ -11,7 +11,7 @@ export default function MatchesPage() {
 
     const { user, loading } = useAuth()
     const router = useRouter()
-    const [matches, setMatches] = useSatate(null)
+    const [matches, setMatches] = useState(null)
 
     useEffect(() => {
         if (loading) return

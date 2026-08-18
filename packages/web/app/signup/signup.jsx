@@ -6,8 +6,8 @@ import Link from 'next/link'
 import {useRouter} from 'next/navigation'
 import {AuthScreen} from '@/components/authScreen.jsx'
 import { GoogleSignInButton } from '@/components/google_signIn_Button'
-import { Input } from '@/components/ui/Input';
-import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/user_interface/Input'
+import { Button } from '@/components/user_interface/Button'
 
 export default function signUpPage(){
 

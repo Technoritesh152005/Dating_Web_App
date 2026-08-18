@@ -1,13 +1,14 @@
 'use client'
 
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState, useRef, useCallback } from 'react'
 import { useAuth } from '@/lib/authContext'
+import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import { api } from '@/lib/api'
 import { useRouter } from 'next/navigation'
-import { connectSocket } from '@/lib/conneckSocket'
+import { connectSocket } from '@/lib/connectSocket'
 import { Button } from '@/components/user_interface/Button'
-import { ActionMenu, ActionMenuItem } from 'components/ActionMenu'
+import { ActionMenu, ActionMenuItem } from '@/components/ActionMenu'
 import { ConfirmModal } from '@/components/ConfirmModal'
 import { ReportModal } from '@/components/ReportModal'
 import { LocationShareModal } from '@/components/LocationShareModal'
@@ -52,17 +53,17 @@ export default function chatPage() {
             return
         }
 
-        const match = api.get('/matches/:matchId', matchId)
+        const match =  api.get(`/matches/${matchId}`)
         setOtherUser(match?.otherUser ?? null)
 
-        api, get(`/matches/${matchId}/messages`).then((data) => {
+        api.get(`/matches/${matchId}/messages`).then((data) => {
             setMessages(data.messages)
             setHasMoreHistory(data.hasMore)
             // the message we get is in order of older to newer. so we set the older message id so that we can even get message above this id
             if (data.messages.length > 0) setOldestLoadedId(data.messages[0].id)
 
         })
-        api.get(`'/matches${matchId}/icebreaker`).then((data) => {
+        api.get(`/matches/${matchId}/icebreaker`).then((data) => {
             if (data.ready) setIceBreaker(data.iceBreakerSuggestion)
         })
     }, [loading, user, matchId, router])
@@ -117,12 +118,9 @@ export default function chatPage() {
         })
 
         socket.on('messages-read', () => {
-            //map through all message and check sender id of meesga eis it user only
-            //if message is of logged in user then only show his message whether that message has been read or not 
-            setMessages((prev) => prev.map((e) =>
-            (e.senderId === user.id ?
-                /* only update the timestamp whose message is of logged in user.. and also once check whether readAt has been updated or not */
-                { ...m, readAt: m.readAt ?? new Date().toISOString() } : e)))
+            setMessages((prev) => prev.map((m) =>
+            (m.senderId === user.id ?
+                { ...m, readAt: m.readAt ?? new Date().toISOString() } : m)))
         })
 
         return () => {
@@ -136,7 +134,7 @@ export default function chatPage() {
         messageEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [messages])
 
-    const loadOlderMessages = usecallback(async function () {
+    const loadOlderMessages = useCallback(async function () {
         if (!oldestLoadedId) return
         const data = await api.get(`/matches/${matchId}/messages?before=${oldestLoadedId}`)
         /* this loads older message which we got now and then comes the remaining essage which were in stack / array */
@@ -182,6 +180,13 @@ export default function chatPage() {
         await api.post('/safety/block', { userId: otherUser.userId })
         router.push('/matches')
     }
+
+    /* Handle Unmatch */
+    const handleUnmatch = async () => {
+        await api.post('/matches/unmatch', { matchId })
+        router.push('/matches')
+    }
+
     if (loading) {
         return (
             <main className="flex min-h-screen items-center justify-center">

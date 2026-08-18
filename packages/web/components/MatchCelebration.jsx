@@ -1,8 +1,8 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { Bloom } from './ui/Bloom';
-import { Button } from './ui/Button';
+import { Bloom } from '@/components/user_interface/Bloom';
+import { Button } from '@/components/user_interface/Button';
 
 // THE full expression of the signature Bloom motion - large, layered
 // blooms behind the matched profile's photo. Everywhere else in the app

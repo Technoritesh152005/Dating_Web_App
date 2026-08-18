@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { api } from '@/lib/api'
 import { Button } from '@/components/user_interface/Button'
 import { Card } from '@/components/user_interface/Card'
-import { ChoicePills } from '@/components/user_interface/choicePills'
+import { ChoicePills } from '@/components/user_interface/ChoicePills'
 
 const DURATION_OPTIONS = [
     { value: 30, label: '30 min' },
