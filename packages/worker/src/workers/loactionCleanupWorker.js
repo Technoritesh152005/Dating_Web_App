@@ -1,6 +1,6 @@
 import { Worker } from 'bullmq'
 import { createRedisClient } from '@dating-app/shared'
-import { QUEUE_NAMES, prisma } from '@dating-app/shared/src/queueNames'
+import { QUEUE_NAMES, prisma } from '@dating-app/shared'
 
 
 export function startLocationCleanUpWorker(logger) {

@@ -2,7 +2,7 @@
 import { verifyAccessToken } from '../utils/token.js'
 export function registerAuthDecorator(app, config) {
 
-    app.decorator('authenticate', async (request, reply) => {
+    app.decorate('authenticate', async (request, reply) => {
         const token = request.cookies?.accessToken
 
         if (!token) {

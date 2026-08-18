@@ -9,3 +9,5 @@ build/
 packages/shared/prisma/migrations/dev.db
 .prisma/
 .claude/settings.local.json
+.env.production
+.env.production.example

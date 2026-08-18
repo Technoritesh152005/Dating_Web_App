@@ -1,12 +1,12 @@
 import { Worker } from 'bullmq'
 import { loadConfig, createRedisClient, createLogger, connectDb, disconnectDb } from '@dating-app/shared'
-import { QUEUE_NAMES } from './queueNames.js'
+import { QUEUE_NAMES } from '@dating-app/shared'
 import { startVerificationWorker } from './workers/verificationWorkers.js'
-import { startMatchNotificationWorker } from './workers/matchNotificationWorker.js';
+import { startMatchNotificationWorker } from './workers/matchNotifications.js';
 import { startFeedRefilWorker } from './workers/feedRefilWorker.js'
-import { startFeedSchedulerWorker } from './workers/feedSchedulerWorker.js'
+import { startFeedSchedulerWorker } from './workers/feedScheduleWorker.js'
 import { startIceBreakerFunction } from './workers/iceBreakerWorker.js'
-import { startLocationCleanUpWorker } from './workers/locationShareCleanupWorker.js';
+import { startLocationCleanUpWorker } from './workers/loactionCleanupWorker.js'
 
 
 const logger = createLogger('worker')
@@ -20,9 +20,9 @@ async function main() {
     await connectDb(logger)
     const workerConnection = createRedisClient()
 
-    const worker = new Worker(QUEUE_NAMES.HEALTH_CHECK,
+    const healthCheckWorker = new Worker(QUEUE_NAMES.HEALTH_CHECK,
         async (job) => {
-            logger.info({ jobId: job.id, data: job.data }, 'Processign job')
+            logger.info({ jobId: job.id, data: job.data }, 'Processing job')
             return { processedAt: new Date().toISOString() }
         },
         {
@@ -31,31 +31,38 @@ async function main() {
         }
     )
 
-    // during shutdoen we need to even close their wrker and prisma redis cobnectiin
-    const { worker: verificationWorker, connection: verificationConnection ,breakerRedisConnection: verificationBreakerRedis } = startVerificationWorker(logger);
-    const { worker: matchNotificationWorker, connection: matchNotificationConnection, breakerRedisConnection:matchNotificationBreakerRedis } =
+    // during shutdown we need to even close their worker and prisma redis connection
+    const { worker: verificationWorker, connection: verificationConnection, breakerRedisConnection: verificationBreakerRedis } = startVerificationWorker(logger);
+    const { worker: matchNotificationWorker, connection: matchNotificationConnection, breakerRedisConnection: matchNotificationBreakerRedis } =
         startMatchNotificationWorker(logger);
-    const { worker:feedRefillWorker, connection:feedRefillConnection, listRedis:feedListRedis } = await startFeedRefilWorker(logger)
-    const { worker:worker, connection } = await startFeedSchedulerWorker
+    const { worker: feedRefillWorker, connection: feedRefillConnection, listRedis: feedListRedis } = await startFeedRefilWorker(logger)
+    const { worker: feedSchedulerWorker, connection: feedSchedulerConnection, enqueueConnection } = await startFeedSchedulerWorker(logger)
     const { worker: iceBreakerWorker, connection: iceBreakConnection } = await startIceBreakerFunction(logger)
     const { worker: locationShareCleanupWorker, connection: locationShareCleanupConnection } = startLocationCleanUpWorker(logger);
     logger.info('Worker process started, listening for jobs on: health-check, verification-check');
 
-    worker.on('completed', (job) => {
+    healthCheckWorker.on('completed', (job) => {
         logger.info('Job Completed')
     })
-    worker.on('failed', (job, err) => {
+    healthCheckWorker.on('failed', (job, err) => {
         logger.error('Job Failed')
     })
 
     const shutdown = async (signal) => {
         logger.info({ signal }, 'Received shutdown signal from worker')
-        await worker.close()
+        await healthCheckWorker.close()
         await workerConnection.quit()
         await verificationWorker.close();
         await verificationConnection.quit();
         await matchNotificationConnection.quit();
         await iceBreakConnection.quit()
+        await feedRefillWorker.close();
+        await feedRefillConnection.quit();
+        await feedSchedulerWorker.close();
+        await feedSchedulerConnection.quit();
+        await feedRefillConnection.quit();
+        await locationShareCleanupWorker.close();
+        await locationShareCleanupConnection.quit();
 
         await disconnectDb()
         process.exit(0)

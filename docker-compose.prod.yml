@@ -40,7 +40,7 @@ services:
   api:
     build:
       context: .
-      dockerfile: packages/api/Dockerfile
+      dockerfile: packages/api_service/Dockerfile
     restart: unless-stopped
     env_file: .env.production
     environment:
@@ -60,7 +60,7 @@ services:
   realtime:
     build:
       context: .
-      dockerfile: packages/realtime/Dockerfile
+      dockerfile: packages/realtime_service/Dockerfile
     restart: unless-stopped
     env_file: .env.production
     environment:

@@ -1,4 +1,4 @@
-import { Card } from '@/components/ui/Card';
+import { Card } from '@/components/user_interface/Card';
 
 export function AuthScreen({ eyebrow, title, subtitle, children }) {
   return (

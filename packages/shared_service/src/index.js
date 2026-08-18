@@ -7,3 +7,5 @@ export { createQueue } from './queue.js';
 export { QUEUE_NAMES } from './queueNames.js';
 export { addToSeenFilter, isInSeenFilter, filterOutSeen } from './bloom.js';
 export { buildCandidateFeedWithRelaxation, buildCandidatePool, removeuserPreference } from './discoveryFeed.js';
+export {getCounter,incrementCounter} from './metrics.js'
+export { circuitBreaker } from './circuitBreaker.js';

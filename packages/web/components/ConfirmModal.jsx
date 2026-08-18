@@ -1,7 +1,7 @@
 'use client';
 
-import { Button } from './ui/Button';
-import { Card } from './ui/Card';
+import { Button } from '@/components/user_interface/Button';
+import { Card } from '@/components/user_interface/Card';
 
 export function ConfirmModal({ open, title, description, confirmLabel, onConfirm, onCancel, danger = true }) {
   if (!open) return null;

@@ -5,10 +5,10 @@ import { api } from '@/lib/api'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/authContext'
 import { NavBar } from '../../components/Navbar'
-import { presignAndUpload } from '@/lib/upload'
-import { Input } from '@/components/ui/Input';
-import { Button } from '@/components/ui/Button';
-import { ChoicePills } from '@/components/ui/ChoicePills';
+import { presignAndUpload } from '@/lib/uploadS3'
+import { Input } from '@/components/user_interface/Input';
+import { Button } from '@/components/user_interface/Button';
+import { ChoicePills } from '@/components/user_interface/ChoicePills';
 import { ConfirmModal } from '@/components/ConfirmModal';
 
 const PROFESSION_OPTIONS = [
@@ -33,12 +33,12 @@ const INTEREST_OPTIONS = [
 ].map((i) => ({ value: i, label: i }))
 
 export default function profileSettingPage() {
-    const [user, loading, logout] = useAuth()
+    const { user, loading, logout } = useAuth()
     const router = useRouter()
 
     const [profile, setProfile] = useState(null)
     const [form, setForm] = useState(null)
-    const [saving, setSaving] = (false)
+    const [saving, setSaving] = useState(false)
     const [saved, setSaved] = useState(false)
     const [error, setError] = useState(null)
     const [confirmLogout, setConfirmLogout] = useState(false)
@@ -49,21 +49,19 @@ export default function profileSettingPage() {
             router.push('/login')
             return
         }
-        try {
-            api.post('/profile/me').then((data) => {
+        api.get('/profile/me')
+            .then((data) => {
                 setProfile(data)
                 setForm({ bio: data.bio ?? '', interests: data.interests ?? [], profession: data.profession })
             })
-        } catch (err) {
-            setError(err)
-        }
-    }, [loading, user, logout])
+            .catch((err) => setError(err.message || 'Failed to load profile'))
+    }, [loading, user])
 
     const save = async () => {
         setError(null)
         setSaving(true)
         try {
-            await api.post('/profile', {
+            await api.put('/profile', {
                 displayName: profile.displayName,
                 dateOfBirth: profile.dateOfBirth,
                 gender: profile.gender,
@@ -74,13 +72,13 @@ export default function profileSettingPage() {
             setSaved(true)
             setTimeout(() => setSaved(false), 2000)
         } catch (err) {
-            setError(err)
+            setError(err.message || 'Failed to save')
         } finally {
             setSaving(false)
         }
     }
 
-    //paht or action to add photos 
+    //paht or action to add photos
     const addPhotos = async (fileList) => {
         setError(null)
         const files = Array.from(fileList)
@@ -89,8 +87,8 @@ export default function profileSettingPage() {
             try {
                 const { key, publicUrl } = await presignAndUpload({
                     file,
-                    presignPath: '/media/photos/presign',
-                    confirmPath: '/media/photos/confirm',
+                    presignPath: 'media/photos/presign',
+                    confirmPath: 'media/photos/confirm',
                     //if length is 0 keep 0 and check whether length = 0.
                     extraConfirmFields:
                         { isPrimary: (profile.photos?.length ?? 0) === 0 }
@@ -106,9 +104,7 @@ export default function profileSettingPage() {
         await api.del(`/media/photos/${photoId}`)
         //remove the deleted photot from prfile list of photos
         setProfile((p) => ({
-            ...p, photos: p.photos.filter((i) => {
-                i.id != photoId
-            })
+            ...p, photos: p.photos.filter((i) => i.id != photoId)
         }))
     }
 

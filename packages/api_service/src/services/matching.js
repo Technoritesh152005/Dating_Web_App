@@ -1,5 +1,5 @@
-import { QUEUE_NAMES, connectDb, createQueue } from '@dating-app/shared';
-import { addToSeenFilter } from '@dating-app/shared/src/bloom';
+import { QUEUE_NAMES, connectDb, createQueue } from '@dating-app/shared'
+import { addToSeenFilter } from '@dating-app/shared'
 
 // we always pair the order in linear ascending order
 function orderedPair(userId1, userId2) {

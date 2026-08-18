@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { api } from '@/lib/api'
 import { Button } from '@/components/user_interface/Button'
-import { ChoicePills } from '@/components/user_interface/choicePills'
+import { ChoicePills } from '@/components/user_interface/ChoicePills'
 import { Input } from '@/components/user_interface/Input'
 
 const GENDER_OPTIONS = [

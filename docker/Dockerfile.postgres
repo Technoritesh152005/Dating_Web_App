@@ -1,0 +1,11 @@
+# Combines PostGIS (Level 1 - geospatial distance filtering) and pgvector
+# (Level 7 - embedding similarity search) in one image, since no official
+# image ships both. Built FROM the Debian-based postgis image (not the
+# alpine one we used originally) because pgvector's apt package is only
+# published for Debian-based Postgres images.
+FROM postgis/postgis:16-3.4
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends postgresql-16-pgvector \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*

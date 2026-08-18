@@ -1,6 +1,6 @@
 'use client';
 
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/user_interface/Button';
 
 // App Router convention: this catches any unhandled error thrown while
 // rendering a page and shows this instead of a blank white screen or a

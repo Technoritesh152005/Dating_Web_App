@@ -77,7 +77,7 @@ export default function onBoardingSteps() {
         setSteps(1);
     };
 
-    constsubmitAboutAndCreateProfile = async () => {
+    const submitAboutAndCreateProfile = async () => {
         setError(null)
         setSaving(true)
         try {

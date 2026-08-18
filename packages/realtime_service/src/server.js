@@ -1,4 +1,5 @@
 import { createServer } from "node:http";
+import {createSocketAuthMiddleware} from "./socketAuth.js";
 import { Server } from "socket.io";
 import { createAdapter } from "@socket.io/redis-adapter";
 import {
@@ -21,12 +22,15 @@ async function main() {
   // this file only maintain socket connection
 
   const server = createServer((req, res) => {
-    if (req.url == "/health") {
-      res.end(JSON.stringify({ status: 200, service: "Eveything good" }));
-    }
-    res.statusCode = 404;
-    res.end("not found");
-  });
+  if (req.url === "/health") {
+    res.statusCode = 200;
+    res.end(JSON.stringify({ status: 200, service: "Everything good" }));
+    return;
+  }
+
+  res.statusCode = 404;
+  res.end("not found");
+});
 
   const allowedOrigins = config.corsOrigin
     ? config.corsOrigin.split(',').map(o => o.trim())
@@ -69,6 +73,10 @@ async function main() {
       logger,
     });
 
+    server.listen(config.port, () => {
+  logger.info(`Realtime server listening on port ${config.port}`);
+    });
+
     // Level 0 placeholder - proves the wiring works end to end.
     // Real chat-room join logic (per match_id) arrives in Level 6.
     socket.on("ping", () => {
@@ -80,3 +88,8 @@ async function main() {
     });
   });
 }
+
+main().catch((err) => {
+  logger.error({ err }, "Failed to start realtime server");
+  process.exit(1);
+});

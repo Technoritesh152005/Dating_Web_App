@@ -5,7 +5,7 @@ import Link from 'next/link'
 import {AuthScreen} from '@/components/authScreen'
 import {Input} from '../../components/user_interface/Input'
 import {Button} from '../../components/user_interface/Button.jsx'
-import {googleSignInButton} from '../../components/google_signIn_Button.jsx'
+import { GoogleSignInButton } from '@/components/google_signIn_Button.jsx'
 import {useState} from 'react'
 import {useRouter} from 'next/navigation'
 

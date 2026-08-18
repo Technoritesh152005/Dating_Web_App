@@ -18,7 +18,7 @@ export function registerMetricsRoutes(app) {
         const errorsTotal = await getCounter(app.redis, 'http_errors_total')
 
         const queueDepthLines = await Promise.all(
-            Object.values(QUEUE_NAMES).map((queueName) => {
+            Object.values(QUEUE_NAMES).map(async (queueName) => {
                 // for each queue names we will get their metrics
                 // u r not creating a new queue just using existing queue to get their metrics count
                 const queue = new Queue(queueName, { connection: app.redis.duplicate() })
@@ -37,7 +37,7 @@ export function registerMetricsRoutes(app) {
 
             '# HELP http_requests_total Total HTTP requests handled',
             '# TYPE http_requests_total counter',
-            `http_requests_total ${requestsTotal}`,
+            `http_requests_total ${requestTotal}`,
             '',
             '# HELP http_errors_total Total HTTP requests that returned 5xx',
             '# TYPE http_errors_total counter',

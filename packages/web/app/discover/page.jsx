@@ -7,11 +7,11 @@ import { ProfileCard } from '../../components/ProfileCard'
 import { MatchBanner } from '../../components/MatchCelebration'
 import { Button } from '../../components/user_interface/Button'
 import { FiltersDrawer } from '@/components/FiltersDrawer';
-import { NavBar } from '@/components/NavBar';
+import { NavBar } from '@/components/Navbar';
 import { ActionMenu, ActionMenuItem } from '@/components/ActionMenu';
 import { ConfirmModal } from '@/components/ConfirmModal';
 import { ReportModal } from '@/components/ReportModal';
-import {ProfileDetailModal} from '@/components/ProfileDetailModel'
+import { ProfileDetailModal } from '@/components/ProfileDetailModel'
 
 
 const LOW_STACK_THRESHOLD = 3
@@ -80,7 +80,7 @@ export default function discoverPage() {
                 setCelebrating({ name: current.displayName })
             }
         } catch (error) {
-            console.error('Swipe Failed', err)
+            console.error('Swipe Failed', error)
         } finally {
             setSwiping(false)
         }
