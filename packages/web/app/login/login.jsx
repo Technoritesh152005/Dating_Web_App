@@ -9,7 +9,7 @@ import { GoogleSignInButton } from '@/components/google_signIn_Button.jsx'
 import {useState} from 'react'
 import {useRouter} from 'next/navigation'
 
-export default function loginPage(){
+export default function LoginPage(){
 
 const {login} = useAuth()
 const [email,setEmail] = useState('')
@@ -26,9 +26,9 @@ const handleSubmit =  async function(e){
     try{
         await login(email , password)
         // we dont know if user has a profile so me forward him to onboarding where we check there only
-        router.push('/onboarding')
+        router.push('/onBoarding')
     }catch(error){
-        setError(err.message);
+        setError(error.message);
       setSubmitting(false);
     }
 }

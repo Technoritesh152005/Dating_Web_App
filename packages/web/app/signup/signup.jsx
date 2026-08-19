@@ -7,9 +7,10 @@ import {useRouter} from 'next/navigation'
 import {AuthScreen} from '@/components/authScreen.jsx'
 import { GoogleSignInButton } from '@/components/google_signIn_Button'
 import { Input } from '@/components/user_interface/Input'
+import { Divider } from '@/components/user_interface/Divider'
 import { Button } from '@/components/user_interface/Button'
 
-export default function signUpPage(){
+export default function SignUpPage(){
 
     const {signup} = useAuth()
     const [email, setEmail] = useState('')
@@ -35,7 +36,7 @@ export default function signUpPage(){
 
         try{
             await signup(email,password)
-            router.push('/onboarding')
+            router.push('/onBoarding')
         }catch(err){
             setError(err.message)
             setSubmitting(false)
@@ -87,7 +88,7 @@ export default function signUpPage(){
   
         <Divider>or continue with</Divider>
   
-        <googleSignInButton />
+        <GoogleSignInButton />
   
         <p className="mt-6 text-center text-[14px] text-cream-dim">
           Already have an account?{' '}
