@@ -1,5 +1,5 @@
 import { createServer } from "node:http";
-import {createSocketAuthMiddleware} from "./socketAuth.js";
+import {createSocketAuthMiddleware, createVerificationSocketMiddleware} from "./socketAuth.js";
 import { Server } from "socket.io";
 import { createAdapter } from "@socket.io/redis-adapter";
 import {
@@ -63,6 +63,8 @@ async function main() {
   const presenceRedis = createRedisClient(logger, "realtime-presence");
   // / --- Auth: every connection must present a valid accessToken cookie ---
   io.use(createSocketAuthMiddleware(config, logger));
+  // --- Verification: only VERIFIED or UNDER_REVIEW users can access chat ---
+  io.use(createVerificationSocketMiddleware(prisma, logger));
   // on connection
   // when a new client enters socket is created
   io.on("connection", (socket) => {

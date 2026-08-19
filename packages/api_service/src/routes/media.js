@@ -146,7 +146,7 @@ export function generateMediaRoutes(app) {
     async (request, reply) => {
       const { photoId } = request.params;
 
-      const photo = await app.db.photos.findUnique({
+      const photo = await app.db.photo.findUnique({
         where: {
           id: photoId,
         },
@@ -198,19 +198,52 @@ export function generateMediaRoutes(app) {
     "/media/photos/:photoId/primary",
     { preHandler: app.authenticate, config: { authenticated: true } },
     async (request, reply) => {
-      //photoid is the id which user needs to make primary
+      // photoid is the id which user needs to make primary
       const { photoId } = request.params;
-      const photo = await app.db.findUnique({
+
+      // Fix: use app.db.photo.findUnique (not app.db.findUnique)
+      const photo = await app.db.photo.findUnique({
         where: {
           id: photoId,
         },
         include: { profile: true },
       });
-      if (!photo || photo.profile.userId != request.userId) {
+      if (!photo || photo.profile.userId !== request.userId) {
         return reply.code(404).send({ error: "Photo not found" });
       }
 
-      //remove the old primary photo and make it as false
+      const currentStatus = photo.profile.verificationStatus;
+
+      // Handle verification status changes when primary photo is updated
+      if (currentStatus === 'VERIFIED') {
+        // User was fully verified - changing primary photo requires re-verification
+        await app.db.profile.update({
+          where: { id: photo.profileId },
+          data: { verificationStatus: 'REVERIFICATION_REQUIRED' },
+        });
+      } else if (currentStatus === 'UNDER_REVIEW') {
+        // User has a verification in progress - cancel the pending request
+        // since the comparison photo has changed
+        await app.db.verificationRequest.updateMany({
+          where: {
+            userId: request.userId,
+            status: 'UNDER_REVIEW',
+          },
+          data: {
+            status: 'REJECTED',
+            rejectionReason: 'Primary photo changed during review - new verification required',
+            reviewedAt: new Date(),
+          },
+        });
+        // Update profile to PENDING so user can submit new verification
+        await app.db.profile.update({
+          where: { id: photo.profileId },
+          data: { verificationStatus: 'PENDING' },
+        });
+      }
+      // For PENDING, REJECTED, REVERIFICATION_REQUIRED - no status change needed
+
+      // Remove the old primary photo and make it false
       await app.db.photo.updateMany({
         where: {
           profileId: photo.profileId,
@@ -220,8 +253,8 @@ export function generateMediaRoutes(app) {
           isPrimary: false,
         },
       });
-      //update the new photo as primary
-      await app.db.update({
+      // Update the new photo as primary
+      await app.db.photo.update({
         where: {
           id: photoId,
         },

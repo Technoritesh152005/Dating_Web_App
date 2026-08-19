@@ -87,6 +87,7 @@ enum VerificationStatus {
   UNDER_REVIEW // job ran, borderline result, needs manual check
   VERIFIED
   REJECTED
+  REVERIFICATION_REQUIRED // primary photo changed after verification; user must re-verify
 }
 
 // Profile is also a user data but what other user usually see data of other user
@@ -262,6 +263,9 @@ model VerificationRequest {
   createdAt DateTime @default(now())
 
   @@index([userId])
+  // Partial unique index prevents duplicate active verification requests per user
+  // Created via migration: verification_requests_user_id_active_unique
+  // WHERE status IN ('PENDING', 'UNDER_REVIEW')
   @@map("verification_requests")
 }
 

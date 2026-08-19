@@ -18,17 +18,72 @@ export function registerVerificationRoutes(app) {
         if (!profile) return reply.code(404).send({ error: 'Create profile first before verifying your account' })
         if (profile.photos.length === 0) return reply.code(400).send({ error: 'Upload atleast one profile photo before verifying' })
 
-        const verificationRequest = await app.db.verificationRequest.create({
-            data: {
-                userId: request.userId,
-                selfieKey,
-                comparePhotoId: profile.photos[0].id,
-                status: 'PENDING'
+        // Check current verification state to prevent duplicate requests
+        const currentStatus = profile.verificationStatus
+
+        if (currentStatus === 'VERIFIED') {
+            return reply.code(409).send({
+                error: 'ALREADY_VERIFIED',
+                message: 'Your profile is already verified',
+                verificationStatus: 'VERIFIED'
+            })
+        }
+
+        if (currentStatus === 'UNDER_REVIEW') {
+            // Find the active verification request
+            const activeRequest = await app.db.verificationRequest.findFirst({
+                where: {
+                    userId: request.userId,
+                    status: { in: ['PENDING', 'UNDER_REVIEW'] }
+                },
+                orderBy: { createdAt: 'desc' }
+            })
+            return reply.code(409).send({
+                error: 'VERIFICATION_IN_PROGRESS',
+                message: 'Verification is already in progress',
+                verificationStatus: 'UNDER_REVIEW',
+                verificationRequestId: activeRequest?.id
+            })
+        }
+
+        // For REJECTED or REVERIFICATION_REQUIRED or PENDING - allow new attempt
+        // Use a transaction to atomically check and create to prevent race conditions
+        const verificationRequest = await app.db.$transaction(async (tx) => {
+            // Double-check no active request exists (race condition protection)
+            const existingActive = await tx.verificationRequest.findFirst({
+                where: {
+                    userId: request.userId,
+                    status: { in: ['PENDING', 'UNDER_REVIEW'] }
+                }
+            })
+            if (existingActive) {
+                throw new Error('VERIFICATION_IN_PROGRESS')
             }
+
+            return tx.verificationRequest.create({
+                data: {
+                    userId: request.userId,
+                    selfieKey,
+                    comparePhotoId: profile.photos[0].id,
+                    status: 'PENDING'
+                }
+            })
+        }).catch((err) => {
+            if (err.message === 'VERIFICATION_IN_PROGRESS') {
+                return reply.code(409).send({
+                    error: 'VERIFICATION_IN_PROGRESS',
+                    message: 'Verification is already in progress',
+                    verificationStatus: 'UNDER_REVIEW'
+                })
+            }
+            throw err
         })
 
-        // now we have made verification status entry in db now we assign this job to workee where verification he will handle
-        // we use redis duplicate client connection cause we need a seperate connection for background worker - bullmq
+        if (!verificationRequest) {
+            // Response already sent in catch block
+            return
+        }
+
         // Enqueue the actual comparison work - the worker process picks this
         // up independently. Note we reuse app.redis's connection details via a
         // fresh queue handle rather than reusing app.redis directly - BullMQ
@@ -44,7 +99,7 @@ export function registerVerificationRoutes(app) {
             requestId: request.id
         })
 
-        // // Mark the profile as under review immediately - the USER-FACING state
+        // Mark the profile as under review immediately - the USER-FACING state
         // flips out of "PENDING" (never verified) into "UNDER_REVIEW" (actively
         // being checked) right away, even though the actual check hasn't run yet.
         await app.db.profile.update({

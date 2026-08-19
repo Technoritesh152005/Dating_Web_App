@@ -27,6 +27,49 @@ const refreshCookiesOpts = (config) => ({
 
 export function registerAuthRoutes(app, config) {
 
+    // GET /auth/me - returns current user's profile including verification status
+    app.get('/auth/me', { preHandler: app.authenticate, config: { authenticated: true } }, async (request, reply) => {
+        const user = await app.db.user.findUnique({
+            where: { id: request.userId },
+            select: {
+                id: true,
+                email: true,
+                phone: true,
+                googleId: true,
+                createdAt: true,
+                profile: {
+                    select: {
+                        id: true,
+                        displayName: true,
+                        dateOfBirth: true,
+                        gender: true,
+                        bio: true,
+                        interests: true,
+                        profession: true,
+                        religion: true,
+                        caste: true,
+                        showReligionCaste: true,
+                        latitude: true,
+                        longitude: true,
+                        verificationStatus: true,
+                        safetyFlagged: true,
+                        photos: {
+                            where: { isPrimary: true },
+                            take: 1,
+                            select: { id: true, url: true, key: true, isPrimary: true }
+                        }
+                    }
+                }
+            }
+        });
+
+        if (!user) {
+            return reply.code(404).send({ error: 'User not found' });
+        }
+
+        return reply.send(user);
+    });
+
     /* 1. SignUp Routes */
     app.post('/auth/signup', { config: { rateLimit: { max: 5, timeWindow: '1 minute' } } }, async (request, reply) => {
 

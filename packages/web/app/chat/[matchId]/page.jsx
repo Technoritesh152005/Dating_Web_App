@@ -12,11 +12,12 @@ import { ActionMenu, ActionMenuItem } from '@/components/ActionMenu'
 import { ConfirmModal } from '@/components/ConfirmModal'
 import { ReportModal } from '@/components/ReportModal'
 import { LocationShareModal } from '@/components/LocationShareModal'
+import { VerifiedLayout } from '@/components/VerifiedLayout'
 
 
 const TYPING_DEBOUNCE_MS = 1500
 
-export default function chatPage() {
+function ChatPageContent() {
     const { matchId } = useParams()
     const { user, loading } = useAuth()
     const router = useRouter()
@@ -310,4 +311,12 @@ export default function chatPage() {
             <LocationShareModal open={locationShareOpen} onClose={() => setLocationShareOpen(false)} />
         </main>
     );
+}
+
+export default function ChatPage() {
+    return (
+        <VerifiedLayout>
+            <ChatPageContent />
+        </VerifiedLayout>
+    )
 }

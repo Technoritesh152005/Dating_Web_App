@@ -7,7 +7,7 @@ function isValidUuid(id) {
 
 export function registerGetMessageRoutes(app){
 
-    app.get('/matches/:matchId/messages', {preHandler:app.authenticate} , async(request,reply)=>{
+    app.get('/matches/:matchId/messages', {preHandler:[app.authenticate, app.requireVerification]} , async(request,reply)=>{
 
         const {matchId} = request.params;
         const before = request.query.before //fetches all message older than this msg

@@ -18,7 +18,18 @@ export function AuthProvider({ children }) {
             const me = await api.get('/auth/me')
             setUser(me)
         } catch (err) {
-            setUser(null)
+            // Handle 403 VERIFICATION_REQUIRED - user is authenticated but not verified
+            if (err?.status === 403 && err?.body?.error === 'VERIFICATION_REQUIRED') {
+                // Return minimal user object with verification status so UI can show proper state
+                setUser({
+                    id: null,
+                    verificationRequired: true,
+                    verificationStatus: err.body.verificationStatus,
+                    message: err.body.message
+                })
+            } else {
+                setUser(null)
+            }
         } finally {
             setLoading(false)
         }
@@ -52,11 +63,46 @@ export function AuthProvider({ children }) {
         setUser(null);
     };
 
+    // Helper to get verification status from user or user.profile
+    const getVerificationStatus = useCallback(() => {
+        if (!user) return 'NOT_AUTHENTICATED'
+        if (user.verificationRequired) return user.verificationStatus
+        return user.profile?.verificationStatus || 'PENDING'
+    }, [user])
+
+    // Helper to check if user is verified (has VERIFIED status)
+    const isVerified = useCallback(() => {
+        return getVerificationStatus() === 'VERIFIED'
+    }, [getVerificationStatus])
+
+    // Helper to check if user needs verification (REJECTED, REVERIFICATION_REQUIRED, PENDING)
+    const needsVerification = useCallback(() => {
+        const status = getVerificationStatus()
+        return ['REJECTED', 'REVERIFICATION_REQUIRED', 'PENDING'].includes(status)
+    }, [getVerificationStatus])
+
+    // Helper to check if verification is in progress (UNDER_REVIEW)
+    const isVerificationPending = useCallback(() => {
+        return getVerificationStatus() === 'UNDER_REVIEW'
+    }, [getVerificationStatus])
+
     //   this returns an component that whichever cild function call will come in the children and use this
     // means ay child inside this can access this value
     // authcontext provides data to authcontext.provider
     return (
-        <authContext.Provider value={{ user, loading, signup, login, loginWithGoogle, logout, refetch: checkAuth }}>
+        <authContext.Provider value={{
+            user,
+            loading,
+            signup,
+            login,
+            loginWithGoogle,
+            logout,
+            refetch: checkAuth,
+            getVerificationStatus,
+            isVerified,
+            needsVerification,
+            isVerificationPending
+        }}>
             {children}
         </authContext.Provider>
     );
