@@ -11,3 +11,4 @@ packages/shared/prisma/migrations/dev.db
 .claude/settings.local.json
 .env.production
 .env.production.example
+.vscode
