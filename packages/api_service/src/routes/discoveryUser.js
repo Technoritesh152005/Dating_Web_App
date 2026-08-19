@@ -15,7 +15,7 @@ export function registerDiscoveryRoutes(app) {
     // Step 1: raw SQL finds WHICH profile IDs qualify (uses indexes, fast,
     //           even with millions of rows - this is the DB-level filtering
     //           we designed for).
-    app.get('/discovery/feed', { preHandler: app.authenticate }, async (request, reply) => {
+    app.get('/discovery/feed', { preHandler: [app.authenticate, app.requireVerification] }, async (request, reply) => {
 
         const page = Math.max(1, Number(request.query.page || 1))
         const ownProfile = await app.db.profile.findUnique({
@@ -63,13 +63,13 @@ export function registerDiscoveryRoutes(app) {
         }
 
 
-        // u get here all profiles 
+        // u get here all profiles
         const fullProfiles = await app.db.profile.findMany({
             where: { id: { in: candIds } },
             include: { photos: { orderBy: { position: 'asc' } } },
         });
 
-        //   it maps the profile id to profile and helps user to get 
+        //   it maps the profile id to profile and helps user to get
         const profileById = new Map(fullProfiles.map((p) => [p.id, p]));
 
         const orderedProfiles = candIds

@@ -1,23 +1,23 @@
 'use client'
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import { useAuth } from '../../lib/authContext'
-import { api } from '../../lib/api'
-import { ProfileCard } from '../../components/ProfileCard'
-import { MatchBanner } from '../../components/MatchCelebration'
-import { Button } from '../../components/user_interface/Button'
+import { useAuth } from '@/lib/authContext'
+import { api } from '@/lib/api'
+import { ProfileCard } from '@/components/ProfileCard'
+import { MatchCelebration as MatchBanner } from '@/components/MatchCelebration'
+import { Button } from '@/components/user_interface/Button'
 import { FiltersDrawer } from '@/components/FiltersDrawer';
 import { NavBar } from '@/components/Navbar';
 import { ActionMenu, ActionMenuItem } from '@/components/ActionMenu';
 import { ConfirmModal } from '@/components/ConfirmModal';
 import { ReportModal } from '@/components/ReportModal';
 import { ProfileDetailModal } from '@/components/ProfileDetailModel'
+import { VerifiedLayout } from '@/components/VerifiedLayout'
 
 
 const LOW_STACK_THRESHOLD = 3
 
-export default function discoverPage() {
-
+function DiscoverPageContent() {
     /* only discover the feed when user is logged in */
     const { user, loading } = useAuth()
     const [stack, setStack] = useState([])
@@ -29,7 +29,6 @@ export default function discoverPage() {
     const [confirmBlock , setConfrimBlock] = useState(false)
     const [reportOpen , setReportOpen] = useState(false)
     const [viewingDetail , setViewingDetail] = useState(false)
-
 
 
     const fetchFeed = useCallback(async () => {
@@ -90,7 +89,7 @@ export default function discoverPage() {
 
     const handleBlock = async function(){
         const current = stack[0]
-        if(!current) return 
+        if(!current) return
         await api.post('/safety/block', {userId:current.userId})
         setStack((prev)=> prev.slice(1))
 
@@ -108,8 +107,8 @@ export default function discoverPage() {
 
     return (
         <main className="relative flex min-h-screen flex-col items-center bg-ink px-6 pb-10 pt-6">
-          {celebrating && <MatchCelebration match={celebrating} onDismiss={() => setCelebrating(null)} />}
-    
+          {celebrating && <MatchBanner match={celebrating} onDismiss={() => setCelebrating(null)} />}
+
           <div className="flex w-full max-w-sm items-center justify-between">
             <NavBar />
           </div>
@@ -120,7 +119,7 @@ export default function discoverPage() {
           >
             <span className="font-mono text-[13px]">⚙</span>
           </button>
-    
+
           <div className="relative mt-6 h-[560px] w-full max-w-sm">
             {!topCard && !fetching && (
               <div className="flex h-full flex-col items-center justify-center rounded-card border border-dashed border-cream/15 text-center">
@@ -133,7 +132,7 @@ export default function discoverPage() {
                 </Button>
               </div>
             )}
-    
+
             {nextCard && <ProfileCard profile={nextCard} style={{ transform: 'scale(0.96) translateY(10px)', opacity: 0.6 }} />}
             {topCard && (
               <SwipeableCard
@@ -160,7 +159,7 @@ export default function discoverPage() {
               />
             )}
           </div>
-    
+
           {topCard && (
             <div className="mt-6 flex items-center gap-6">
               <button
@@ -181,9 +180,9 @@ export default function discoverPage() {
               </button>
             </div>
           )}
-    
+
           <FiltersDrawer open={filtersOpen} onClose={() => setFiltersOpen(false)} onSaved={() => { setStack([]); fetchFeed(); }} />
-    
+
           <ConfirmModal
             open={confirmBlock}
             title="Block this profile?"
@@ -193,7 +192,7 @@ export default function discoverPage() {
             onCancel={() => setConfirmBlock(false)}
           />
           <ReportModal open={reportOpen} reportedUserId={topCard?.userId} onClose={() => setReportOpen(false)} />
-    
+
           {viewingDetail && topCard && (
             <ProfileDetailModal
               profile={topCard}
@@ -204,5 +203,12 @@ export default function discoverPage() {
           )}
         </main>
       );
+}
 
+export default function discoverPage() {
+    return (
+        <VerifiedLayout>
+            <DiscoverPageContent />
+        </VerifiedLayout>
+    )
 }

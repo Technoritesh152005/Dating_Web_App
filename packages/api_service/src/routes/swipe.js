@@ -4,8 +4,8 @@ const VALID_ACTIONS = ['PASS', 'LIKE', 'FIRE_LIKE']
 
 export function registerSwipesRoutes(app) {
 
-    // first swipe route
-    app.post('/swipe', { preHandler: app.authenticate, config: { authenticated: true } }, async (request, reply) => {
+    // first swipe route - requires verification
+    app.post('/swipe', { preHandler: [app.authenticate, app.requireVerification], config: { authenticated: true } }, async (request, reply) => {
 
         const { toUserId, action } = request.body ?? {}
 
@@ -38,12 +38,12 @@ export function registerSwipesRoutes(app) {
         return reply.code(201).send({
             swiped: true,
             isMatched: result.matched,
-            match: result.macth
+            match: result.match
         })
     })
 
-    // shows all the matched lost of logged in user which shows the user to chat with a matched list of person
-    app.get('/matches', { preHandler: app.authenticate }, async (request, reply) => {
+    // shows all the matched list of logged in user - requires verification
+    app.get('/matches', { preHandler: [app.authenticate, app.requireVerification] }, async (request, reply) => {
         // as we stored match id in sorted id so we must see whether usera or userbid can be logged in user id
         // "Find every match where I am one of the two people."
         // const matches = await app.db.match.findMany({
@@ -99,7 +99,7 @@ export function registerSwipesRoutes(app) {
         return reply.send({ matches: enrichedMatches });
     })
 
-    app.get('/matches/:matchId', { preHandler: app.authenticate }, async (request, reply) => {
+    app.get('/matches/:matchId', { preHandler: [app.authenticate, app.requireVerification] }, async (request, reply) => {
         const { matchId } = request.params;
 
         const match = await app.db.match.findUnique({
@@ -127,7 +127,7 @@ export function registerSwipesRoutes(app) {
             iceBreakerSuggestion: match.iceBreakerSuggestion,
         });
     })
-    app.post('/matches/:matchId/unmatch', { preHandler: app.authenticate, config: { authenticated: true } }, async (request, reply) => {
+    app.post('/matches/:matchId/unmatch', { preHandler: [app.authenticate, app.requireVerification], config: { authenticated: true } }, async (request, reply) => {
 
         const { matchId } = request.body ?? {}
 

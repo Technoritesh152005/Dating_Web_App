@@ -44,7 +44,7 @@ export default function onBoardingSteps() {
     const router = useRouter()
 
     const [checkingProfile, setCheckingProfile] = useState(true)
-    const [step, setSteps] = useState(0)
+    const [step, setStep] = useState(0)
     const [saving, setSaving] = useState(false)
     const [error, setError] = useState(null)
     const [complete, setComplete] = useState(false)
@@ -65,9 +65,36 @@ export default function onBoardingSteps() {
             router.push('/login')
             return
         }
+
+        // Check if user has verificationRequired flag from authContext (403 VERIFICATION_REQUIRED)
+        if (user.verificationRequired) {
+            // User is authenticated but not verified - show verification status
+            setVerificationSubmitted(true)
+            setComplete(true)
+            setCheckingProfile(false)
+            return
+        }
+
         api.get('/profile/me')
-            .then(() => setComplete(true))
-            .catch(() => { })
+            .then((profile) => {
+                // Check verification status
+                const status = profile.verificationStatus
+                if (status === 'VERIFIED' || status === 'UNDER_REVIEW') {
+                    // User can proceed - profile complete
+                    setComplete(true)
+                } else if (status === 'PENDING') {
+                    // No verification submitted yet - need to complete onboarding
+                    setComplete(false)
+                } else if (status === 'REVERIFICATION_REQUIRED' || status === 'REJECTED') {
+                    // Need to re-verify
+                    setVerificationSubmitted(true)
+                    setComplete(true)
+                }
+            })
+            .catch(() => {
+                // Profile doesn't exist yet - need to complete onboarding
+                setComplete(false)
+            })
             .finally(() => setCheckingProfile(false))
     }, [loading, user, router])
 
@@ -128,7 +155,7 @@ export default function onBoardingSteps() {
                 file: selfieFile,
                 presignPath: "media/selfie/presign"
             })
-            await api.post("/verification/selfie", { selfieUploadKey })
+            await api.post("/verification/selfie", { selfieKey: selfieUploadKey })
             setVerificationSubmitted(true)
             setComplete(true)
         } catch (error) {
@@ -149,22 +176,46 @@ export default function onBoardingSteps() {
     }
 
     if (complete) {
+        const status = user?.profile?.verificationStatus || user?.verificationStatus
+
+        // Determine message based on verification status
+        let statusMessage = "Discovery feed comes next."
+        let statusTitle = "Profile created"
+
+        if (status === 'UNDER_REVIEW') {
+            statusTitle = "Verification under review"
+            statusMessage = "Your verification is being reviewed. You can keep using the app while it finishes."
+        } else if (status === 'REVERIFICATION_REQUIRED') {
+            statusTitle = "Re-verification required"
+            statusMessage = "You changed your primary photo and need to verify again."
+        } else if (status === 'REJECTED') {
+            statusTitle = "Verification rejected"
+            statusMessage = "Your verification was rejected. Please try again with a clearer selfie."
+        } else if (status === 'PENDING') {
+            statusTitle = "Verification pending"
+            statusMessage = "Please complete verification to access discovery."
+        }
+
         return (
             <main className="flex min-h-screen items-center justify-center px-6">
                 <Card className="max-w-md p-8 text-center">
                     <p className="mb-3 font-mono text-[11px] uppercase tracking-[0.2em] text-marigold">
-                        {verificationSubmitted ? "You're all set" : "Welcome back"}
+                        {status === 'VERIFIED' ? "You're all set" : "Verification needed"}
                     </p>
                     <h1 className="font-display text-2xl text-cream">
-                        {verificationSubmitted
-                            ? "Profile created"
-                            : `Good to see you, ${form.displayName || user.email}`}
+                        {statusTitle}
                     </h1>
                     <p className="mt-3 text-[15px] leading-relaxed text-cream-dim">
-                        {verificationSubmitted
-                            ? "Verification is processing in the background — you can keep using the app while it finishes. Discovery feed comes next."
-                            : "Discovery feed comes next."}
+                        {statusMessage}
                     </p>
+                    {(status === 'REVERIFICATION_REQUIRED' || status === 'REJECTED') && (
+                        <button
+                            onClick={() => router.push('/onboarding')}
+                            className="mt-4 w-full btn-primary"
+                        >
+                            Verify again
+                        </button>
+                    )}
                 </Card>
             </main>
         );

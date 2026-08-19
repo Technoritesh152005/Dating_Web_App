@@ -1,13 +1,14 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { api } from '../../lib/api'
-import { useAuth } from '../../lib/authContext'
+import { api } from '@/lib/api'
+import { useAuth } from '@/lib/authContext'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { NavBar } from '@/components/Navbar'
+import { VerifiedLayout } from '@/components/VerifiedLayout'
 
-export default function MatchesPage() {
+function MatchesPageContent() {
 
     const { user, loading } = useAuth()
     const router = useRouter()
@@ -87,4 +88,12 @@ function timeAgo(dateString) {
     if (hours < 1) return 'just now';
     if (hours < 24) return `${hours}h ago`;
     return `${Math.floor(hours / 24)}d ago`;
+}
+
+export default function MatchesPage() {
+    return (
+        <VerifiedLayout>
+            <MatchesPageContent />
+        </VerifiedLayout>
+    )
 }
