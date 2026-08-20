@@ -246,7 +246,7 @@ export async function issueTokenPair(app, reply, config, userId) {
     const accessToken = signAccessToken(userId, config.jwtSecret)
     const { raw, hash, expiresAt } = generateRefreshToken()
 
-    await app.db.refreshToken.create({
+    await app.db.refreshTokens.create({
         data: { userId, tokenHash: hash, expiresAt }
     })
 

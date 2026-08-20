@@ -6,6 +6,9 @@ import { useAuth } from '../../lib/authContext'
 import { api } from '../../lib/api'
 import { presignAndUpload } from '@/lib/uploadS3'
 
+import { StepProgress } from '@/components/user_interface/stepProgress'
+import { Input } from '@/components/user_interface/Input'
+
 
 const GENDER_OPTIONS = [
     { value: 'MALE', label: 'Man' },
