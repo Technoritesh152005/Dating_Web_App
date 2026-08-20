@@ -67,28 +67,29 @@ async function main() {
   io.use(createVerificationSocketMiddleware(prisma, logger));
   // on connection
   // when a new client enters socket is created
+
   io.on("connection", (socket) => {
-    logger.info({ socketId: socket.id }, "Client connected");
-    registerChatHandlers(io, socket, {
-      db: prisma,
-      redis: presenceRedis,
-      logger,
-    });
+  logger.info({ socketId: socket.id }, "Client connected");
 
-    server.listen(config.port, () => {
-  logger.info(`Realtime server listening on port ${config.port}`);
-    });
-
-    // Level 0 placeholder - proves the wiring works end to end.
-    // Real chat-room join logic (per match_id) arrives in Level 6.
-    socket.on("ping", () => {
-      socket.emit("pong", { at: new Date().toISOString() });
-    });
-
-    socket.on("disconnect", (reason) => {
-      logger.info({ socketId: socket.id }, "Client disconnected");
-    });
+  registerChatHandlers(io, socket, {
+    db: prisma,
+    redis: presenceRedis,
+    logger,
   });
+
+  socket.on("ping", () => {
+    socket.emit("pong", { at: new Date().toISOString() });
+  });
+
+  socket.on("disconnect", (reason) => {
+    logger.info({ socketId: socket.id }, "Client disconnected");
+  });
+});
+
+// START SERVER HERE
+server.listen(config.port, () => {
+  logger.info(`Realtime server listening on port ${config.port}`);
+});
 }
 
 main().catch((err) => {
