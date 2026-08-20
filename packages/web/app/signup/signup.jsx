@@ -7,7 +7,7 @@ import {useRouter} from 'next/navigation'
 import {AuthScreen} from '@/components/authScreen.jsx'
 import { GoogleSignInButton } from '@/components/google_signIn_Button'
 import { Input } from '@/components/user_interface/Input'
-import { Divider } from '@/components/user_interface/Divider'
+import { Divider } from '@/components/authScreen'
 import { Button } from '@/components/user_interface/Button'
 
 export default function SignUpPage(){

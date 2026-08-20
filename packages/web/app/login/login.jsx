@@ -1,6 +1,6 @@
 'use client'
 
-import {useAuth} from '@lib/authContext.jsx'
+import {useAuth} from '@/lib/authContext'
 import Link from 'next/link'
 import {AuthScreen} from '@/components/authScreen'
 import {Input} from '../../components/user_interface/Input'
@@ -8,6 +8,7 @@ import {Button} from '../../components/user_interface/Button.jsx'
 import { GoogleSignInButton } from '@/components/google_signIn_Button.jsx'
 import {useState} from 'react'
 import {useRouter} from 'next/navigation'
+import { Divider } from '@/components/authScreen'
 
 export default function LoginPage(){
 

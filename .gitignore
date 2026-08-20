@@ -12,3 +12,4 @@ packages/shared/prisma/migrations/dev.db
 .env.production
 .env.production.example
 .vscode
+.next
