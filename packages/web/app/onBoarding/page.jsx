@@ -6,6 +6,10 @@ import { useAuth } from '../../lib/authContext'
 import { api } from '../../lib/api'
 import { presignAndUpload } from '@/lib/uploadS3'
 import {Card} from '@/components/user_interface/Card'
+import {Button} from '@/components/user_interface/Button'
+import {CameraCapture} from '@/components/cameraCapture'
+import {ChoicePills} from '@/components/user_interface/ChoicePills'
+
 
 import { StepProgress } from '@/components/user_interface/stepProgress'
 import { Input } from '@/components/user_interface/Input'
