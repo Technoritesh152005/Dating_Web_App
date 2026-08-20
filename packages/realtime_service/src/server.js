@@ -87,8 +87,8 @@ async function main() {
 });
 
 // START SERVER HERE
-server.listen(config.port, () => {
-  logger.info(`Realtime server listening on port ${config.port}`);
+server.listen(config.realtimePort, () => {
+  logger.info(`Realtime server listening on port ${config.realtimePort}`);
 });
 }
 
