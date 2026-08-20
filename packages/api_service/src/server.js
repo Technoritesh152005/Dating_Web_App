@@ -29,6 +29,10 @@ async function main() {
     logger: false,
   })
 
+  app.get('/health', async () => {
+  return { status: 'ok' }
+})
+
   const allowedOrigins = config.corsOrigin
     ? config.corsOrigin.split(',').map(o => o.trim())
     : ['http://localhost:5174'];
