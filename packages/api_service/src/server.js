@@ -92,6 +92,7 @@ async function main() {
 
   // like a middleware
   registerAuthDecorator(app, config)
+  registerProfileRoutes(app)
 
   // Input validation and sanitization middleware (runs on all routes)
   registerValidationMiddleware(app)
