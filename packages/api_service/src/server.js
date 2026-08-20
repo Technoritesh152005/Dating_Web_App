@@ -108,7 +108,7 @@ async function main() {
 
     // For authenticated endpoints, require CSRF token
     if (request.routeOptions && request.routeOptions.config && request.routeOptions.config.authenticated) {
-      await reply.csrfProtection(); // This will throw if CSRF validation fails
+      await await app.csrfProtection(request, reply); // This will throw if CSRF validation fails
     }
   });
 
