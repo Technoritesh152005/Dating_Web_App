@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useAuth } from '../../lib/authContext'
 import { api } from '../../lib/api'
 import { presignAndUpload } from '@/lib/uploadS3'
+import {Card} from '@/components/user_interface/Card'
 
 import { StepProgress } from '@/components/user_interface/stepProgress'
 import { Input } from '@/components/user_interface/Input'
