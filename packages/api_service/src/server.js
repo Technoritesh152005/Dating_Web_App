@@ -43,7 +43,7 @@ async function main() {
   })
   await app.register(helmet)
   await app.register(cookie)
-
+await app.register(csrf)
   // CSRF protection for state-changing operations
   // Uses double-submit cookie pattern: csrf token in cookie + header
 
