@@ -101,19 +101,40 @@ await app.register(csrf, {
   registerValidationMiddleware(app)
 
   // CSRF protection hook - skip for public auth endpoints, require for authenticated state-changing
-  app.addHook('preHandler', async (request, reply) => {
-    // Skip CSRF for safe methods
-    if (['GET', 'HEAD', 'OPTIONS'].includes(request.method)) return;
+app.addHook('preHandler', (request, reply, done) => {
+  // Safe methods don't need CSRF
+  if (['GET', 'HEAD', 'OPTIONS'].includes(request.method)) {
+    done()
+    return
+  }
 
-    // Skip CSRF for public auth endpoints (signup, login, google, refresh, logout)
-    const publicAuthPaths = ['/auth/signup', '/auth/login', '/auth/google', '/auth/refresh', '/auth/logout'];
-    if (publicAuthPaths.some(path => request.url.startsWith(path))) return;
+  // Public auth endpoints don't need CSRF
+  const publicAuthPaths = [
+    '/auth/signup',
+    '/auth/login',
+    '/auth/google',
+    '/auth/refresh',
+    '/auth/logout'
+  ]
 
-    // For authenticated endpoints, require CSRF token
-    if (request.routeOptions && request.routeOptions.config && request.routeOptions.config.authenticated) {
-       await app.csrfProtection(request, reply) // This will throw if CSRF validation fails
-    }
-  });
+  if (
+    publicAuthPaths.some(path =>
+      request.url.startsWith(path)
+    )
+  ) {
+    done()
+    return
+  }
+
+  // Only authenticated state-changing routes
+  if (
+    request.routeOptions?.config?.authenticated
+  ) {
+    return app.csrfProtection(request, reply, done)
+  }
+
+  done()
+})
 
   registerAuthRoutes(app, config)
   generateMediaRoutes(app, config)
