@@ -5,6 +5,14 @@ import { useRouter } from 'next/navigation'
 import { useAuth } from '../../lib/authContext'
 import { api } from '../../lib/api'
 import { presignAndUpload } from '@/lib/uploadS3'
+import {Card} from '@/components/user_interface/Card'
+import {Button} from '@/components/user_interface/Button'
+import {CameraCapture} from '@/components/cameraCapture'
+import {ChoicePills} from '@/components/user_interface/ChoicePills'
+
+
+import { StepProgress } from '@/components/user_interface/stepProgress'
+import { Input } from '@/components/user_interface/Input'
 
 
 const GENDER_OPTIONS = [
@@ -101,7 +109,7 @@ export default function onBoardingSteps() {
     const updateForm = (fields) => setForm((f) => ({ ...f, ...fields }));
 
     const submitBasicInfo = async () => {
-        setSteps(1);
+        setStep(1);
     };
 
     const submitAboutAndCreateProfile = async () => {
@@ -116,7 +124,7 @@ export default function onBoardingSteps() {
                 interests: form.interests,
                 profession: form.profession,
             })
-            setSteps(2)
+            setStep(2)
         } catch (error) {
             setError(error.message)
         } finally {

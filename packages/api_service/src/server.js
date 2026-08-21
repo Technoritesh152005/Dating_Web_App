@@ -29,6 +29,10 @@ async function main() {
     logger: false,
   })
 
+  app.get('/health', async () => {
+  return { status: 'ok' }
+})
+
   const allowedOrigins = config.corsOrigin
     ? config.corsOrigin.split(',').map(o => o.trim())
     : ['http://localhost:5174'];
@@ -42,17 +46,7 @@ async function main() {
 
   // CSRF protection for state-changing operations
   // Uses double-submit cookie pattern: csrf token in cookie + header
-  await app.register(csrf, {
-    sessionPlugin: '@fastify/cookie',
-    cookieOpts: {
-      httpOnly: true,
-      secure: config.nodeEnv === 'production',
-      sameSite: 'strict',
-      path: '/'
-    },
-    cookieKey: 'csrf_token',
-    headerName: 'x-csrf-token'
-  })
+
 
   // Global rate limit (applies to all routes)
   await app.register(rateLimit, {
@@ -88,6 +82,7 @@ async function main() {
 
   // like a middleware
   registerAuthDecorator(app, config)
+  registerProfileRoutes(app)
 
   // Input validation and sanitization middleware (runs on all routes)
   registerValidationMiddleware(app)
@@ -103,7 +98,7 @@ async function main() {
 
     // For authenticated endpoints, require CSRF token
     if (request.routeOptions && request.routeOptions.config && request.routeOptions.config.authenticated) {
-      await reply.csrfProtection(); // This will throw if CSRF validation fails
+       await app.csrfProtection(request, reply); // This will throw if CSRF validation fails
     }
   });
 
