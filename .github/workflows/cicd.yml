@@ -40,13 +40,18 @@ jobs:
           NEXT_PUBLIC_GOOGLE_CLIENT_ID: dummy-ci-client-id
 
 
-  # ============================================================
+    # ============================================================
   # 2. PRISMA VALIDATION
   # ============================================================
 
   prisma:
     name: Validate Prisma
     runs-on: ubuntu-latest
+
+    env:
+      # Dummy URL only for Prisma schema validation.
+      # CI does NOT connect to this database.
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/ci_database
 
     steps:
       - name: Checkout
@@ -66,7 +71,6 @@ jobs:
 
       - name: Prisma validate
         run: npx prisma validate --schema=packages/shared_service/prisma/schema.prisma
-
 
   # ============================================================
   # 3. DOCKER BUILD VALIDATION
