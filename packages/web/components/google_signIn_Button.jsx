@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useCallback, useEffect } from 'react'
+import { useRef, useCallback, useEffect, useState } from 'react'
 import Script from 'next/script'
 import { useAuth } from '@/lib/authContext'
 import { useRouter } from 'next/navigation'
@@ -9,6 +9,7 @@ export function GoogleSignInButton() {
     const buttonRef = useRef(null)
     const { loginWithGoogle } = useAuth()
     const router = useRouter()
+    const [error, setError] = useState('')
 
     // Validate required env variable
     const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID
@@ -18,12 +19,13 @@ export function GoogleSignInButton() {
 
     /* This function is handled when google gives response */
     const handleCredential = useCallback(async (response) => {
+        setError('')
         try {
-            await loginWithGoogle(response.credential)
-            // navigate the person to onboarding page
-            router.push('/onboarding')
+            const result = await loginWithGoogle(response.credential)
+            const status = result.user?.profile?.verificationStatus
+            router.push(status === 'VERIFIED' || status === 'UNDER_REVIEW' ? '/discover' : '/onBoarding')
         } catch (err) {
-            // Error is handled by auth context / UI - no console.error to avoid data leaks
+            setError(err.message || 'Google sign-in failed. Please try again.')
         }
     }, [loginWithGoogle, router])
 
@@ -61,6 +63,7 @@ export function GoogleSignInButton() {
             strategy="afterInteractive"
             onLoad={initializeGoogleButton}
         />
+        {error && <p role="alert" className="mt-3 text-[14px] text-sindoor-light">{error}</p>}
         <div ref={buttonRef} />
         </>
     )

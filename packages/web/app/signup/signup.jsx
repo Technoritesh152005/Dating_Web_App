@@ -35,8 +35,9 @@ export default function SignUpPage(){
         setSubmitting(true)
 
         try{
-            await signup(email,password)
-            router.push('/onBoarding')
+            const result = await signup(email,password)
+            const status = result.user?.profile?.verificationStatus
+            router.push(status === 'VERIFIED' || status === 'UNDER_REVIEW' ? '/discover' : '/onBoarding')
         }catch(err){
             setError(err.message)
             setSubmitting(false)

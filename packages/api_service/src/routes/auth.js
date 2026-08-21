@@ -118,7 +118,7 @@ export function registerAuthRoutes(app, config) {
     })
 
     //google based login / signup
-    app.post('/auth/google', { config: { rateLimit: { max: 5, timeWindow: '1 minute' } } }, async (request, reply) => {
+    app.post('/auth/google/callback', { config: { rateLimit: { max: 5, timeWindow: '1 minute' } } }, async (request, reply) => {
 
         const { idToken } = request.body ?? {}
         if (!idToken) return reply.code(400).send({ error: 'idToken is required for Google sign in' })

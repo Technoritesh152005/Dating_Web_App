@@ -115,6 +115,7 @@ app.addHook('preHandler', (request, reply, done) => {
     '/auth/signup',
     '/auth/login',
     '/auth/google',
+    '/auth/google/callback',
     '/auth/refresh',
     '/auth/logout'
   ]
