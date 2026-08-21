@@ -1,0 +1,195 @@
+name: CI/CD
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+
+  # ============================================================
+  # 1. FRONTEND BUILD
+  # ============================================================
+
+  frontend-build:
+    name: Build Frontend
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build frontend
+        run: npm run build --workspace=@dating-app/web
+        env:
+          NEXT_PUBLIC_API_URL: https://api.melodis.in
+          NEXT_PUBLIC_REALTIME_URL: https://realtime.melodis.in
+          NEXT_PUBLIC_GOOGLE_CLIENT_ID: dummy-ci-client-id
+
+
+  # ============================================================
+  # 2. PRISMA VALIDATION
+  # ============================================================
+
+  prisma:
+    name: Validate Prisma
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Prisma generate
+        run: npm run prisma:generate
+
+      - name: Prisma validate
+        run: npx prisma validate --schema=packages/shared_service/prisma/schema.prisma
+
+
+  # ============================================================
+  # 3. DOCKER BUILD VALIDATION
+  # ============================================================
+
+  docker-build:
+    name: Build Docker Images
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        service:
+          - api
+          - realtime
+          - worker
+          - web
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build ${{ matrix.service }}
+        run: |
+          case "${{ matrix.service }}" in
+
+            api)
+              docker build \
+                -f packages/api_service/Dockerfile \
+                -t dating-app-api:ci \
+                .
+              ;;
+
+            realtime)
+              docker build \
+                -f packages/realtime_service/Dockerfile \
+                -t dating-app-realtime:ci \
+                .
+              ;;
+
+            worker)
+              docker build \
+                -f packages/worker/Dockerfile \
+                -t dating-app-worker:ci \
+                .
+              ;;
+
+            web)
+              docker build \
+                -f packages/web/Dockerfile \
+                -t dating-app-web:ci \
+                --build-arg NEXT_PUBLIC_API_URL=https://api.melodis.in \
+                --build-arg NEXT_PUBLIC_REALTIME_URL=https://realtime.melodis.in \
+                --build-arg NEXT_PUBLIC_GOOGLE_CLIENT_ID=dummy-ci-client-id \
+                .
+              ;;
+
+          esac
+
+
+  # ============================================================
+  # 4. DEPLOY TO AWS EC2
+  # ============================================================
+
+  deploy:
+    name: Deploy to AWS EC2
+    needs:
+      - frontend-build
+      - prisma
+      - docker-build
+
+    # Deploy ONLY when code is actually pushed to main.
+    # PRs must never deploy production.
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Deploy
+        uses: appleboy/ssh-action@v1.0.3
+
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+
+          script: |
+
+            set -e
+
+            echo "======================================"
+            echo "Starting deployment"
+            echo "======================================"
+
+            cd ~/Dating_Web_App
+
+            echo "Pulling latest main..."
+            git fetch origin
+            git reset --hard origin/main
+
+            echo "Starting production containers..."
+
+            docker compose \
+              -f docker-compose.prod.yml \
+              --env-file .env.production \
+              up -d --build
+
+            echo "Waiting for API..."
+
+            sleep 10
+
+            echo "Checking containers..."
+
+            docker compose \
+              -f docker-compose.prod.yml \
+              --env-file .env.production \
+              ps
+
+            echo "Checking API health..."
+
+            docker exec dating_web_app-api-1 \
+              wget -qO- http://127.0.0.1:4000/health
+
+            echo ""
+            echo "======================================"
+            echo "DEPLOYMENT SUCCESSFUL"
+            echo "======================================"

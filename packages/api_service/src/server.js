@@ -46,17 +46,7 @@ async function main() {
 
   // CSRF protection for state-changing operations
   // Uses double-submit cookie pattern: csrf token in cookie + header
-  await app.register(csrf, {
-    sessionPlugin: '@fastify/cookie',
-    cookieOpts: {
-      httpOnly: true,
-      secure: config.nodeEnv === 'production',
-      sameSite: 'strict',
-      path: '/'
-    },
-    cookieKey: 'csrf_token',
-    headerName: 'x-csrf-token'
-  })
+
 
   // Global rate limit (applies to all routes)
   await app.register(rateLimit, {
@@ -108,7 +98,7 @@ async function main() {
 
     // For authenticated endpoints, require CSRF token
     if (request.routeOptions && request.routeOptions.config && request.routeOptions.config.authenticated) {
-      await await app.csrfProtection(request, reply); // This will throw if CSRF validation fails
+       await app.csrfProtection(request, reply); // This will throw if CSRF validation fails
     }
   });
 
