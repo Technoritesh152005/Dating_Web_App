@@ -54,8 +54,7 @@ function ChatPageContent() {
             return
         }
 
-        const match =  api.get(`/matches/${matchId}`)
-        setOtherUser(match?.otherUser ?? null)
+        api.get(`/matches/${matchId}`).then((match) => setOtherUser(match?.otherUser ?? null))
 
         api.get(`/matches/${matchId}/messages`).then((data) => {
             setMessages(data.messages)
@@ -184,7 +183,7 @@ function ChatPageContent() {
 
     /* Handle Unmatch */
     const handleUnmatch = async () => {
-        await api.post('/matches/unmatch', { matchId })
+        await api.post(`/matches/${matchId}/unmatch`, {})
         router.push('/matches')
     }
 

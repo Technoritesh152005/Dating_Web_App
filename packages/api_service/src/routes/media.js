@@ -23,14 +23,14 @@ export function generateMediaRoutes(app) {
           });
       }
 
-      const { key, uploadUrl, publicUr } = await generatePresignedUploadUrl({
+      const { key, uploadUrl, publicUrl } = await generatePresignedUploadUrl({
         userId: request.userId,
         fileExtension: fileExtension.toLowerCase(),
         folder: "profile-photos",
       });
 
-      // nowclient use this upload url to upload in s3 ,further when succeed status received we store it in database
-      return reply.send({ uploadUrl, key, publicUr });
+      // now client uses this upload url to upload in s3; when it succeeds the client will call the confirm endpoint
+      return reply.send({ uploadUrl, key, publicUrl });
     },
   );
 
@@ -93,9 +93,10 @@ export function generateMediaRoutes(app) {
       const photo = await app.db.photo.create({
         data: {
           profileId: profile.id,
+          key,
           url: publicUrl,
           position: existingCount,
-          isPrimary: Boolean(isPrimary) || existingCount === 0, //first photo is primary by default
+          isPrimary: Boolean(isPrimary) || existingCount === 0, // first photo is primary by default
         },
       });
 
@@ -119,8 +120,8 @@ export function generateMediaRoutes(app) {
   app.post(
     "/media/selfie/presign",
     { preHandler: app.authenticate, config: { authenticated: true, rateLimit: { max: 10, timeWindow: '1 minute' } } },
-    async (req, res) => {
-      const { fileExtension } = req.body ?? {};
+    async (request, reply) => {
+      const { fileExtension } = request.body ?? {};
       if (!fileExtension || !allowed_extension.includes(fileExtension)) {
         return reply
           .code(400)
@@ -130,13 +131,13 @@ export function generateMediaRoutes(app) {
           });
       }
       const { key, uploadUrl } = await generatePresignedUploadUrl({
-        userId: req.userId,
+        userId: request.userId,
         fileExtension: fileExtension.toLowerCase(),
         folder:
           "selfies" /* seperate private folder.. we never generate public url for this */,
       });
 
-      return res.send({ ok: true, uploadUrl, key });
+      return reply.send({ ok: true, uploadUrl, key });
     },
   );
 
@@ -176,7 +177,7 @@ export function generateMediaRoutes(app) {
           where: {
             profileId: photo.profileId,
           },
-          orderBy: { order: "asc" },
+          orderBy: { position: "asc" },
         });
         if (next) {
           await app.db.photo.update({

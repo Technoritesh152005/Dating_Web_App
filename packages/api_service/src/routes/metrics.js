@@ -14,7 +14,7 @@ export function registerMetricsRoutes(app) {
 
     app.get('/metrics', async (request, reply) => {
 
-        const requestTotal = await getCounter(app.redis, 'http_request_total');
+        const requestTotal = await getCounter(app.redis, 'http_requests_total');
         const errorsTotal = await getCounter(app.redis, 'http_errors_total')
 
         const queueDepthLines = await Promise.all(

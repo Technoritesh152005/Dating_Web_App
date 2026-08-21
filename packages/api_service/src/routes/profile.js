@@ -35,7 +35,7 @@ export function registerProfileRoutes(app) {
 
         }
         if (profession && !VALID_PROFESSION.includes(profession)) {
-            return reply.code(400).send({ error: "Please select profession based on one of them : ${VALID_PROFESSIONS.join(', ')}` }" })
+            return reply.code(400).send({ error: `Please select profession based on one of them: ${VALID_PROFESSION.join(', ')}` })
         }
 
         const parsedDateOfBirth = new Date(dateOfBirth)

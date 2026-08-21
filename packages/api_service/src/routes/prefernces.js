@@ -38,19 +38,18 @@ export function registerPreferencesRoutes(app){
 
         //   upsert means if record exist update else create
           const prefernce = await app.db.preference.upsert({
-            where:{userId : request.userId},
-            update:{data},
-            create:{
-                userId: request.userId,
-                minAge: minAge ?? 18,
-                maxAge: maxAge ?? 99,
-                maxDistanceKm: maxDistanceKm ?? 50,
-                genderPreference: genderPreference ?? [],
-                professionFilter: professionFilter ?? [],
-                religionFilter: religionFilter ?? [],
-                casteFilter: casteFilter ?? [],  
-            }
-
+            where: { userId: request.userId },
+            update: data,
+            create: {
+              userId: request.userId,
+              minAge: minAge ?? 18,
+              maxAge: maxAge ?? 99,
+              maxDistanceKm: maxDistanceKm ?? 50,
+              genderPreference: genderPreference ?? [],
+              professionFilter: professionFilter ?? [],
+              religionFilter: religionFilter ?? [],
+              casteFilter: casteFilter ?? [],
+            },
           })
 
           return reply.send(prefernce)

@@ -129,7 +129,7 @@ export function registerSwipesRoutes(app) {
     })
     app.post('/matches/:matchId/unmatch', { preHandler: [app.authenticate, app.requireVerification], config: { authenticated: true } }, async (request, reply) => {
 
-        const { matchId } = request.body ?? {}
+        const { matchId } = request.params
 
         const match = await app.db.match.findUnique({
             where: { id: matchId }
@@ -137,7 +137,7 @@ export function registerSwipesRoutes(app) {
         if (!match) {
             return reply.code(404).send({ error: 'Match Not Found' })
         }
-        // if logged in user dont mathc any ser of a and b he is not matched user
+        // if logged in user dont match any user of a and b he is not matched user
         if (match.userAId !== request.userId && match.userBId !== request.userId) {
             return reply.code(403).send({ error: 'You are not part of this match' });
         }

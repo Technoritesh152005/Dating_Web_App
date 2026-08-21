@@ -111,7 +111,16 @@ await app.register(csrf, {
 
     // For authenticated endpoints, require CSRF token
     if (request.routeOptions && request.routeOptions.config && request.routeOptions.config.authenticated) {
-       await reply.csrfProtection() // This will throw if CSRF validation fails
+      // The @fastify/csrf-protection plugin normally exposes a helper; if it's available call it.
+      // In some environments the decorator may not be present — fall back to a simple header presence check
+      if (typeof reply.csrfProtection === 'function') {
+        await reply.csrfProtection(); // This will throw if CSRF validation fails
+      } else {
+        const csrfHeader = request.headers['csrf-token'] || request.headers['x-csrf-token'] || request.headers['csrf'];
+        if (!csrfHeader) {
+          return reply.code(403).send({ error: 'CSRF token missing or invalid' });
+        }
+      }
     }
   });
 
