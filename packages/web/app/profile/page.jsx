@@ -92,7 +92,7 @@ export default function profileSettingPage() {
                 const { key, publicUrl } = await presignAndUpload({
                     file,
                     presignPath: '/media/photos/presign',
-                    confirmPath: 'media/photos/confirm',
+                    confirmPath: '/media/photos/confirm',
                     //if length is 0 keep 0 and check whether length = 0.
                     extraConfirmFields:
                         { isPrimary: (profile.photos?.length ?? 0) === 0 }

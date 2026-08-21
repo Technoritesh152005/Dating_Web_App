@@ -83,27 +83,17 @@ export default function onBoardingSteps() {
             return
         }
 
-        api.get('/profile/me')
-            .then((profile) => {
-                // Check verification status
-                const status = profile.verificationStatus
-                if (status === 'VERIFIED' || status === 'UNDER_REVIEW') {
-                    // User can proceed - profile complete
-                    setComplete(true)
-                } else if (status === 'PENDING') {
-                    // No verification submitted yet - need to complete onboarding
-                    setComplete(false)
-                } else if (status === 'REVERIFICATION_REQUIRED' || status === 'REJECTED') {
-                    // Need to re-verify
-                    setVerificationSubmitted(true)
-                    setComplete(true)
-                }
-            })
-            .catch(() => {
-                // Profile doesn't exist yet - need to complete onboarding
-                setComplete(false)
-            })
-            .finally(() => setCheckingProfile(false))
+        const profile = user.profile
+        const status = profile?.verificationStatus
+        if (status === 'VERIFIED' || status === 'UNDER_REVIEW') {
+            setComplete(true)
+        } else if (status === 'REVERIFICATION_REQUIRED' || status === 'REJECTED') {
+            setVerificationSubmitted(true)
+            setComplete(true)
+        } else {
+            setComplete(false)
+        }
+        setCheckingProfile(false)
     }, [loading, user, router])
 
     const updateForm = (fields) => setForm((f) => ({ ...f, ...fields }));
@@ -146,7 +136,7 @@ export default function onBoardingSteps() {
                 const { key, publicUrl } = await presignAndUpload({
                     file,
                     presignPath: "/media/photos/presign",
-                    confirmPath: "media/photos/confirm",
+                    confirmPath: "/media/photos/confirm",
                     extraConfirmFields: { isPrimary: photos.length === 0 }
                 })
                 /* take the element or photo from setPhotos and add in setphotos with again one extra field that is this key and publicurl */
@@ -165,7 +155,7 @@ export default function onBoardingSteps() {
         try {
             const { key: selfieUploadKey } = await presignAndUpload({
                 file: selfieFile,
-                presignPath: "media/selfie/presign"
+                presignPath: "/media/selfie/presign"
             })
             await api.post("/verification/selfie", { selfieKey: selfieUploadKey })
             setVerificationSubmitted(true)
