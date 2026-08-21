@@ -3,13 +3,17 @@ import { api } from './api'
 /* here we try to get the upload url for s3 and then with that upload url we put that image in s3 */
 
 // Allowed file types for upload
-const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
+const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp']
 const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
 
 export async function presignAndUpload({ file, presignPath, confirmPath, extraConfirmFields = {} }) {
+    if (!file) {
+        throw new Error('Please select an image before continuing')
+    }
+
     // Validate file type
     if (!ALLOWED_TYPES.includes(file.type)) {
-        throw new Error('Invalid file type. Allowed: JPEG, PNG, WebP, GIF')
+        throw new Error('Invalid file type. Allowed: JPEG, PNG, or WebP')
     }
 
     // Validate file size
