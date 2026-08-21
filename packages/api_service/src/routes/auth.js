@@ -21,7 +21,7 @@ const refreshCookiesOpts = (config) => ({
     // Scoped to ONLY the refresh endpoint - the browser won't even attach this
     // cookie to other requests, shrinking the attack surface if anything on
     // another route were ever compromised.
-    path: '/auth/refresh',
+    path: '/auth',
     maxAge: 7 * 24 * 60 * 60,
 })
 
@@ -233,7 +233,7 @@ export function registerAuthRoutes(app, config) {
 
         // remove both token from cookies
         reply.clearCookie('accessToken', { path: '/', httpOnly: true, secure: config.nodeEnv === 'production', sameSite: 'lax' })
-        reply.clearCookie('refreshToken', { path: '/auth/refresh', httpOnly: true, secure: config.nodeEnv === 'production', sameSite: 'strict' });
+        reply.clearCookie('refreshToken', { path: '/auth', httpOnly: true, secure: config.nodeEnv === 'production', sameSite: 'strict' });
 
         return reply.send({ ok: true });
     })

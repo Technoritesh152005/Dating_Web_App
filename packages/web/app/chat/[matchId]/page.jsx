@@ -54,23 +54,21 @@ function ChatPageContent() {
             return
         }
 
-        const match =  api.get(`/matches/${matchId}`)
-        setOtherUser(match?.otherUser ?? null)
-
-        api.get(`/matches/${matchId}/messages`).then((data) => {
+        Promise.all([
+            api.get(`/matches/${matchId}`),
+            api.get(`/matches/${matchId}/messages`),
+        ]).then(([match, data]) => {
+            setOtherUser(match?.otherUser ?? null)
             setMessages(data.messages)
             setHasMoreHistory(data.hasMore)
-            // the message we get is in order of older to newer. so we set the older message id so that we can even get message above this id
             if (data.messages.length > 0) setOldestLoadedId(data.messages[0].id)
-
-        })
-        api.get(`/matches/${matchId}/icebreaker`).then((data) => {
-            if (data.ready) setIceBreaker(data.iceBreakerSuggestion)
+            if (match.iceBreakerSuggestion) setIceBreaker(match.iceBreakerSuggestion)
         })
     }, [loading, user, matchId, router])
 
     /* this is to maintains socket lifecycle */
     useEffect(() => {
+                    setMessages((prev) => (prev.some((m) => m.id === message.id) ? prev : [...prev, message]))
         if (loading || !user) return
 
         const socket = connectSocket()
@@ -97,7 +95,7 @@ function ChatPageContent() {
         /* this is the event listened from client to server */
         /* this listen event coming from client to server and set the new message it receives */
         /* before broadcasting to sender message, check the duplicates msg and emit the event as read the message */
-        socket.on('new-messages', (message) => {
+        socket.on('new-msg', (message) => {
             setMessages((prev) => (prev.some((m) => m.id === message.id) ? prev : [...prev, message]))
             if (message.senderId !== user.id) {
                 socket.emit('mark-read', { matchId })
@@ -184,7 +182,7 @@ function ChatPageContent() {
 
     /* Handle Unmatch */
     const handleUnmatch = async () => {
-        await api.post('/matches/unmatch', { matchId })
+        await api.post(`/matches/${matchId}/unmatch`, {})
         router.push('/matches')
     }
 

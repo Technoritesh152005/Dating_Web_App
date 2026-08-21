@@ -13,8 +13,11 @@ export async function markOnline(redis, userId, socketId) {
     await redis.set(`presence:${userId}`, socketId, 'EX', TTL)
 }
 
-export async function markOffline(redis, userId) {
-    await redis.del(`presence:${userId}`);
+export async function markOffline(redis, userId, socketId) {
+  const key = `presence:${userId}`
+  if (!socketId || await redis.get(key) === socketId) {
+    await redis.del(key)
+  }
   }
   
   export async function isOnline(redis, userId) {

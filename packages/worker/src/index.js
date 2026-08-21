@@ -4,9 +4,10 @@ import { QUEUE_NAMES } from '@dating-app/shared'
 import { startVerificationWorker } from './workers/verificationWorkers.js'
 import { startMatchNotificationWorker } from './workers/matchNotifications.js';
 import { startFeedRefilWorker } from './workers/feedRefilWorker.js'
-import { startFeedSchedulerWorker } from './workers/feedScheduleWorker.js'
+import { startFeedSchedulerWorker, scheduleFeedSchedulerQueueJobRepeatable } from './workers/feedScheduleWorker.js'
 import { startIceBreakerFunction } from './workers/iceBreakerWorker.js'
 import { startLocationCleanUpWorker } from './workers/loactionCleanupWorker.js'
+import { startEmbeddingWorkerForProfile } from './workers/embeddingWorker.js'
 
 
 const logger = createLogger('worker')
@@ -39,6 +40,8 @@ async function main() {
     const { worker: feedSchedulerWorker, connection: feedSchedulerConnection, enqueueConnection } = await startFeedSchedulerWorker(logger)
     const { worker: iceBreakerWorker, connection: iceBreakConnection } = await startIceBreakerFunction(logger)
     const { worker: locationShareCleanupWorker, connection: locationShareCleanupConnection } = startLocationCleanUpWorker(logger);
+    const { worker: embeddingWorker, connection: embeddingConnection, breakerRedisConnection: embeddingBreakerRedis } = startEmbeddingWorkerForProfile(logger)
+    const schedulerRegistrationConnection = await scheduleFeedSchedulerQueueJobRepeatable(logger)
     logger.info('Worker process started, listening for jobs on: health-check, verification-check');
 
     healthCheckWorker.on('completed', (job) => {
@@ -63,6 +66,10 @@ async function main() {
         await feedRefillConnection.quit();
         await locationShareCleanupWorker.close();
         await locationShareCleanupConnection.quit();
+        await embeddingWorker.close();
+        await embeddingConnection.quit();
+        await embeddingBreakerRedis.quit();
+        await schedulerRegistrationConnection.quit();
 
         await disconnectDb()
         process.exit(0)

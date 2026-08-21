@@ -1,5 +1,6 @@
 import { Worker } from 'bullmq'
-import { redisClient, QUEUE_NAMES, createRedisClient, circuitBreaker } from '@dating-app/shared-facility'
+import { Prisma } from '@prisma/client'
+import { QUEUE_NAMES, createRedisClient, circuitBreaker, prisma } from '@dating-app/shared'
 import { generateEmbedding } from '../services/embeddingService.js'
 
 export function startEmbeddingWorkerForProfile(logger) {
@@ -16,7 +17,7 @@ export function startEmbeddingWorkerForProfile(logger) {
             const { embedding } = await circuitBreaker(breakerRedisConnection, 'gemini-embedding', () =>
                 generateEmbedding(embeddingInput)
             )
-            const { embedding } = generateEmbedding(embeddingInput)
+
             const vectorLiteral = `[${embedding.join(',')}]`;
 
             await prisma.$executeRaw(Prisma.sql

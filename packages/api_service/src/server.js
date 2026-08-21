@@ -46,12 +46,14 @@ async function main() {
 await app.register(csrf, {
   cookieOpts: {
     signed: false,
-    sameSite: 'none',
-    secure: true
+    sameSite: 'lax',
+    secure: config.nodeEnv === 'production',
+    httpOnly: true,
+    path: '/'
   }
 })
   app.get('/csrf-token', async (request, reply) => {
-  const token = reply.generateCsrf()
+  const token = await reply.generateCsrf()
 
   return {
     csrfToken: token
