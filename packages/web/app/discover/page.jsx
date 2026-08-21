@@ -29,11 +29,13 @@ function DiscoverPageContent() {
     const [confirmBlock , setConfrimBlock] = useState(false)
     const [reportOpen , setReportOpen] = useState(false)
     const [viewingDetail , setViewingDetail] = useState(false)
+    const [feedError, setFeedError] = useState(null)
 
 
     const fetchFeed = useCallback(async () => {
 
         setFetching(true)
+        setFeedError(null)
         try {
             const { profiles } = await api.get('/discovery/feed')
             /* set the profile elements in stack  */
@@ -41,6 +43,8 @@ function DiscoverPageContent() {
             so this element is not kept in setStack... Filters requires boolean condition to keep the current element
             */
             setStack((prev) => [...prev, ...profiles.filter((p) => !prev.some((existing) => existing.id === p.id))])
+          } catch (error) {
+            setFeedError(error.message || 'Failed to load profiles')
         } finally {
             setFetching(false)
         }
@@ -121,6 +125,14 @@ function DiscoverPageContent() {
           </button>
 
           <div className="relative mt-6 h-[560px] w-full max-w-sm">
+            {feedError && (
+              <div className="flex h-full flex-col items-center justify-center rounded-card border border-dashed border-sindoor/40 text-center">
+                <p className="text-[14px] text-sindoor-light">{feedError}</p>
+                <Button variant="secondary" className="mt-4" onClick={fetchFeed}>
+                  Try again
+                </Button>
+              </div>
+            )}
             {!topCard && !fetching && (
               <div className="flex h-full flex-col items-center justify-center rounded-card border border-dashed border-cream/15 text-center">
                 <p className="font-display text-xl text-cream">You're all caught up</p>

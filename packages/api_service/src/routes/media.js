@@ -1,5 +1,6 @@
 import {
   generatePresignedUploadUrl,
+  publicUrlForKey,
   deleteObject,
   objectExists,
   getObjectMetadata,
@@ -45,9 +46,9 @@ export function generateMediaRoutes(app) {
     "/media/photos/confirm",
     { preHandler: app.authenticate, config: { authenticated: true, rateLimit: { max: 20, timeWindow: '1 minute' } } },
     async (request, reply) => {
-      const { publicUrl, key, isPrimary } = request.body ?? {};
-      if (!key || !publicUrl) {
-        return reply.code(400).send({ error: "key and PublicUrl is required" });
+      const { key, isPrimary } = request.body ?? {};
+      if (!key) {
+        return reply.code(400).send({ error: "key is required" });
       }
 
       // storing ur image metadata in db first require to check whether profile of user exist
@@ -94,7 +95,7 @@ export function generateMediaRoutes(app) {
       const photo = await app.db.photo.create({
         data: {
           profileId: profile.id,
-          url: publicUrl,
+          url: publicUrlForKey(key),
           key,
           position: existingCount,
           isPrimary: Boolean(isPrimary) || existingCount === 0, //first photo is primary by default

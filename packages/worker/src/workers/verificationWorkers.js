@@ -16,14 +16,37 @@ export function startVerificationWorker(logger) {
 
             logger.info({ verificationRequestId }, 'Processing verification job')
 
-            const { matchScore, noFaceDetected } = await circuitBreaker(
-                breakerRedisConnection,
-                'rekognition',
-                () => compareFaces(selfieKey, profilePhotoKey)
-            )
+            let comparison
+            try {
+                comparison = await circuitBreaker(
+                    breakerRedisConnection,
+                    'rekognition',
+                    () => compareFaces(selfieKey, profilePhotoKey)
+                )
+            } catch (error) {
+                await prisma.$transaction([
+                    prisma.verificationRequest.update({
+                        where: { id: verificationRequestId },
+                        data: {
+                            faceMatchScore: 0,
+                            status: 'REJECTED',
+                            rejectionReason: 'Verification could not be completed. Please submit a new selfie.',
+                            reviewedAt: new Date()
+                        }
+                    }),
+                    prisma.profile.update({
+                        where: { userId },
+                        data: { verificationStatus: 'REJECTED' }
+                    })
+                ])
+                logger.error({ err: error, verificationRequestId }, 'Verification processing failed')
+                return { matchScore: 0, status: 'REJECTED' }
+            }
 
-            const VERIFY_THRESHOLD = 0.85
-            const REVIEW_THRESHOLD = 0.6
+            const { matchScore, noFaceDetected } = comparison
+
+            const VERIFY_THRESHOLD = 0.95
+            const REVIEW_THRESHOLD = 0.85
 
             let status
             let rejectionReason = null
