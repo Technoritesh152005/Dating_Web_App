@@ -59,6 +59,10 @@ export default function profileSettingPage() {
 
     const save = async () => {
         setError(null)
+        if (!form.profession) {
+            setError('Please select your profession before saving')
+            return
+        }
         setSaving(true)
         try {
             await api.put('/profile', {
@@ -87,7 +91,7 @@ export default function profileSettingPage() {
             try {
                 const { key, publicUrl } = await presignAndUpload({
                     file,
-                    presignPath: 'media/photos/presign',
+                    presignPath: '/media/photos/presign',
                     confirmPath: 'media/photos/confirm',
                     //if length is 0 keep 0 and check whether length = 0.
                     extraConfirmFields:

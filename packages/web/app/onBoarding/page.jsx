@@ -114,6 +114,10 @@ export default function onBoardingSteps() {
 
     const submitAboutAndCreateProfile = async () => {
         setError(null)
+        if (!form.profession) {
+            setError('Please select your profession before continuing')
+            return
+        }
         setSaving(true)
         try {
             await api.put("/profile", {
@@ -141,7 +145,7 @@ export default function onBoardingSteps() {
             try {
                 const { key, publicUrl } = await presignAndUpload({
                     file,
-                    presignPath: "media/photos/presign",
+                    presignPath: "/media/photos/presign",
                     confirmPath: "media/photos/confirm",
                     extraConfirmFields: { isPrimary: photos.length === 0 }
                 })
