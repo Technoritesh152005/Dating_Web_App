@@ -111,7 +111,7 @@ await app.register(csrf, {
 
     // For authenticated endpoints, require CSRF token
     if (request.routeOptions && request.routeOptions.config && request.routeOptions.config.authenticated) {
-       await reply.csrfProtection() // This will throw if CSRF validation fails
+       await app.csrfProtection(request, reply) // This will throw if CSRF validation fails
     }
   });
 
