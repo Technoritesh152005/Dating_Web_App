@@ -4,37 +4,42 @@ const api_url =
 const REQUEST_TIMEOUT = 30000
 
 let csrfToken = null
+let csrfTokenPromise = null
 
 async function fetchCsrfToken() {
-    try {
-        const response = await fetch(`${api_url}/csrf-token`, {
+    if (csrfToken) {
+        return csrfToken
+    }
+
+    if (!csrfTokenPromise) {
+        csrfTokenPromise = fetch(`${api_url}/csrf-token`, {
             method: 'GET',
             credentials: 'include'
         })
+            .then(async (response) => {
+                if (!response.ok) {
+                    throw new Error('Failed to fetch CSRF token')
+                }
 
-        if (!response.ok) {
-            throw new Error(`Failed to fetch CSRF token: ${response.status}`)
-        }
+                const data = await response.json()
 
-        const data = await response.json()
+                csrfToken = data.csrfToken
 
-        csrfToken = data.csrfToken
+                if (!csrfToken) {
+                    throw new Error('CSRF token was not returned by server')
+                }
 
-        return csrfToken
-    } catch (err) {
-        console.warn('Failed to fetch CSRF token:', err)
-        return null
+                return csrfToken
+            })
+            .finally(() => {
+                csrfTokenPromise = null
+            })
     }
-}
 
-// Get token when browser loads the module
-if (typeof window !== 'undefined') {
-    fetchCsrfToken()
+    return csrfTokenPromise
 }
-
 
 async function request(path, option = {}) {
-
     const controller = new AbortController()
 
     const timeoutId = setTimeout(
@@ -43,7 +48,6 @@ async function request(path, option = {}) {
     )
 
     try {
-
         const method = (option.method || 'GET').toUpperCase()
 
         const headers = {
@@ -51,19 +55,15 @@ async function request(path, option = {}) {
             ...option.headers
         }
 
-        // Make sure we have a CSRF token before
-        // state-changing requests
+        /*
+         * CSRF is required only for state-changing requests.
+         */
         if (
             ['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)
         ) {
+            const token = await fetchCsrfToken()
 
-            if (!csrfToken) {
-                await fetchCsrfToken()
-            }
-
-            if (csrfToken) {
-                headers['csrf-token'] = csrfToken
-            }
+            headers['csrf-token'] = token
         }
 
         let response = await fetch(`${api_url}${path}`, {
@@ -76,51 +76,41 @@ async function request(path, option = {}) {
         let contentType =
             response.headers.get('content-type') || ''
 
-        let body =
-            contentType.includes('application/json')
-                ? await response.json()
-                : null
-
+        let body = contentType.includes('application/json')
+            ? await response.json()
+            : null
 
         /*
-         * CSRF token can become invalid/expired.
-         * Fetch a new token and retry once.
+         * If the CSRF token became invalid,
+         * get a fresh token and retry once.
          */
         if (
             response.status === 403 &&
-            (
-                body?.code === 'FST_CSRF_INVALID_TOKEN' ||
-                body?.code === 'FST_CSRF_MISSING_SECRET'
-            ) &&
+            body?.code === 'FST_CSRF_INVALID_TOKEN' &&
             ['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)
         ) {
+            csrfToken = null
 
-            await fetchCsrfToken()
+            const newToken = await fetchCsrfToken()
 
-            if (csrfToken) {
+            headers['csrf-token'] = newToken
 
-                headers['csrf-token'] = csrfToken
+            response = await fetch(`${api_url}${path}`, {
+                ...option,
+                credentials: 'include',
+                signal: controller.signal,
+                headers
+            })
 
-                response = await fetch(`${api_url}${path}`, {
-                    ...option,
-                    credentials: 'include',
-                    signal: controller.signal,
-                    headers
-                })
+            contentType =
+                response.headers.get('content-type') || ''
 
-                contentType =
-                    response.headers.get('content-type') || ''
-
-                body =
-                    contentType.includes('application/json')
-                        ? await response.json()
-                        : null
-            }
+            body = contentType.includes('application/json')
+                ? await response.json()
+                : null
         }
 
-
         if (!response.ok) {
-
             const error = new Error(
                 body?.message ||
                 body?.error ||
@@ -138,7 +128,6 @@ async function request(path, option = {}) {
     } catch (err) {
 
         if (err.name === 'AbortError') {
-
             const timeoutError = new Error(
                 'Request timeout. Please check your connection.'
             )
@@ -151,14 +140,11 @@ async function request(path, option = {}) {
         throw err
 
     } finally {
-
         clearTimeout(timeoutId)
     }
 }
 
-
 export const api = {
-
     get: (path) =>
         request(path, {
             method: 'GET'
