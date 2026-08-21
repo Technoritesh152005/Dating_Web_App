@@ -17,6 +17,7 @@ export function AuthProvider({ children }) {
         try {
             const me = await api.get('/auth/me')
             setUser(me)
+            return me
         } catch (err) {
             // Handle 403 VERIFICATION_REQUIRED - user is authenticated but not verified
             if (err?.status === 403 && err?.body?.error === 'VERIFICATION_REQUIRED') {
@@ -27,8 +28,10 @@ export function AuthProvider({ children }) {
                     verificationStatus: err.body.verificationStatus,
                     message: err.body.message
                 })
+                return null
             } else {
                 setUser(null)
+                return null
             }
         } finally {
             setLoading(false)
@@ -42,21 +45,21 @@ export function AuthProvider({ children }) {
 
     const signup = async (email, password) => {
         const response = await api.post('/auth/signup', { email, password })
-        await checkAuth()
-        return response
+        const user = await checkAuth()
+        return { ...response, user }
     }
 
     // u get checkAuth after getting response from backend is because when u get the response u can set the user in ur createcontext
     const login = async (email, password) => {
         const result = await api.post('/auth/login', { email, password })
-        await checkAuth()
-        return result
+        const user = await checkAuth()
+        return { ...result, user }
     }
 
     const loginWithGoogle = async (idToken) => {
-        const result = await api.post('/auth/google', { idToken })
-        await checkAuth()
-        return result
+        const result = await api.post('/auth/google/callback', { idToken })
+        const user = await checkAuth()
+        return { ...result, user }
     }
     const logout = async () => {
         await api.post('/auth/logout', {});

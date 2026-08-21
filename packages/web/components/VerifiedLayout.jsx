@@ -14,7 +14,7 @@ import { useAuth } from '@/lib/authContext'
  * Verification routes (/onboarding, /verification/*) must be accessible to users needing verification
  * to prevent redirect loops.
  */
-export function VerifiedLayout({ children, allowedPaths = ['/onboarding'] }) {
+export function VerifiedLayout({ children, allowedPaths = ['/onBoarding'] }) {
     const auth = useAuth()
     const { user, loading, getVerificationStatus, needsVerification } = auth
     const router = useRouter()
@@ -47,7 +47,7 @@ export function VerifiedLayout({ children, allowedPaths = ['/onboarding'] }) {
 
         // REJECTED, REVERIFICATION_REQUIRED, PENDING - needs verification
         if (needsVerification() && !isAllowedPath) {
-            router.push('/onboarding')
+            router.push('/onBoarding')
             return
         }
     }, [user, loading, router, getVerificationStatus, needsVerification, allowedPaths])
@@ -68,26 +68,8 @@ export function VerifiedLayout({ children, allowedPaths = ['/onboarding'] }) {
 
     const status = getVerificationStatus()
 
-    // UNDER_REVIEW - show pending state
-    if (status === 'UNDER_REVIEW') {
-        return (
-            <main className="flex min-h-screen items-center justify-center px-6">
-                <div className="max-w-md p-8 text-center">
-                    <p className="mb-3 font-mono text-[11px] uppercase tracking-[0.2em] text-marigold">
-                        Verification in progress
-                    </p>
-                    <h1 className="font-display text-2xl text-cream">
-                        Your verification is under review
-                    </h1>
-                    <p className="mt-3 text-[15px] leading-relaxed text-cream-dim">
-                        Your verification is being processed. You can keep using the app while it finishes.
-                    </p>
-                </div>
-            </main>
-        )
-    }
-
-    // Render children for VERIFIED users, or for unverified users on allowed paths
+    // The API allows UNDER_REVIEW users to use core app features while the
+    // asynchronous verification decision is being processed.
     return <>{children}</>
 }
 

@@ -25,9 +25,9 @@ const handleSubmit =  async function(e){
     setSubmitting(true)
 
     try{
-        await login(email , password)
-        // we dont know if user has a profile so me forward him to onboarding where we check there only
-        router.push('/onBoarding')
+        const result = await login(email , password)
+        const status = result.user?.profile?.verificationStatus
+        router.push(status === 'VERIFIED' || status === 'UNDER_REVIEW' ? '/discover' : '/onBoarding')
     }catch(error){
         setError(error.message);
       setSubmitting(false);

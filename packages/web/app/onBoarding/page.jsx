@@ -48,7 +48,7 @@ const totalSteps = 4
 
 export default function onBoardingSteps() {
 
-    const { user, loading } = useAuth()
+    const { user, loading, refetch } = useAuth()
     const router = useRouter()
 
     const [checkingProfile, setCheckingProfile] = useState(true)
@@ -165,6 +165,8 @@ export default function onBoardingSteps() {
             await api.post("/verification/selfie", { selfieKey: selfieUploadKey })
             setVerificationSubmitted(true)
             setComplete(true)
+            await refetch()
+            router.push('/discover')
         } catch (error) {
             setError(error.message)
         } finally {
@@ -217,7 +219,7 @@ export default function onBoardingSteps() {
                     </p>
                     {(status === 'REVERIFICATION_REQUIRED' || status === 'REJECTED') && (
                         <button
-                            onClick={() => router.push('/onboarding')}
+                            onClick={() => router.push('/onBoarding')}
                             className="mt-4 w-full btn-primary"
                         >
                             Verify again
@@ -258,6 +260,7 @@ export default function onBoardingSteps() {
                     {step === 2 && (
                         <StepPhotos
                             photos={photos}
+                            uploadingPhotos={uploadingPhotos}
                             onSelect={handlePhotoSelect}
                             onNext={() => setStep(3)}
                             error={error}
@@ -392,7 +395,7 @@ function StepAbout({ form, updateForm, onNext, onBack, saving, error }) {
 
 //   / STEP 3 — Photos, via the presigned-upload flow
 // ---------------------------------------------------------------------------
-function StepPhotos({ photos, onSelect, onNext, error }) {
+function StepPhotos({ photos, uploadingPhotos, onSelect, onNext, error }) {
     return (
         <div className="flex flex-col gap-5">
             <div>
