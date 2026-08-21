@@ -52,7 +52,7 @@ await app.register(csrf, {
 })
 
   app.get('/csrf-token', async (request, reply) => {
-  const token = reply.generateCsrf()
+  const token = await reply.generateCsrf()
 
   return {
     csrfToken: token
