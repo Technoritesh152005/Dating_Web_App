@@ -84,6 +84,13 @@ export function registerVerificationRoutes(app) {
             return
         }
 
+        // Mark the profile as under review before enqueueing. This prevents a
+        // fast worker result from being overwritten by this request afterward.
+        await app.db.profile.update({
+            where: { id: profile.id },
+            data: { verificationStatus: 'UNDER_REVIEW' },
+        });
+
         // Enqueue the actual comparison work - the worker process picks this
         // up independently. Note we reuse app.redis's connection details via a
         // fresh queue handle rather than reusing app.redis directly - BullMQ
@@ -98,14 +105,7 @@ export function registerVerificationRoutes(app) {
             profilePhotoKey: profile.photos[0].key,
             requestId: request.id
         })
-
-        // Mark the profile as under review immediately - the USER-FACING state
-        // flips out of "PENDING" (never verified) into "UNDER_REVIEW" (actively
-        // being checked) right away, even though the actual check hasn't run yet.
-        await app.db.profile.update({
-            where: { id: profile.id },
-            data: { verificationStatus: 'UNDER_REVIEW' },
-        });
+            await verificationQueue.close()
 
         return reply.code(202).send({
             message: "Verification submitted - you can keep using the app while this processess",

@@ -10,6 +10,9 @@ export function startVerificationWorker(logger) {
         QUEUE_NAMES.VERIFICATION_STATUS,
         async (job) => {
             const { selfieKey, userId, profilePhotoKey, verificationRequestId } = job.data
+                if (!selfieKey || !profilePhotoKey || !verificationRequestId || !userId) {
+                    throw new Error('Verification job is missing required keys')
+                }
 
             logger.info({ verificationRequestId }, 'Processing verification job')
 
@@ -67,6 +70,15 @@ export function startVerificationWorker(logger) {
             concurrency: 3
         }
     )
+        connection.on('ready', () => {
+            logger.info({ queue: QUEUE_NAMES.VERIFICATION_STATUS }, 'Verification worker Redis connection ready')
+        })
+        connection.on('error', (err) => {
+            logger.error({ err, queue: QUEUE_NAMES.VERIFICATION_STATUS }, 'Verification worker Redis connection error')
+        })
+        worker.on('error', (err) => {
+            logger.error({ err, queue: QUEUE_NAMES.VERIFICATION_STATUS }, 'Verification worker error')
+        })
 
     worker.on('completed', (job, result) => {
         logger.info(
