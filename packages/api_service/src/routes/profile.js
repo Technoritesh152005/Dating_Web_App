@@ -115,7 +115,7 @@ export function registerProfileRoutes(app) {
 
         const cachedData = await app.redis.get(profileRedisKey(request.userId))
 
-        if (cachedData) {
+        if (cachedData) {F
             reply.header('X-Cache', 'HIT');
             return reply.send(JSON.parse(cachedData));
         }

@@ -1,0 +1,8 @@
+[
+  {
+    "AllowedHeaders": ["*"],
+    "AllowedMethods": ["PUT", "GET", "HEAD"],
+    "AllowedOrigins": ["https://melodis.in", "https://www.melodis.in"],
+    "ExposeHeaders": ["ETag"]
+  }
+]

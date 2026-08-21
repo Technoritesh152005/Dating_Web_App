@@ -68,7 +68,9 @@ async function request(path, option = {}) {
             headers['csrf-token'] = token
         }
 
-        let response = await fetch(`${api_url}${path}`, {
+        const requestUrl = `${api_url}${path.startsWith('/') ? path : `/${path}`}`
+
+        let response = await fetch(requestUrl, {
             ...option,
             credentials: 'include',
             signal: controller.signal,
@@ -97,7 +99,7 @@ async function request(path, option = {}) {
 
             headers['csrf-token'] = newToken
 
-            response = await fetch(`${api_url}${path}`, {
+            response = await fetch(requestUrl, {
                 ...option,
                 credentials: 'include',
                 signal: controller.signal,
