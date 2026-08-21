@@ -37,14 +37,16 @@ export function registerProfileRoutes(app) {
         if (profession && !VALID_PROFESSION.includes(profession)) {
             return reply.code(400).send({ error: "Please select profession based on one of them : ${VALID_PROFESSIONS.join(', ')}` }" })
         }
-
+                    return reply.code(400).send({ error: "displayName, dateOfBirth, gender and profession are required" })
+                if (!profession) {
+                    return reply.code(400).send({ error: "Profession is required" })
         const parsedDateOfBirth = new Date(dateOfBirth)
         if (Number.isNaN(parsedDateOfBirth.getTime())) {
             return reply.code(400).send({ error: 'dateOfBirth must be a valid date' })
         }
 
-        const ageCalculate = calculateAge(parsedDateOfBirth)
-        if (ageCalculate < 18) {
+                if (!VALID_PROFESSION.includes(profession)) {
+                    return reply.code(400).send({ error: `Profession must be one of: ${VALID_PROFESSION.join(', ')}` })
             return reply.code(400).send({ error: 'You must be 18 or Older than it to use the app' })
         }
 
@@ -69,7 +71,7 @@ export function registerProfileRoutes(app) {
                 profession: profession ?? 'OTHER',
                 religion: religion ?? null,
                 caste: caste ?? null,
-                showReligionCaste: Boolean(showReligionCaste),
+                        profession,
                 latitude: latitude ?? null,
                 longitude: longitude ?? null,
             },
@@ -83,7 +85,7 @@ export function registerProfileRoutes(app) {
                 profession: profession ?? 'OTHER',
                 religion: religion ?? null,
                 caste: caste ?? null,
-                showReligionCaste: Boolean(showReligionCaste),
+                        profession,
                 latitude: latitude ?? null,
                 longitude: longitude ?? null,
             }
