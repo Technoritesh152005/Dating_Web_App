@@ -43,7 +43,21 @@ async function main() {
   })
   await app.register(helmet)
   await app.register(cookie)
-await app.register(csrf)
+await app.register(csrf, {
+  cookieOpts: {
+    signed: false,
+    sameSite: 'none',
+    secure: true
+  }
+})
+
+  app.get('/csrf-token', async (request, reply) => {
+  const token = reply.generateCsrf()
+
+  return {
+    csrfToken: token
+  }
+})
   // CSRF protection for state-changing operations
   // Uses double-submit cookie pattern: csrf token in cookie + header
 
