@@ -64,6 +64,7 @@ export default function onBoardingSteps() {
         }
     )
     const [photos, setPhotos] = useState([])
+    const [uploadingPhotos, setUploadingPhotos] = useState(false)
     const [selfieFile, setSelfieFile] = useState(null)
     const [verificationSubmitted, setVerificationSubmitted] = useState(false)
 
@@ -128,22 +129,26 @@ export default function onBoardingSteps() {
 
     const handlePhotoSelect = async (fileList) => {
         setError(null)
+        setUploadingPhotos(true)
         // Array.from() takes something that is iterable or array-like and creates a real JavaScript array from it.
         const files = Array.from(fileList).slice(0, 6 - photos.length)
         /* we try to upload one and one file / photo to s3 */
-        for (const file of files) {
-            try {
-                const { key, publicUrl } = await presignAndUpload({
-                    file,
-                    presignPath: "/media/photos/presign",
-                    confirmPath: "/media/photos/confirm",
-                    extraConfirmFields: { isPrimary: photos.length === 0 }
-                })
-                /* take the element or photo from setPhotos and add in setphotos with again one extra field that is this key and publicurl */
-                setPhotos((p) => [...p, { key, publicUrl }])
-            } catch (err) {
-                setError(err.message)
+        try {
+            for (const [index, file] of files.entries()) {
+                try {
+                    const { key, publicUrl } = await presignAndUpload({
+                        file,
+                        presignPath: "/media/photos/presign",
+                        confirmPath: "/media/photos/confirm",
+                        extraConfirmFields: { isPrimary: photos.length === 0 && index === 0 }
+                    })
+                    setPhotos((p) => [...p, { key, publicUrl }])
+                } catch (err) {
+                    setError(err.message)
+                }
             }
+        } finally {
+            setUploadingPhotos(false)
         }
 
     }
@@ -414,6 +419,7 @@ function StepPhotos({ photos, onSelect, onNext, error }) {
                             accept="image/*"
                             multiple
                             className="hidden"
+                            disabled={uploadingPhotos}
                             onChange={(e) => onSelect(e.target.files)}
                         />
                     </label>
@@ -422,7 +428,7 @@ function StepPhotos({ photos, onSelect, onNext, error }) {
             {error && <p className="text-[14px] text-sindoor-light">{error}</p>}
             <Button
                 variant="primary"
-                disabled={photos.length === 0}
+                disabled={photos.length === 0 || uploadingPhotos}
                 onClick={onNext}
                 className="mt-2 w-full"
             >

@@ -95,6 +95,7 @@ export function generateMediaRoutes(app) {
         data: {
           profileId: profile.id,
           url: publicUrl,
+          key,
           position: existingCount,
           isPrimary: Boolean(isPrimary) || existingCount === 0, //first photo is primary by default
         },
