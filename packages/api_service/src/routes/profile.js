@@ -27,26 +27,23 @@ export function registerProfileRoutes(app) {
             longitude,
         } = request.body ?? {}
 
-        if (!displayName || !dateOfBirth || !gender) {
-            return reply.code(400).send({ error: "displayname , gender and dateOfbirth is required" })
+        if (!displayName || !dateOfBirth || !gender || !profession) {
+            return reply.code(400).send({ error: 'displayName, dateOfBirth, gender and profession are required' })
         }
         if (!VALID_GENDER.includes(gender)) {
-            return reply.code(400).send({ error: `Gender must be one of: ${VALID_GENDER.join(', ')}` });
+            return reply.code(400).send({ error: `Gender must be one of: ${VALID_GENDER.join(', ')}` })
+        }
+        if (!VALID_PROFESSION.includes(profession)) {
+            return reply.code(400).send({ error: `Profession must be one of: ${VALID_PROFESSION.join(', ')}` })
+        }
 
-        }
-        if (profession && !VALID_PROFESSION.includes(profession)) {
-            return reply.code(400).send({ error: "Please select profession based on one of them : ${VALID_PROFESSIONS.join(', ')}` }" })
-        }
-                    return reply.code(400).send({ error: "displayName, dateOfBirth, gender and profession are required" })
-                if (!profession) {
-                    return reply.code(400).send({ error: "Profession is required" })
         const parsedDateOfBirth = new Date(dateOfBirth)
         if (Number.isNaN(parsedDateOfBirth.getTime())) {
             return reply.code(400).send({ error: 'dateOfBirth must be a valid date' })
         }
 
-                if (!VALID_PROFESSION.includes(profession)) {
-                    return reply.code(400).send({ error: `Profession must be one of: ${VALID_PROFESSION.join(', ')}` })
+        const ageCalculate = calculateAge(parsedDateOfBirth)
+        if (ageCalculate < 18) {
             return reply.code(400).send({ error: 'You must be 18 or Older than it to use the app' })
         }
 
