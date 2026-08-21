@@ -62,8 +62,18 @@ export async function generatePresignedUploadUrl ({userId , fileExtension,folder
     // creates cryptographic signed  url 
     const uploadUrl = await getSignedUrl(client , command , {expiresIn : 300})
 
-    const publicUrl = process.env.S3_PUBLIC_URL ? `${process.env.S3_PUBLIC_URL.replace(/\/$/, '')}/${key}` : key
+    const publicUrl = publicUrlForKey(key)
     return { uploadUrl, key, publicUrl };
+}
+
+export function publicUrlForKey(key) {
+    const bucket = requireBucketName()
+    const region = process.env.S3_REGION || process.env.AWS_REGION || 'us-east-1'
+    const publicBaseUrl = process.env.S3_PUBLIC_URL ||
+        (region === 'us-east-1'
+            ? `https://${bucket}.s3.amazonaws.com`
+            : `https://${bucket}.s3.${region}.amazonaws.com`)
+    return `${publicBaseUrl.replace(/\/$/, '')}/${key}`
 }
 
 // For private objects (like a raw selfie you don't want publicly guessable),

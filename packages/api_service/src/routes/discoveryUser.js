@@ -50,7 +50,7 @@ export function registerDiscoveryRoutes(app) {
             const result = await buildCandidateFeedWithRelaxation(app.db, {
                 userId: request.userId,
                 ownProfile,
-                resolvedPrefs,
+                prefs: resolvedPrefs,
                 page: 1,
                 pageSize: PAGE_SIZE
             })

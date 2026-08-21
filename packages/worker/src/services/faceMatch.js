@@ -1,6 +1,6 @@
 // placeholder
 
-import {RekognitionClient , CompareFacesCommand} from '@aws-sdk/client-rekognition'
+import { RekognitionClient, CompareFacesCommand, DetectFacesCommand } from '@aws-sdk/client-rekognition'
 
 // WHY S3Object REFERENCES INSTEAD OF DOWNLOADING BYTES:
 // Rekognition can read directly from S3 if the IAM identity making the API
@@ -17,10 +17,28 @@ export async function compareFaces(selfieKey , profilePhotoKey){
     const client = new RekognitionClient({region:process.env.AWS_REGION || 'us-east-1'})
     const bucket = process.env.S3_BUCKET_NAME
 
+    const faceCheck = async (key) => {
+        const response = await client.send(new DetectFacesCommand({
+            Image: { S3Object: { Bucket: bucket, Name: key } },
+            Attributes: ['DEFAULT'],
+        }))
+        const faces = response.FaceDetails ?? []
+        return faces.length === 1 && (faces[0].Confidence ?? 0) >= 90
+    }
+
+    const [validSelfie, validProfilePhoto] = await Promise.all([
+        faceCheck(selfieKey),
+        faceCheck(profilePhotoKey),
+    ])
+
+    if (!validSelfie || !validProfilePhoto) {
+        return { matchScore: 0, noFaceDetected: true }
+    }
+
     const command = new CompareFacesCommand({
         SourceImage : {S3Object : {Bucket:bucket , Name:selfieKey}},
         TargetImage :{S3Object : {Bucket:bucket , Name:profilePhotoKey}},
-        SimilarityThreshold: 0,  // we want the raw score back, not Rekognition's own pass/fail cutoff -
+        SimilarityThreshold: 90,
     })
 
     let result = null
@@ -34,7 +52,6 @@ export async function compareFaces(selfieKey , profilePhotoKey){
         throw error
     }
 
-    console.log(result)
     const bestMatch = result.FaceMatches?.[0]
     const matchScore = bestMatch ? bestMatch.Similarity / 100 : 0; // Rekognition returns 0-100, we normalize to 0-1
 
