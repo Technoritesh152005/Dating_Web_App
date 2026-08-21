@@ -28,7 +28,7 @@ export function ReportModal({ open, reportedUserId, onClose, onSubmitted }) {
         setSubmitting(true)
         setError(null)
         try {
-            await api.post('/safety/report', { reportedUserId, reason })
+            await api.post('/safety/report', { reporteduserId: reportedUserId, reason })
             onSubmitted?.()
             onClose()
         } catch (err) {

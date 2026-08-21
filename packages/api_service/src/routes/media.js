@@ -11,11 +11,12 @@ export function generateMediaRoutes(app) {
   // we user first ask backend permission that we need to store the images
   // we just receive a presigned url we didnt send image till now
   app.post(
-    "/media/photo/presign",
+    "/media/photos/presign",
     { preHandler: app.authenticate, config: { authenticated: true, rateLimit: { max: 20, timeWindow: '1 minute' } } },
     async (request, reply) => {
       const { fileExtension } = request.body ?? {};
-      if (!fileExtension || !allowed_extension.includes(fileExtension)) {
+      const normalizedExtension = String(fileExtension || '').toLowerCase();
+      if (!allowed_extension.includes(normalizedExtension)) {
         return reply
           .code(400)
           .send({
@@ -23,14 +24,14 @@ export function generateMediaRoutes(app) {
           });
       }
 
-      const { key, uploadUrl, publicUr } = await generatePresignedUploadUrl({
+      const { key, uploadUrl, publicUrl } = await generatePresignedUploadUrl({
         userId: request.userId,
-        fileExtension: fileExtension.toLowerCase(),
+        fileExtension: normalizedExtension,
         folder: "profile-photos",
       });
 
       // nowclient use this upload url to upload in s3 ,further when succeed status received we store it in database
-      return reply.send({ uploadUrl, key, publicUr });
+      return reply.send({ uploadUrl, key, publicUrl });
     },
   );
 

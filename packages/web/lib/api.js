@@ -1,5 +1,7 @@
-const api_url =
-    process.env.NEXT_PUBLIC_API_URL || 'https://localhost:4000'
+export const API_URL =
+    process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'
+
+const api_url = API_URL
 
 const REQUEST_TIMEOUT = 30000
 

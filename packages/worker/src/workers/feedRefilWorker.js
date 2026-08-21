@@ -35,9 +35,9 @@ export function startFeedRefilWorker(logger){
 
         const prefs = await removeuserPreference(prisma,userId , profile)
         const { candidates, relaxed, relaxedFields } = await buildCandidateFeedWithRelaxation(prisma , {
-            userId ,
+            userId,
             prefs,
-            profile,
+            ownProfile: profile,
             page:1,
             pageSize:FEED_BATCH
         })

@@ -21,10 +21,10 @@ export async function generateEmbedding(text){
               }),
         })
         if(!response.ok){
-            const errorBody = response.text().catch(()=> '')
+            const errorBody = await response.text().catch(()=> '')
             throw new Error(`Gemini embedding request failed: ${response.status}${errorBody}`)
         }
-        const data = response.json()
+        const data = await response.json()
         const embedding = data?.embedding?.values
 
 

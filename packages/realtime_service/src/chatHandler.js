@@ -151,7 +151,7 @@ export function registerChatHandlers(io, socket, { db, redis, logger }) {
     })
 
     socket.on('disconnect', async (reason) => {
-        await markOffline(redis, socket.userId);
+        await markOffline(redis, socket.userId, socket.id);
         // leave all rooms to clean up stale memberships
         socket.rooms.forEach(room => {
             if (room !== socket.id) socket.leave(room)
