@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+
   pull_request:
     branches:
       - main
@@ -130,66 +131,64 @@ jobs:
   # ============================================================
 
   deploy:
-    name: Deploy to AWS EC2
+    name: Deploy to AWS
     needs:
       - frontend-build
       - prisma
       - docker-build
 
-    # Deploy ONLY when code is actually pushed to main.
-    # PRs must never deploy production.
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    # Deploy ONLY after a successful push to main.
+    # Pull requests only run CI validation.
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
 
     runs-on: ubuntu-latest
 
     steps:
 
-      - name: Deploy
+      - name: Deploy to AWS VPS
         uses: appleboy/ssh-action@v1.0.3
 
         with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USER }}
-          key: ${{ secrets.EC2_SSH_KEY }}
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
 
           script: |
-
             set -e
-
-            echo "======================================"
-            echo "Starting deployment"
-            echo "======================================"
 
             cd ~/Dating_Web_App
 
-            echo "Pulling latest main..."
-            git fetch origin
-            git reset --hard origin/main
+            echo "Pulling latest main branch..."
+            git pull --rebase origin main
 
-            echo "Starting production containers..."
-
+            echo "Building and starting production containers..."
             docker compose \
               -f docker-compose.prod.yml \
               --env-file .env.production \
               up -d --build
 
-            echo "Waiting for API..."
-
-            sleep 10
-
-            echo "Checking containers..."
-
+            echo "Running Prisma migrations..."
             docker compose \
               -f docker-compose.prod.yml \
-              --env-file .env.production \
-              ps
+              exec -T api \
+              npx prisma migrate deploy \
+              --schema=packages/shared_service/prisma/schema.prisma
 
-            echo "Checking API health..."
+            echo "Deployment completed."
 
-            docker exec dating_web_app-api-1 \
-              wget -qO- http://127.0.0.1:4000/health
 
-            echo ""
-            echo "======================================"
-            echo "DEPLOYMENT SUCCESSFUL"
-            echo "======================================"
+      # ========================================================
+      # 5. VERIFY DEPLOYMENT
+      # ========================================================
+
+      - name: Verify deployment
+        run: |
+          echo "Waiting for API to become ready..."
+          sleep 10
+
+          echo "Checking API health..."
+
+          curl -sf "https://api.${{ secrets.DOMAIN }}/health"
+
+          echo ""
+          echo "Deployment verified successfully."
