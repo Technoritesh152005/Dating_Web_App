@@ -254,8 +254,19 @@ export default function onBoardingSteps() {
     const status = user?.profile?.verificationStatus;
     if (!verificationSubmitted || status !== "UNDER_REVIEW") return undefined;
 
+    const checkVerification = async () => {
+      const refreshedUser = await refetch();
+      const refreshedProfile = refreshedUser?.profile;
+      if (
+        refreshedProfile?.verificationStatus === "VERIFIED" &&
+        (refreshedProfile.latitude == null || refreshedProfile.longitude == null)
+      ) {
+        setLocationPromptOpen(true);
+      }
+    };
+
     const intervalId = window.setInterval(() => {
-      refetch();
+      checkVerification().catch(() => {});
     }, 3000);
 
     return () => window.clearInterval(intervalId);
