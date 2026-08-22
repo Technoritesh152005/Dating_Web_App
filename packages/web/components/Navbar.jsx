@@ -14,7 +14,7 @@ export function NavBar() {
 
   return (
     <header className="flex w-full max-w-sm items-center justify-between">
-      <span className="font-display text-xl text-cream">Saanjh</span>
+      <span className="font-display text-xl text-cream">Melodis</span>
       <nav className="flex gap-1 rounded-full border border-cream/10 bg-dusk p-1">
         {LINKS.map(({ href, label }) => {
           const active = pathname === href;
