@@ -94,7 +94,7 @@ export async function buildCandidatePool(db, { userId, ownProfile, prefs, page =
     // take the best users who have same embeeding feature
     const ownEmbeddingRows = await db.$queryRaw
         `
-         SELECT "bioEmbedding"::text AS embedding FROM profiles WHERE id = ${ownProfile.id}::uuid
+         SELECT "bioEmbedding"::text AS embedding FROM profiles WHERE id = ${ownProfile.id}
          `
     const ownEmbeddingText = ownEmbeddingRows[0]?.embedding ?? null;
 
@@ -108,18 +108,18 @@ export async function buildCandidatePool(db, { userId, ownProfile, prefs, page =
       SELECT p.id, p."userId",
       EXTRACT(YEAR FROM AGE(p."dateOfBirth")) AS age
     FROM profiles p
-    WHERE p."userId" != ${userId}::uuid
+    WHERE p."userId" != ${userId}
       -- exclude anyone I've already swiped on (in either direction of action)
       AND NOT EXISTS (
         SELECT 1 FROM swipes s
-        WHERE s."fromUserId" = ${userId}::uuid AND s."toUserId" = p."userId"
+        WHERE s."fromUserId" = ${userId} AND s."toUserId" = p."userId"
          AND (s.action IN ('LIKE', 'FIRE_LIKE') OR s."createdAt" > NOW() - INTERVAL '30 days')
       )
       -- exclude anyone I've blocked, or who has blocked me
       AND NOT EXISTS (
         SELECT 1 FROM blocks b
-        WHERE (b."blockerId" = ${userId}::uuid AND b."blockedId" = p."userId")
-           OR (b."blockerId" = p."userId" AND b."blockedId" = ${userId}::uuid)
+          WHERE (b."blockerId" = ${userId} AND b."blockedId" = p."userId")
+              OR (b."blockerId" = p."userId" AND b."blockedId" = ${userId})
       )
       AND EXTRACT(YEAR FROM AGE(p."dateOfBirth")) BETWEEN ${prefs.minAge} AND ${prefs.maxAge}
       ${genderClause}
