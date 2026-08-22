@@ -71,15 +71,6 @@ await app.register(csrf, {
     errorMessage: 'Too many requests, please try again later'
   })
 
-  // Stricter rate limit for auth endpoints
-  await app.register(rateLimit, {
-    max: 10,
-    timeWindow: '1 minute',
-    keyGenerator: (request) => request.ip,
-    errorMessage: 'Too many authentication attempts, please try again later',
-    skipOnError: true
-  })
-
   // starting the app connection
   await connectDb(logger)
   const redis = createRedisClient()

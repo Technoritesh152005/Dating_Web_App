@@ -129,7 +129,7 @@ export function registerProfileRoutes(app) {
         await app.db.$executeRaw(Prisma.sql`
             UPDATE profiles
             SET location = ST_SetSRID(ST_MakePoint(${longitude}, ${latitude}) , 4326)::geography
-            WHERE id = ${profile.id}::uuid
+            WHERE id = ${profile.id}
             `);
       }
       /* delete the stale copy of profile data cached in redis */
@@ -240,7 +240,7 @@ export function registerProfileRoutes(app) {
             ST_MakePoint(${lon}, ${lat}),
             4326
             )::geography
-            WHERE id = ${profile.id}::uuid
+            WHERE id = ${profile.id}
             `);
 
       await app.redis.del(profileRedisKey(request.userId));
