@@ -45,8 +45,8 @@ export function startVerificationWorker(logger) {
 
             const { matchScore, noFaceDetected } = comparison
 
-            const VERIFY_THRESHOLD = 0.95
-            const REVIEW_THRESHOLD = 0.85
+            const VERIFY_THRESHOLD = 0.90
+            const REVIEW_THRESHOLD = 0.80
 
             let status
             let rejectionReason = null

@@ -97,6 +97,21 @@ export default function onBoardingSteps() {
         setCheckingProfile(false)
     }, [loading, user, router])
 
+    useEffect(() => {
+        const status = user?.profile?.verificationStatus || user?.verificationStatus
+        if (!verificationSubmitted || status !== 'UNDER_REVIEW') return undefined
+
+        const intervalId = window.setInterval(async () => {
+            const refreshedUser = await refetch()
+            const refreshedStatus = refreshedUser?.profile?.verificationStatus
+            if (refreshedStatus === 'VERIFIED') {
+                router.push('/discover')
+            }
+        }, 3000)
+
+        return () => window.clearInterval(intervalId)
+    }, [refetch, router, user, verificationSubmitted])
+
     const updateForm = (fields) => setForm((f) => ({ ...f, ...fields }));
 
     const submitBasicInfo = async () => {
@@ -166,7 +181,6 @@ export default function onBoardingSteps() {
             setVerificationSubmitted(true)
             setComplete(true)
             await refetch()
-            router.push('/discover')
         } catch (error) {
             setError(error.message)
         } finally {

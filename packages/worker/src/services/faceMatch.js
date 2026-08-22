@@ -1,25 +1,45 @@
 // placeholder
 
 import { RekognitionClient, CompareFacesCommand, DetectFacesCommand } from '@aws-sdk/client-rekognition'
-
-// WHY S3Object REFERENCES INSTEAD OF DOWNLOADING BYTES:
-// Rekognition can read directly from S3 if the IAM identity making the API
-// call has s3:GetObject permission on that bucket - so the worker process
-// never downloads the selfie/photo itself, never holds image bytes in
-// memory, and never re-uploads them anywhere. This is the efficiency point
-// flagged earlier: a naive implementation would fetch both images via HTTP,
-// base64-encode them, and send the bytes in the API request - slower, more
-// memory pressure, and an unnecessary round trip through your own server
-// for data that's already sitting in S3.
+import { generatePresignedReadUrl } from '@dating-app/shared'
 
 export async function compareFaces(selfieKey , profilePhotoKey){
 
-    const client = new RekognitionClient({region:process.env.AWS_REGION || 'us-east-1'})
-    const bucket = process.env.S3_BUCKET_NAME
+    const client = new RekognitionClient({
+        region: process.env.AWS_REGION || 'us-east-1',
+        ...(process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY
+            ? {
+                credentials: {
+                    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+                    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+                },
+            }
+            : !process.env.S3_ENDPOINT && process.env.S3_ACCESS_KEY_ID && process.env.S3_SECRET_ACCESS_KEY
+                ? {
+                    credentials: {
+                        accessKeyId: process.env.S3_ACCESS_KEY_ID,
+                        secretAccessKey: process.env.S3_SECRET_ACCESS_KEY,
+                    },
+                }
+                : {}),
+    })
 
-    const faceCheck = async (key) => {
+    const loadImage = async (key) => {
+        const response = await fetch(await generatePresignedReadUrl(key))
+        if (!response.ok) {
+            throw new Error(`Unable to read verification image: ${response.status}`)
+        }
+        return Buffer.from(await response.arrayBuffer())
+    }
+
+    const [selfieBytes, profilePhotoBytes] = await Promise.all([
+        loadImage(selfieKey),
+        loadImage(profilePhotoKey),
+    ])
+
+    const faceCheck = async (bytes) => {
         const response = await client.send(new DetectFacesCommand({
-            Image: { S3Object: { Bucket: bucket, Name: key } },
+            Image: { Bytes: bytes },
             Attributes: ['DEFAULT'],
         }))
         const faces = response.FaceDetails ?? []
@@ -27,8 +47,8 @@ export async function compareFaces(selfieKey , profilePhotoKey){
     }
 
     const [validSelfie, validProfilePhoto] = await Promise.all([
-        faceCheck(selfieKey),
-        faceCheck(profilePhotoKey),
+        faceCheck(selfieBytes),
+        faceCheck(profilePhotoBytes),
     ])
 
     if (!validSelfie || !validProfilePhoto) {
@@ -36,9 +56,9 @@ export async function compareFaces(selfieKey , profilePhotoKey){
     }
 
     const command = new CompareFacesCommand({
-        SourceImage : {S3Object : {Bucket:bucket , Name:selfieKey}},
-        TargetImage :{S3Object : {Bucket:bucket , Name:profilePhotoKey}},
-        SimilarityThreshold: 90,
+        SourceImage: { Bytes: selfieBytes },
+        TargetImage: { Bytes: profilePhotoBytes },
+        SimilarityThreshold: 80,
     })
 
     let result = null
