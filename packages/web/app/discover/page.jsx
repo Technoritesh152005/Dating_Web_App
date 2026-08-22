@@ -13,6 +13,7 @@ import { ConfirmModal } from '@/components/ConfirmModal';
 import { ReportModal } from '@/components/ReportModal';
 import { ProfileDetailModal } from '@/components/ProfileDetailModel'
 import { VerifiedLayout } from '@/components/VerifiedLayout'
+import { SwipeableCard } from '@/components/SwipeableCard'
 
 
 const LOW_STACK_THRESHOLD = 3
