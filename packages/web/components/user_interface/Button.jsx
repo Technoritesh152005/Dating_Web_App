@@ -4,16 +4,23 @@ import { useState } from 'react';
 import { Bloom } from './Bloom';
 
 const VARIANTS = {
-  // Primary: the sindoor->marigold gradient, reserved for the ONE main
-  // action per screen - not diluted by using it everywhere.
   primary:
-    'bg-gradient-to-r from-sindoor to-marigold text-ink font-semibold shadow-[0_8px_24px_-8px_rgba(230,57,80,0.6)] hover:shadow-[0_12px_32px_-8px_rgba(230,57,80,0.75)] hover:-translate-y-0.5 active:translate-y-0',
+    'bg-gradient-to-r from-marigold to-marigold-deep text-dusk-deep font-semibold hover:brightness-105 active:scale-[0.985] glow-marigold',
   secondary:
-    'bg-dusk-light text-cream border border-cream/15 hover:border-marigold/50 hover:-translate-y-0.5 active:translate-y-0',
-  ghost: 'text-cream-dim hover:text-cream underline-offset-4 hover:underline',
+    'border border-cream/15 bg-cream/[0.04] text-cream hover:bg-cream/[0.09] active:scale-[0.985]',
+  ghost: 'text-cream-dim hover:text-cream',
 };
 
-export function Button({ children, variant = 'primary', className = '', onClick, type = 'button', disabled, showBloom = false, ...props }) {
+export function Button({
+  children,
+  variant = 'primary',
+  className = '',
+  onClick,
+  type = 'button',
+  disabled,
+  showBloom = false,
+  ...props
+}) {
   const [bloomTrigger, setBloomTrigger] = useState(0);
 
   const handleClick = (e) => {
@@ -26,7 +33,7 @@ export function Button({ children, variant = 'primary', className = '', onClick,
       type={type}
       disabled={disabled}
       onClick={handleClick}
-      className={`relative overflow-hidden rounded-full px-7 py-3.5 text-[15px] transition-all duration-200 ease-out disabled:opacity-50 disabled:pointer-events-none ${VARIANTS[variant]} ${className}`}
+      className={`relative overflow-hidden inline-flex h-12 items-center justify-center rounded-2xl px-6 text-[15px] tracking-tight transition-all duration-200 disabled:pointer-events-none disabled:opacity-40 ${VARIANTS[variant]} ${className}`}
       {...props}
     >
       {showBloom && bloomTrigger > 0 && <Bloom trigger={bloomTrigger} size={180} />}

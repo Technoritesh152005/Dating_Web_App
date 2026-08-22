@@ -242,6 +242,15 @@ export default function onBoardingSteps() {
     router.push("/discover");
   };
 
+  const startVerificationAgain = () => {
+    setError(null);
+    setLocationError(null);
+    setLocationPromptOpen(false);
+    setVerificationSubmitted(false);
+    setComplete(false);
+    setStep(3);
+  };
+
   useEffect(() => {
     const status = user?.profile?.verificationStatus || user?.verificationStatus;
     const hasLocation = user?.profile?.latitude != null && user?.profile?.longitude != null;
@@ -420,7 +429,7 @@ export default function onBoardingSteps() {
           </p>
           {(status === "REVERIFICATION_REQUIRED" || status === "REJECTED") && (
             <button
-              onClick={() => router.push("/onBoarding")}
+              onClick={startVerificationAgain}
               className="mt-4 w-full btn-primary"
             >
               Verify again

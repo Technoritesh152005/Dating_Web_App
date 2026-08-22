@@ -170,9 +170,10 @@ export function registerProfileRoutes(app) {
       const cachedData = await app.redis.get(profileRedisKey(request.userId));
 
       if (cachedData) {
-        F;
+        const cachedProfile = JSON.parse(cachedData);
+        cachedProfile.photos = await signPhotoUrls(cachedProfile.photos);
         reply.header("X-Cache", "HIT");
-        return reply.send(JSON.parse(cachedData));
+        return reply.send(cachedProfile);
       }
       const profile = await app.db.profile.findUnique({
         where: {
@@ -187,13 +188,6 @@ export function registerProfileRoutes(app) {
         return reply.code(404).send({ error: "Profile not Created" });
       }
 
-      profile.photos = await Promise.all(
-        profile.photos.map(async (photo) => ({
-          ...photo,
-          url: await generatePresignedReadUrl(photo.key),
-        })),
-      );
-
       // setting the data in cache memory
       await app.redis.set(
         profileRedisKey(request.userId),
@@ -202,7 +196,7 @@ export function registerProfileRoutes(app) {
         PROFILE_CACHE_TTL_SECONDS,
       );
       reply.header("X-Cache", "MISS");
-      return reply.send(profile);
+      return reply.send({ ...profile, photos: await signPhotoUrls(profile.photos) });
     },
   );
 
@@ -268,4 +262,13 @@ function calculateAge(dob) {
 
 function profileRedisKey(userid) {
   return `cache:profile::me:${userid}`;
+}
+
+async function signPhotoUrls(photos = []) {
+  return Promise.all(
+    photos.map(async (photo) => ({
+      ...photo,
+      url: await generatePresignedReadUrl(photo.key),
+    })),
+  );
 }

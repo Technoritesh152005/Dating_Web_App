@@ -1,4 +1,5 @@
 import { recordSwipeAndCheckMatch } from '../services/matching.js'
+import { generatePresignedReadUrl } from '@dating-app/shared/src/storage.js'
 
 const VALID_ACTIONS = ['PASS', 'LIKE', 'FIRE_LIKE']
 
@@ -84,6 +85,13 @@ export function registerSwipesRoutes(app) {
             include: { photos: { where: { isPrimary: true }, take: 1 } },
         });
 
+        for (const profile of otherProfiles) {
+            profile.photos = await Promise.all(profile.photos.map(async (photo) => ({
+                ...photo,
+                url: await generatePresignedReadUrl(photo.key),
+            })));
+        }
+
         //   map profile id to profile
         const profileByUserId = new Map(otherProfiles.map((p) => [p.userId, p]));
         const enrichedMatches = matches.map((match) => {
@@ -117,6 +125,13 @@ export function registerSwipesRoutes(app) {
             where: { userId: otherUserId },
             include: { photos: { where: { isPrimary: true }, take: 1 } },
         });
+
+        if (otherUser) {
+            otherUser.photos = await Promise.all(otherUser.photos.map(async (photo) => ({
+                ...photo,
+                url: await generatePresignedReadUrl(photo.key),
+            })));
+        }
 
         return reply.send({
             ok: true,
