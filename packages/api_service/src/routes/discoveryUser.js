@@ -1,5 +1,6 @@
 import { removeuserPreference, filterOutSeen, createQueue, buildCandidateFeedWithRelaxation } from '@dating-app/shared'
 import { QUEUE_NAMES } from '@dating-app/shared/src/queueNames.js';
+import { generatePresignedReadUrl } from '@dating-app/shared/src/storage.js';
 const PAGE_SIZE = 20; // pagination: never return the whole pool in one response
 const REFIL_THRESHOLD = 10
 
@@ -76,6 +77,13 @@ export function registerDiscoveryRoutes(app) {
             .map((id) => profileById.get(id))
             .filter(Boolean) // in case a profile got deleted between step 1 and step 2
             .map((profile) => sanitizeForOtherUsers(profile));
+
+        for (const profile of orderedProfiles) {
+            profile.photos = await Promise.all(profile.photos.map(async (photo) => ({
+                ...photo,
+                url: await generatePresignedReadUrl(photo.key),
+            })));
+        }
 
         return reply.send({
             profiles: orderedProfiles,
