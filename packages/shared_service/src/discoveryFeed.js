@@ -131,7 +131,7 @@ export async function buildCandidatePool(db, { userId, ownProfile, prefs, page =
     LIMIT ${pageSize}
     OFFSET ${offset}
       `
-
+console.log(candidate)
     return candidate;
 }
 

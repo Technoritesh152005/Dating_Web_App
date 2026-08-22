@@ -248,7 +248,7 @@ export default function onBoardingSteps() {
     setLocationPromptOpen(false);
     setVerificationSubmitted(false);
     setComplete(false);
-    setStep(3);
+    setStep(2);
   };
 
   useEffect(() => {
