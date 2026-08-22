@@ -5,6 +5,7 @@ import { Prisma } from "@prisma/client";
 import { QUEUE_NAMES } from "@dating-app/shared/src/queueNames.js";
 import { createQueue } from "@dating-app/shared/src/queue.js";
 import { buildEmbeddingInput } from "@dating-app/shared/src/buildEmbeddingInput.js";
+import { generatePresignedReadUrl } from "@dating-app/shared/src/storage.js";
 
 const VALID_GENDER = [
   "MALE",
@@ -185,6 +186,13 @@ export function registerProfileRoutes(app) {
       if (!profile) {
         return reply.code(404).send({ error: "Profile not Created" });
       }
+
+      profile.photos = await Promise.all(
+        profile.photos.map(async (photo) => ({
+          ...photo,
+          url: await generatePresignedReadUrl(photo.key),
+        })),
+      );
 
       // setting the data in cache memory
       await app.redis.set(

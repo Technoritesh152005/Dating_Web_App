@@ -42,6 +42,7 @@ export default function profileSettingPage() {
     const [saved, setSaved] = useState(false)
     const [error, setError] = useState(null)
     const [confirmLogout, setConfirmLogout] = useState(false)
+    const [activePhoto, setActivePhoto] = useState(0)
 
     useEffect(() => {
         if (loading) return
@@ -98,6 +99,8 @@ export default function profileSettingPage() {
                         { isPrimary: (profile.photos?.length ?? 0) === 0 }
                 })
                 setProfile((p) => ({ ...p, photos: [...p.photos, { key, url: publicUrl, isPrimary: p.photos.length === 0 }] }))
+                const refreshed = await api.get('/profile/me')
+                setProfile(refreshed)
             } catch (error) {
                 setError(error.message)
             }
@@ -135,79 +138,56 @@ export default function profileSettingPage() {
         );
     }
 
+    const primaryPhoto = profile.photos.find((photo) => photo.isPrimary) ?? profile.photos[0]
+    const displayedPhoto = profile.photos[activePhoto] ?? primaryPhoto
+
     return (
-        <main className="flex min-h-screen flex-col items-center bg-ink px-6 pb-16 pt-6">
+        <main className="min-h-screen overflow-hidden bg-ink px-4 pb-16 pt-4 text-cream sm:px-8 lg:px-12">
             <NavBar />
-
-            <div className="mt-8 w-full max-w-sm">
-                <h1 className="font-display text-2xl text-cream">{profile.displayName}</h1>
-
-                <section className="mt-6">
-                    <p className="mb-2 font-mono text-[11px] uppercase tracking-[0.12em] text-cream-dim">Photos</p>
-                    <div className="grid grid-cols-3 gap-3">
-                        {profile.photos.map((photo) => (
-                            <div key={photo.id ?? photo.key} className={`relative aspect-square overflow-hidden rounded-2xl ${photo.isPrimary ? 'ring-2 ring-marigold' : ''}`}>
-                                {/* eslint-disable-next-line @next/next/no-img-element */}
-                                <img src={photo.url} alt="" className="h-full w-full object-cover" />
-                                {photo.id && (
-                                    <>
-                                        <button
-                                            onClick={() => deletePhoto(photo.id)}
-                                            aria-label="Delete photo"
-                                            className="absolute right-1.5 top-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-ink/70 text-[12px] text-cream backdrop-blur-sm"
-                                        >
-                                            ✕
-                                        </button>
-                                        {!photo.isPrimary && (
-                                            <button
-                                                onClick={() => setPrimary(photo.id)}
-                                                className="absolute inset-x-0 bottom-0 bg-ink/70 py-1 font-mono text-[9px] uppercase tracking-wide text-cream backdrop-blur-sm"
-                                            >
-                                                Make primary
-                                            </button>
-                                        )}
-                                    </>
-                                )}
-                            </div>
-                        ))}
-                        {profile.photos.length < 6 && (
-                            <label className="flex aspect-square cursor-pointer items-center justify-center rounded-2xl border border-dashed border-cream/20 text-cream-dim hover:border-marigold/50 hover:text-marigold">
-                                <span className="text-2xl">+</span>
-                                <input type="file" accept="image/*" multiple className="hidden" onChange={(e) => addPhotos(e.target.files)} />
-                            </label>
-                        )}
+            <div className="mx-auto mt-8 grid w-full max-w-7xl gap-6 lg:grid-cols-[minmax(0,1.15fr)_minmax(360px,0.85fr)] lg:gap-10">
+                <section className="relative min-h-[620px] overflow-hidden rounded-card border border-cream/10 bg-dusk shadow-[0_30px_100px_-40px_rgba(0,0,0,0.9)] animate-[fade-in_600ms_ease-out]">
+                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_15%_10%,rgba(245,158,11,0.18),transparent_30%),radial-gradient(circle_at_90%_90%,rgba(218,52,69,0.2),transparent_35%)]" />
+                    {displayedPhoto ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={displayedPhoto.url} alt={profile.displayName} className="absolute inset-0 h-full w-full object-cover transition duration-700" onError={(event) => { event.currentTarget.style.display = 'none' }} />
+                    ) : (
+                        <div className="absolute inset-0 flex items-center justify-center bg-dusk-light font-display text-8xl text-cream/30">{profile.displayName?.[0]}</div>
+                    )}
+                    <div className="absolute inset-0 bg-gradient-to-t from-ink via-transparent to-ink/20" />
+                    <div className="absolute inset-x-0 bottom-0 p-7 sm:p-10">
+                        <p className="font-mono text-[11px] uppercase tracking-[0.24em] text-marigold">Your profile</p>
+                        <div className="mt-2 flex flex-wrap items-end gap-x-3 gap-y-2">
+                            <h1 className="font-display text-5xl leading-none text-cream sm:text-7xl">{profile.displayName}</h1>
+                            {profile.verificationStatus === 'VERIFIED' && <span className="mb-1 rounded-full border border-mehendi/40 bg-mehendi/20 px-3 py-1 font-mono text-[10px] uppercase tracking-widest text-mehendi-light">Verified</span>}
+                        </div>
+                        <p className="mt-4 max-w-xl text-base leading-relaxed text-cream-dim">{form.bio || 'Add a little spark to your introduction.'}</p>
+                    </div>
+                    <div className="absolute left-5 top-5 flex gap-1.5 sm:left-7 sm:top-7">
+                        {profile.photos.map((photo, index) => <button key={photo.id ?? photo.key} aria-label={`Show photo ${index + 1}`} onClick={() => setActivePhoto(index)} className={`h-1.5 w-12 rounded-full transition ${index === activePhoto ? 'bg-marigold' : 'bg-cream/30 hover:bg-cream/60'}`} />)}
                     </div>
                 </section>
 
-                <section className="mt-6">
-                    <label className="mb-2 block font-mono text-[11px] uppercase tracking-[0.12em] text-cream-dim">Bio</label>
-                    <textarea
-                        rows={3}
-                        value={form.bio}
-                        onChange={(e) => setForm((f) => ({ ...f, bio: e.target.value }))}
-                        className="w-full rounded-2xl border border-cream/10 bg-dusk-light px-5 py-3.5 text-[15px] text-cream outline-none focus:border-marigold/60"
-                    />
+                <section className="space-y-5 animate-[slide-up_700ms_120ms_both]">
+                    <div className="flex items-center justify-between">
+                        <div><p className="font-mono text-[11px] uppercase tracking-[0.2em] text-cream-dim">Profile studio</p><h2 className="mt-1 font-display text-3xl text-cream">Shape your story</h2></div>
+                        <span className="rounded-full border border-cream/10 bg-dusk px-3 py-1 font-mono text-[10px] uppercase tracking-widest text-cream-dim">{profile.photos.length}/6 photos</span>
+                    </div>
+
+                    <section className="rounded-card border border-cream/10 bg-dusk/80 p-5 backdrop-blur-sm">
+                        <div className="mb-4 flex items-center justify-between"><p className="font-mono text-[11px] uppercase tracking-[0.15em] text-cream-dim">Photo gallery</p><label className="cursor-pointer font-mono text-[11px] uppercase tracking-widest text-marigold hover:text-cream">Add photos<input type="file" accept="image/*" multiple className="hidden" onChange={(e) => addPhotos(e.target.files)} /></label></div>
+                        <div className="grid grid-cols-3 gap-2.5">
+                            {profile.photos.map((photo, index) => <div key={photo.id ?? photo.key} className={`group relative aspect-square overflow-hidden rounded-xl bg-dusk-light ${photo.isPrimary ? 'ring-2 ring-marigold ring-offset-2 ring-offset-dusk' : ''}`}><button onClick={() => setActivePhoto(index)} className="h-full w-full">{/* eslint-disable-next-line @next/next/no-img-element */}<img src={photo.url} alt={`${profile.displayName} photo ${index + 1}`} className="h-full w-full object-cover transition duration-500 group-hover:scale-105" onError={(event) => { event.currentTarget.style.display = 'none' }} /></button>{photo.id && <button onClick={() => deletePhoto(photo.id)} aria-label="Delete photo" className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-ink/75 text-xs text-cream opacity-0 transition group-hover:opacity-100">✕</button>}{photo.id && !photo.isPrimary && <button onClick={() => setPrimary(photo.id)} className="absolute inset-x-1 bottom-1 rounded-lg bg-ink/75 py-1.5 font-mono text-[9px] uppercase tracking-wide text-cream opacity-0 transition group-hover:opacity-100">Make primary</button>}</div>)}
+                            {profile.photos.length < 6 && <label className="flex aspect-square cursor-pointer items-center justify-center rounded-xl border border-dashed border-cream/20 text-3xl text-cream-dim transition hover:border-marigold hover:text-marigold">+<input type="file" accept="image/*" multiple className="hidden" onChange={(e) => addPhotos(e.target.files)} /></label>}
+                        </div>
+                    </section>
+
+                    <section className="rounded-card border border-cream/10 bg-dusk/80 p-5 backdrop-blur-sm"><p className="mb-3 font-mono text-[11px] uppercase tracking-[0.15em] text-cream-dim">About you</p><textarea rows={4} value={form.bio} onChange={(e) => setForm((f) => ({ ...f, bio: e.target.value }))} placeholder="What should someone know about you?" className="w-full resize-none rounded-xl border border-cream/10 bg-ink/50 px-4 py-3 text-[15px] text-cream outline-none transition placeholder:text-cream/30 focus:border-marigold/60" /></section>
+
+                    <section className="rounded-card border border-cream/10 bg-dusk/80 p-5 backdrop-blur-sm"><p className="mb-3 font-mono text-[11px] uppercase tracking-[0.15em] text-cream-dim">Your signals</p><div className="mb-5"><ChoicePills options={INTEREST_OPTIONS} value={form.interests} onChange={(v) => setForm((f) => ({ ...f, interests: v }))} multiple /></div><p className="mb-3 font-mono text-[11px] uppercase tracking-[0.15em] text-cream-dim">Work and craft</p><ChoicePills options={PROFESSION_OPTIONS} value={form.profession} onChange={(v) => setForm((f) => ({ ...f, profession: v }))} /></section>
+
+                    {error && <p className="text-[14px] text-sindoor-light">{error}</p>}
+                    <div className="flex flex-col gap-3 sm:flex-row"><Button variant="primary" onClick={save} disabled={saving} showBloom className="flex-1">{saving ? 'Saving…' : saved ? 'Saved' : 'Save changes'}</Button><Button variant="ghost" onClick={() => setConfirmLogout(true)} className="sm:px-7">Log out</Button></div>
                 </section>
-
-                <section className="mt-6">
-                    <p className="mb-2 font-mono text-[11px] uppercase tracking-[0.12em] text-cream-dim">Interests</p>
-                    <ChoicePills options={INTEREST_OPTIONS} value={form.interests} onChange={(v) => setForm((f) => ({ ...f, interests: v }))} multiple />
-                </section>
-
-                <section className="mt-6">
-                    <p className="mb-2 font-mono text-[11px] uppercase tracking-[0.12em] text-cream-dim">Profession</p>
-                    <ChoicePills options={PROFESSION_OPTIONS} value={form.profession} onChange={(v) => setForm((f) => ({ ...f, profession: v }))} />
-                </section>
-
-                {error && <p className="mt-4 text-[14px] text-sindoor-light">{error}</p>}
-
-                <Button variant="primary" onClick={save} disabled={saving} showBloom className="mt-8 w-full">
-                    {saving ? 'Saving…' : saved ? 'Saved' : 'Save changes'}
-                </Button>
-
-                <Button variant="ghost" onClick={() => setConfirmLogout(true)} className="mt-4 w-full">
-                    Log out
-                </Button>
             </div>
 
             <ConfirmModal
