@@ -144,7 +144,7 @@ export function registerSwipesRoutes(app) {
     })
     app.post('/matches/:matchId/unmatch', { preHandler: [app.authenticate, app.requireVerification], config: { authenticated: true } }, async (request, reply) => {
 
-        const { matchId } = request.body ?? {}
+        const { matchId } = request.params
 
         const match = await app.db.match.findUnique({
             where: { id: matchId }
