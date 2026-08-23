@@ -68,7 +68,6 @@ function ChatPageContent() {
 
     /* this is to maintains socket lifecycle */
     useEffect(() => {
-                    setMessages((prev) => (prev.some((m) => m.id === message.id) ? prev : [...prev, message]))
         if (loading || !user) return
 
         const socket = connectSocket()
@@ -263,13 +262,13 @@ function ChatPageContent() {
                 <div ref={messageEndRef} />
             </div>
 
-            {icebreaker && (
+            {iceBreaker && (
                 <button
                     onClick={useIcebreaker}
                     className="mx-5 mb-3 rounded-2xl border border-marigold/30 bg-marigold/10 px-4 py-3 text-left text-[14px] text-cream-dim transition-colors hover:border-marigold/60"
                 >
                     <span className="mb-1 block font-mono text-[10px] uppercase tracking-wide text-marigold">Suggested opener</span>
-                    {icebreaker}
+                    {iceBreaker}
                 </button>
             )}
 

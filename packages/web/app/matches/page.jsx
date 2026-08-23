@@ -13,6 +13,7 @@ function MatchesPageContent() {
     const { user, loading } = useAuth()
     const router = useRouter()
     const [matches, setMatches] = useState(null)
+    const [error, setError] = useState(null)
 
     useEffect(() => {
         if (loading) return
@@ -20,8 +21,10 @@ function MatchesPageContent() {
             router.push('/login')
             return
         }
-        /* set the matches data  in useState */
-        api.get('/matches').then((data) => setMatches(data.matches))
+        /* set the matches data in useState */
+        api.get('/matches')
+            .then((data) => setMatches(data.matches))
+            .catch((requestError) => setError(requestError.message || 'Failed to load matches'))
 
     }, [loading, user, router])
 
@@ -29,7 +32,9 @@ function MatchesPageContent() {
     if (loading || matches === null) {
         return (
             <main className="flex min-h-screen items-center justify-center">
-                <p className="font-mono text-[13px] uppercase tracking-widest text-cream-dim">Loading…</p>
+                <p className="font-mono text-[13px] uppercase tracking-widest text-cream-dim">
+                    {error || 'Loading…'}
+                </p>
             </main>
         );
     }

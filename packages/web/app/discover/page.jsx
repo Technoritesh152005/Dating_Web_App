@@ -80,8 +80,11 @@ function DiscoverPageContent() {
         setStack((prev) => prev.slice(1))
         try {
             const result = await api.post('/swipe', { toUserId: current.userId, action })
-            if (result.matched) {
-                setCelebrating({ name: current.displayName })
+            if (result.isMatched && result.match) {
+              setCelebrating({
+                id: result.match.id,
+                profile: current,
+              })
             }
         } catch (error) {
             console.error('Swipe Failed', error)
