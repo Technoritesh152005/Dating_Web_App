@@ -94,6 +94,12 @@ function DiscoverPageContent() {
 
     }
 
+    const triggerLoveBurst = (action) => {
+        if (action === 'FIRE_LIKE') {
+            setCelebrating((prev) => prev ?? { id: 'superlike', profile: stack[0] })
+        }
+    }
+
 
     const handleBlock = async function(){
         const current = stack[0]
@@ -177,22 +183,37 @@ function DiscoverPageContent() {
           </div>
 
           {topCard && (
-            <div className="mt-6 flex items-center gap-6">
+            <div className="mt-6 flex items-center justify-center gap-5">
               <button
                 onClick={() => handleSwipe('PASS')}
                 disabled={swiping}
                 aria-label="Pass"
-                className="flex h-16 w-16 items-center justify-center rounded-full border border-cream/15 bg-dusk text-2xl text-cream-dim transition-transform hover:scale-105 hover:border-cream/30 disabled:opacity-50"
+                className="flex h-16 w-16 items-center justify-center rounded-full border border-cream/15 bg-dusk text-2xl text-cream-dim transition-all duration-200 hover:scale-105 hover:border-cream/30 hover:text-cream disabled:opacity-50"
               >
                 ✕
               </button>
+
+              <button
+                onClick={() => {
+                  triggerLoveBurst('FIRE_LIKE')
+                  handleSwipe('FIRE_LIKE')
+                }}
+                disabled={swiping}
+                aria-label="Super like"
+                className="group relative flex h-14 w-14 items-center justify-center rounded-full border border-marigold/40 bg-[radial-gradient(circle,_rgba(240,162,2,0.14),_rgba(230,57,80,0.12))] text-xl text-marigold transition-all duration-200 hover:scale-110 hover:shadow-[0_0_30px_rgba(240,162,2,0.35)] disabled:opacity-50"
+              >
+                <span className="absolute inset-0 animate-ping rounded-full bg-marigold/20 opacity-0 group-hover:opacity-100" />
+                ✦
+              </button>
+
               <button
                 onClick={() => handleSwipe('LIKE')}
                 disabled={swiping}
                 aria-label="Like"
-                className="flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-r from-sindoor to-marigold text-3xl text-ink shadow-[0_12px_32px_-8px_rgba(230,57,80,0.6)] transition-transform hover:scale-105 disabled:opacity-50"
+                className="group relative flex h-20 w-20 items-center justify-center rounded-full bg-[radial-gradient(circle_at_30%_30%,_#ffb765_0%,_#f39d2b_28%,_#de5d43_62%,_#cd2e52_100%)] text-3xl text-white shadow-[0_18px_40px_-12px_rgba(230,57,80,0.7)] transition-all duration-250 hover:scale-110 active:scale-95 disabled:opacity-50"
               >
-                ♥
+                <span className="absolute inset-0 rounded-full bg-white/10 opacity-0 transition group-hover:opacity-100" />
+                <span className="relative animate-[pulse_1.6s_ease-in-out_infinite]">♥</span>
               </button>
             </div>
           )}

@@ -44,7 +44,15 @@ export function registerChatHandlers(io, socket, { db, redis, logger }) {
             }
             // why do we verify- we verify cause only the match members should enter in match room
             const match = await verifyMatchMembership(db, matchId, socket.userId)
-            if (!match) return callback?.({ ok: false, error: 'Not authorized to join the chat room' })
+            if (!match) {
+                const endedMatch = await db.match.findUnique({ where: { id: matchId }, select: { status: true } })
+                return callback?.({
+                    ok: false,
+                    error: endedMatch?.status === 'UNMATCHED'
+                        ? 'This match has ended. You can no longer join this chat.'
+                        : 'Not authorized to join the chat room'
+                })
+            }
 
             socket.join(matchRoom(matchId))
             logger.info({ userId: socket.userId, matchId }, 'User joined match room');
@@ -85,7 +93,13 @@ export function registerChatHandlers(io, socket, { db, redis, logger }) {
             // re-verify match status at send time to catch race condition (match unmatched between join and send)
             const match = await verifyMatchMembership(db, matchId, socket.userId)
             if (!match) {
-                return callback?.({ ok: false, error: 'Not authorized to message in this match' });
+                const endedMatch = await db.match.findUnique({ where: { id: matchId }, select: { status: true } })
+                return callback?.({
+                    ok: false,
+                    error: endedMatch?.status === 'UNMATCHED'
+                        ? 'This match has ended. You can no longer send messages.'
+                        : 'Not authorized to message in this match'
+                });
             }
 
             //   we now store the message before broadcasting

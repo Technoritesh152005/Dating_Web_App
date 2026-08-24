@@ -56,9 +56,10 @@ export function SwipeableCard({ profile, onSwipe, onTap, disabled, topRightSlot 
   const rotation = offset.x * 0.05;
   const likeOpacity = Math.min(Math.max(offset.x / SWIPE_THRESHOLD, 0), 1);
   const passOpacity = Math.min(Math.max(-offset.x / SWIPE_THRESHOLD, 0), 1);
+  const superLikeOpacity = Math.min(Math.max(Math.abs(offset.x) / (SWIPE_THRESHOLD * 1.5), 0), 1);
 
   const transform = exiting
-    ? `translateX(${exiting === 'LIKE' ? EXIT_DISTANCE : -EXIT_DISTANCE}px) rotate(${exiting === 'LIKE' ? 30 : -30}deg)`
+    ? `translateX(${exiting === 'LIKE' ? EXIT_DISTANCE : exiting === 'FIRE_LIKE' ? EXIT_DISTANCE * 0.65 : -EXIT_DISTANCE}px) rotate(${exiting === 'LIKE' ? 30 : exiting === 'FIRE_LIKE' ? 18 : -30}deg)`
     : `translate(${offset.x}px, ${offset.y}px) rotate(${rotation}deg)`;
 
   return (
@@ -82,16 +83,22 @@ export function SwipeableCard({ profile, onSwipe, onTap, disabled, topRightSlot 
       )}
 
       <div
-        className="pointer-events-none absolute left-6 top-8 rotate-[-18deg] rounded-lg border-4 border-mehendi px-3 py-1 font-display text-2xl font-semibold uppercase text-mehendi"
+        className="pointer-events-none absolute left-6 top-8 rotate-[-18deg] rounded-full border-4 border-mehendi bg-mehendi/10 px-4 py-1.5 font-display text-2xl font-semibold uppercase text-mehendi shadow-[0_10px_30px_rgba(76,122,94,0.35)]"
         style={{ opacity: likeOpacity }}
       >
         Like
       </div>
       <div
-        className="pointer-events-none absolute right-6 top-8 rotate-[18deg] rounded-lg border-4 border-sindoor px-3 py-1 font-display text-2xl font-semibold uppercase text-sindoor"
+        className="pointer-events-none absolute right-6 top-8 rotate-[18deg] rounded-full border-4 border-sindoor bg-sindoor/10 px-4 py-1.5 font-display text-2xl font-semibold uppercase text-sindoor shadow-[0_10px_30px_rgba(230,57,80,0.35)]"
         style={{ opacity: passOpacity }}
       >
         Nope
+      </div>
+      <div
+        className="pointer-events-none absolute left-1/2 top-8 -translate-x-1/2 rounded-full border-4 border-marigold bg-[rgba(240,162,2,0.08)] px-4 py-1.5 font-display text-2xl font-semibold uppercase text-marigold shadow-[0_10px_30px_rgba(240,162,2,0.3)]"
+        style={{ opacity: superLikeOpacity }}
+      >
+        Super
       </div>
     </div>
   );

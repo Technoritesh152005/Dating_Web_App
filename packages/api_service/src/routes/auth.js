@@ -12,7 +12,7 @@ const accessCookieOpts = (config) => ({
     // The realtime service is on a sibling subdomain and must receive this cookie.
     ...(config.nodeEnv === 'production' ? { domain: '.melodis.in' } : {}),
     path: '/',
-    maxAge: 15 * 60 //same as access token
+    maxAge: 30 * 60 //same as access token
 
 })
 
