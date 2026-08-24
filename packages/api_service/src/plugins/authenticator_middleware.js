@@ -8,7 +8,7 @@ export function registerAuthDecorator(app, config) {
         const token = request.cookies?.accessToken
 
         if (!token) {
-            return reply.code(401).send({ error: 'Access Token Not Found/ Not Authenticated' })
+            return reply.code(401).send({ error: 'Not Authenticated. Please log in.' })
         }
 
         try {
