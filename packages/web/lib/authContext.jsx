@@ -10,6 +10,7 @@ export function AuthProvider({ children }) {
 
     const [user, setUser] = useState(null)
     const [loading, setLoading] = useState(true);/* it is true until auth/me check finishes */
+    const [sessionBanner, setSessionBanner] = useState('')
 
     // Remember this function so React doesn't create a new checkAuth function on every render.
     const checkAuth = useCallback(async () => {
@@ -17,6 +18,7 @@ export function AuthProvider({ children }) {
         try {
             const me = await api.get('/auth/me')
             setUser(me)
+            setSessionBanner('')
             return me
         } catch (err) {
             // Handle 403 VERIFICATION_REQUIRED - user is authenticated but not verified
@@ -28,9 +30,13 @@ export function AuthProvider({ children }) {
                     verificationStatus: err.body.verificationStatus,
                     message: err.body.message
                 })
+                setSessionBanner('')
                 return null
             } else {
                 setUser(null)
+                if (err?.status === 401) {
+                    setSessionBanner(err?.body?.error || 'Your session expired. Please log in again.')
+                }
                 return null
             }
         } finally {
@@ -51,6 +57,7 @@ export function AuthProvider({ children }) {
 
     // u get checkAuth after getting response from backend is because when u get the response u can set the user in ur createcontext
     const login = async (email, password) => {
+        setSessionBanner('')
         const result = await api.post('/auth/login', { email, password })
         const user = await checkAuth()
         return { ...result, user }
@@ -104,8 +111,17 @@ export function AuthProvider({ children }) {
             getVerificationStatus,
             isVerified,
             needsVerification,
-            isVerificationPending
+            isVerificationPending,
+            sessionBanner,
+            clearSessionBanner: () => setSessionBanner('')
         }}>
+            {sessionBanner && (
+                <div className="fixed inset-x-0 top-4 z-[100] flex justify-center px-4">
+                    <div className="max-w-md rounded-full border border-sindoor/30 bg-[linear-gradient(135deg,rgba(230,57,80,0.16),rgba(240,162,2,0.12))] px-4 py-2 text-center text-sm text-cream shadow-[0_18px_35px_rgba(0,0,0,0.25)] backdrop-blur-sm">
+                        {sessionBanner}
+                    </div>
+                </div>
+            )}
             {children}
         </authContext.Provider>
     );

@@ -8,7 +8,7 @@ export function registerAuthDecorator(app, config) {
         const token = request.cookies?.accessToken
 
         if (!token) {
-            return reply.code(401).send({ error: 'Not Authenticated. Please log in.' })
+            return reply.code(401).send({ error: 'Please log in to continue.' })
         }
 
         try {
@@ -16,7 +16,7 @@ export function registerAuthDecorator(app, config) {
             const payload = verifyAccessToken(token, config.jwtSecrets)
             request.userId = payload.sub
         } catch (error) {
-            return reply.code(401).send({ error: 'Invalid or expired token' });
+            return reply.code(401).send({ error: 'Your session expired. Please log in again.' });
         }
     })
 

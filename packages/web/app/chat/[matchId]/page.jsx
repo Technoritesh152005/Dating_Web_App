@@ -194,12 +194,12 @@ function ChatPageContent() {
     }
 
     return (
-        <main className="flex min-h-screen flex-col bg-ink">
-            <header className="flex items-center gap-3 border-b border-cream/8 px-5 py-4">
-                <Link href="/matches" className="text-cream-dim hover:text-cream" aria-label="Back to matches">
+        <main className="flex h-screen flex-col overflow-hidden bg-[radial-gradient(circle_at_top,_rgba(119,58,73,0.42),_transparent_25%),linear-gradient(180deg,_#1d0d13_0%,_#140911_100%)] text-cream">
+            <header className="flex items-center gap-3 border-b border-white/10 bg-black/10 px-5 py-4 backdrop-blur-sm">
+                <Link href="/matches" className="text-cream-dim transition hover:text-cream" aria-label="Back to matches">
                     ←
                 </Link>
-                <div className="h-10 w-10 flex-shrink-0 overflow-hidden rounded-full bg-dusk-light">
+                <div className="h-10 w-10 flex-shrink-0 overflow-hidden rounded-full border border-white/10 bg-dusk-light shadow-[0_10px_30px_rgba(0,0,0,0.35)]">
                     {otherUser?.photos?.[0] ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img src={otherUser.photos[0].url} alt={otherUser.displayName} className="h-full w-full object-cover" />
@@ -210,15 +210,15 @@ function ChatPageContent() {
                     )}
                 </div>
                 <div className="flex-1">
-                    <p className="font-display text-[16px] text-cream">{otherUser?.displayName ?? 'Loading…'}</p>
-                    <p className="font-mono text-[11px] text-cream-dim">
-                        {partnerTyping ? 'typing…' : partnerOnline ? 'online' : ''}
+                    <p className="font-display text-[17px] text-cream">{otherUser?.displayName ?? 'Loading…'}</p>
+                    <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-cream-dim">
+                        {partnerTyping ? 'typing…' : partnerOnline ? 'online' : 'away'}
                     </p>
                 </div>
 
                 <ActionMenu
                     trigger={
-                        <button aria-label="More options" className="flex h-9 w-9 items-center justify-center rounded-full text-cream-dim hover:text-cream">
+                        <button aria-label="More options" className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/5 text-cream-dim transition hover:border-marigold/40 hover:text-cream">
                             ⋯
                         </button>
                     }
@@ -234,55 +234,59 @@ function ChatPageContent() {
                 <p className="bg-sindoor/10 px-5 py-2 text-center text-[13px] text-sindoor-light">{connectionError}</p>
             )}
 
-            <div className="flex-1 overflow-y-auto px-5 py-4">
-                {hasMoreHistory && (
-                    <button onClick={loadOlderMessages} className="mb-4 w-full text-center font-mono text-[11px] uppercase tracking-wide text-cream-dim hover:text-marigold">
-                        Load earlier messages
-                    </button>
-                )}
+            <div className="relative flex-1 overflow-hidden">
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(240,162,2,0.12),_transparent_26%),radial-gradient(circle_at_bottom_right,_rgba(230,57,80,0.12),_transparent_24%)]" />
+                <div className="relative flex h-full flex-col overflow-hidden px-5 py-4">
+                    <div className="flex-1 overflow-y-auto overscroll-contain pb-2 pr-1 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
+                        {hasMoreHistory && (
+                            <button onClick={loadOlderMessages} className="mb-4 w-full text-center font-mono text-[10px] uppercase tracking-[0.18em] text-cream-dim transition hover:text-marigold">
+                                Load earlier messages
+                            </button>
+                        )}
 
-                <div className="flex flex-col gap-2">
-                    {messages.map((message) => {
-                        const mine = message.senderId === user.id;
-                        return (
-                            <div key={message.id} className={`flex ${mine ? 'justify-end' : 'justify-start'}`}>
-                                <div
-                                    className={`max-w-[75%] rounded-2xl px-4 py-2.5 text-[15px] ${mine ? 'bg-gradient-to-r from-sindoor to-marigold text-ink' : 'bg-dusk-light text-cream'
-                                        }`}
-                                >
-                                    {message.content}
-                                    {mine && (
-                                        <span className="ml-2 font-mono text-[10px] opacity-60">{message.readAt ? '✓✓' : '✓'}</span>
-                                    )}
-                                </div>
-                            </div>
-                        );
-                    })}
+                        <div className="flex flex-col gap-2.5">
+                            {messages.map((message) => {
+                                const mine = message.senderId === user.id;
+                                return (
+                                    <div key={message.id} className={`flex ${mine ? 'justify-end' : 'justify-start'}`}>
+                                        <div
+                                            className={`max-w-[78%] rounded-[1.4rem] px-4 py-2.5 text-[15px] leading-relaxed shadow-[0_14px_30px_rgba(0,0,0,0.18)] backdrop-blur-sm ${mine ? 'bg-gradient-to-r from-[#f04f65] via-[#e96d45] to-[#f0a202] text-[#1b0e14] shadow-[0_14px_25px_rgba(240,120,70,0.35)]' : 'border border-white/8 bg-white/5 text-cream'} `}
+                                        >
+                                            <span className="break-words">{message.content}</span>
+                                            {mine && (
+                                                <span className="ml-2 align-middle font-mono text-[9px] opacity-70">{message.readAt ? '✓✓' : '✓'}</span>
+                                            )}
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                        <div ref={messageEndRef} />
+                    </div>
+
+                    {iceBreaker && (
+                        <button
+                            onClick={useIcebreaker}
+                            className="mb-3 rounded-[1.25rem] border border-marigold/40 bg-[linear-gradient(135deg,rgba(240,162,2,0.18),rgba(230,57,80,0.08))] px-4 py-3 text-left text-[14px] text-cream ring-1 ring-white/5 transition hover:-translate-y-0.5 hover:border-marigold/70"
+                        >
+                            <span className="mb-1 block font-mono text-[10px] uppercase tracking-[0.18em] text-marigold">Suggested opener</span>
+                            <span className="text-cream-dim">{iceBreaker}</span>
+                        </button>
+                    )}
+
+                    <form onSubmit={sendMessage} className="mt-2 flex items-center gap-3 rounded-[1.4rem] border border-white/8 bg-[#2b1620]/80 p-2 shadow-[0_12px_28px_rgba(0,0,0,0.22)] backdrop-blur-sm">
+                        <input
+                            value={input}
+                            onChange={handleInputChange}
+                            placeholder="Write something…"
+                            className="flex-1 rounded-full border border-transparent bg-[#1d0d13]/70 px-4 py-3 text-[15px] text-cream placeholder:text-cream/45 outline-none transition focus:border-marigold/50"
+                        />
+                        <Button type="submit" variant="primary" disabled={!input.trim() || sending} className="h-11 rounded-full px-5 text-[14px]">
+                            Send
+                        </Button>
+                    </form>
                 </div>
-                <div ref={messageEndRef} />
             </div>
-
-            {iceBreaker && (
-                <button
-                    onClick={useIcebreaker}
-                    className="mx-5 mb-3 rounded-2xl border border-marigold/30 bg-marigold/10 px-4 py-3 text-left text-[14px] text-cream-dim transition-colors hover:border-marigold/60"
-                >
-                    <span className="mb-1 block font-mono text-[10px] uppercase tracking-wide text-marigold">Suggested opener</span>
-                    {iceBreaker}
-                </button>
-            )}
-
-            <form onSubmit={sendMessage} className="flex items-center gap-3 border-t border-cream/8 px-5 py-4">
-                <input
-                    value={input}
-                    onChange={handleInputChange}
-                    placeholder="Write something…"
-                    className="flex-1 rounded-full border border-cream/10 bg-dusk-light px-5 py-3 text-[15px] text-cream outline-none focus:border-marigold/60"
-                />
-                <Button type="submit" variant="primary" disabled={!input.trim() || sending}>
-                    Send
-                </Button>
-            </form>
 
             <ConfirmModal
                 open={confirmBlock}

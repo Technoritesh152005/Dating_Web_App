@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken'
 import crypto from 'node:crypto'
 
-const ACCESS_TOKEN_LIFE = '15m'
+const ACCESS_TOKEN_LIFE = '30m'
 const REFRESH_TOKEN_LIFE_DAYS = 7
 
 // sub mens subject which is identity of user
