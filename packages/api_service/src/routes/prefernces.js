@@ -40,10 +40,10 @@ export function registerPreferencesRoutes(app){
           if (professionFilter && !professionFilter.every((p) => VALID_PROFESSIONS.includes(p))) {
             return reply.code(400).send({ error: `professionFilter values must be one of: ${VALID_PROFESSIONS.join(', ')}` });
           }
-          if(lookingFor && (Array.isArray(loookingFor)) && !loookingFor.every((l) => VALID_LOOKING_FOR.includes(l))){
-            return reply.code(400).send({error:
-              'Lookingfor value must be: '`${VALID_LOOKING_FOR.join(', ')}`
-            })
+          if (Array.isArray(lookingFor) && !lookingFor.every((l) => VALID_LOOKING_FOR.includes(l))) {
+            return reply.code(400).send({
+              error: `Looking for values must be one of: ${VALID_LOOKING_FOR.join(', ')}`
+            });
           }
         //   only whose details r present they appear in data as key value pair
           const data = {

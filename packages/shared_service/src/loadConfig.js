@@ -11,20 +11,28 @@ const SUPPORTED_SECRET_VERSIONS = ['v1', 'v2']
 function loadDotEnvFromNearestParent(){
 let currentDir = process.cwd()
 
+const candidateFiles = [
+    '.env.local',
+    '.env.production.local',
+    '.env.production',
+    '.env'
+]
+
 while (true){
-const envPath = path.join(currentDir, '.env')
+    for (const fileName of candidateFiles) {
+        const envPath = path.join(currentDir, fileName)
+        if (fs.existsSync(envPath)) {
+            dotenv.config({ path: envPath })
+            return
+        }
+    }
 
-if (fs.existsSync(envPath)){
-dotenv.config({ path: envPath })
-return
-}
+    const parentDir = path.dirname(currentDir)
+    if (parentDir === currentDir){
+        return
+    }
 
-const parentDir = path.dirname(currentDir)
-if (parentDir === currentDir){
-return
-}
-
-currentDir = parentDir
+    currentDir = parentDir
 }
 }
 
