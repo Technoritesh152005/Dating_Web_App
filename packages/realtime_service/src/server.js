@@ -33,14 +33,36 @@ async function main() {
 });
 
   const allowedOrigins = config.corsOrigin
-    ? config.corsOrigin.split(',').map(o => o.trim())
-    : ['http://localhost:5173'];
+    ? config.corsOrigin.split(',').map(o => o.trim()).filter(Boolean)
+    : ['http://localhost:3000', 'http://localhost:3001', 'https://melodis.in', 'https://www.melodis.in'];
+
+  const isAllowedOrigin = (origin) => {
+    if (!origin) return true;
+    if (allowedOrigins.includes(origin)) return true;
+
+    try {
+      const hostname = new URL(origin).hostname;
+      return hostname === 'localhost' || hostname.endsWith('.localhost') || hostname === 'melodis.in' || hostname === 'www.melodis.in';
+    } catch {
+      return false;
+    }
+  };
 
   // Creating socket.io server
   const io = new Server(server, {
     cors: {
-      origin: allowedOrigins,
-      credentials: true
+      origin: (origin, callback) => {
+        if (isAllowedOrigin(origin)) {
+          callback(null, true);
+          return;
+        }
+
+        logger.warn({ origin }, 'Rejected Socket.IO CORS origin');
+        callback(new Error(`Origin not allowed: ${origin}`));
+      },
+      credentials: true,
+      methods: ['GET', 'POST', 'OPTIONS'],
+      allowedHeaders: ['Content-Type', 'Authorization'],
     },
   });
 

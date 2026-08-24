@@ -106,6 +106,6 @@ realtimePort: Number(process.env.REALTIME_PORT) || 4001,
 jwtSecret: activeSecret,
 jwtSecrets: allSecrets,
 googleClientId:process.env.GOOGLE_CLIENT_ID,
-corsOrigin: process.env.CORS_ORIGIN
+corsOrigin: process.env.CORS_ORIGIN || 'http://localhost:3000,http://localhost:3001,https://melodis.in,https://www.melodis.in,https://realtime.melodis.in'
 }
 }

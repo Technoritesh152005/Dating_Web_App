@@ -34,11 +34,30 @@ async function main() {
 })
 
   const allowedOrigins = config.corsOrigin
-    ? config.corsOrigin.split(',').map(o => o.trim())
-    : ['http://localhost:5174'];
+    ? config.corsOrigin.split(',').map(o => o.trim()).filter(Boolean)
+    : ['http://localhost:3000', 'http://localhost:3001', 'https://melodis.in', 'https://www.melodis.in'];
 
   await app.register(cors, {
-    origin: allowedOrigins,
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true)
+        return
+      }
+
+      try {
+        const hostname = new URL(origin).hostname
+        const allowedHostnames = new Set(['localhost', 'melodis.in', 'www.melodis.in'])
+        if (hostname === 'localhost' || hostname.endsWith('.localhost') || allowedHostnames.has(hostname)) {
+          callback(null, true)
+          return
+        }
+      } catch {
+        // ignore malformed origins and block them
+      }
+
+      logger.warn({ origin }, 'Rejected API CORS origin')
+      callback(new Error(`Origin not allowed: ${origin}`), false)
+    },
     credentials: true
   })
   await app.register(helmet)
