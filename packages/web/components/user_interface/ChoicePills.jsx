@@ -12,7 +12,7 @@ export function ChoicePills({ options, value, onChange, multiple = false }) {
   };
 
   return (
-    <div className="flex flex-wrap gap-2">
+    <div className="flex flex-wrap gap-2.5">
       {options.map(({ value: optValue, label }) => {
         const selected = isSelected(optValue);
         return (
@@ -20,10 +20,10 @@ export function ChoicePills({ options, value, onChange, multiple = false }) {
             key={optValue}
             type="button"
             onClick={() => toggle(optValue)}
-            className={`rounded-full border px-4 py-2 text-[13.5px] transition-all duration-200 active:scale-95 ${
+            className={`rounded-full border px-4 py-2.5 text-[13px] font-medium transition-all duration-200 active:scale-[0.98] ${
               selected
-                ? 'animate-pop-in border-marigold/70 bg-marigold/15 text-marigold'
-                : 'border-cream/10 bg-cream/[0.03] text-cream-dim hover:border-cream/25 hover:text-cream'
+                ? 'border-marigold/70 bg-marigold/20 text-marigold shadow-[0_0_0_1px_rgba(240,162,2,0.3)]'
+                : 'border-cream/12 bg-cream/[0.02] text-cream-dim hover:border-cream/20 hover:text-cream'
             }`}
           >
             {label}
