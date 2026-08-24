@@ -8,14 +8,14 @@ export function Input({ label, error, className = '', id, ...props }) {
       {label && (
         <label
           htmlFor={inputId}
-          className="mb-2 block font-mono text-[11px] uppercase tracking-[0.14em] text-cream-dim"
+          className="mb-2 block font-mono text-[11px] uppercase tracking-[0.16em] text-cream-dim/80"
         >
           {label}
         </label>
       )}
       <input
         id={inputId}
-        className={`w-full rounded-2xl border border-cream/10 bg-dusk px-5 py-3.5 text-[15px] text-cream outline-none transition-colors placeholder:text-cream-dim/50 focus:border-marigold/60 ${error ? 'border-sindoor/70' : ''} ${className}`}
+        className={`w-full rounded-2xl border border-cream/10 bg-[#2a1f1d]/80 px-4 py-3.5 text-[15px] text-cream outline-none transition-all placeholder:text-cream-dim/45 focus:border-marigold/60 focus:shadow-[0_0_0_1px_rgba(240,162,2,0.3)] ${error ? 'border-sindoor/70' : ''} ${className}`}
         {...props}
       />
       {error && (
