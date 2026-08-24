@@ -3,6 +3,22 @@ import { QUEUE_NAMES } from '@dating-app/shared/src/queueNames.js';
 import { generatePresignedReadUrl } from '@dating-app/shared/src/storage.js';
 const PAGE_SIZE = 20; // pagination: never return the whole pool in one response
 const REFIL_THRESHOLD = 10
+const VALID_EXPLORE_MODES = [
+  'SHORT_TERM',
+  'LONG_TERM',
+  'CASUAL_DATING',
+  'SERIOUS_RELATIONSHIP',
+  'FRIENDSHIP',
+  'NEW_CONNECTIONS',
+  'OPEN_TO_ANYTHING',
+  'NOT_SURE_YET',
+  'JUST_CHAT',
+  'COFFEE_DATE',
+  'ADVENTURE_BUDDY',
+  'TRAVEL_BUDDY',
+  'GAMING_BUDDY',
+  'FREE_TONIGHT',
+];
 
 function feedListKey(userId) {
     return `feed:${userId}`
@@ -91,6 +107,83 @@ export function registerDiscoveryRoutes(app) {
             hasMore: candIds.length === PAGE_SIZE,
             relaxed
         })
+    })
+
+    app.get('/discovery/explore', { preHandler: [app.authenticate, app.requireVerification] }, async (request, reply) => {
+
+        const mode = String(request.query.mode || '').toUpperCase()
+
+        if (!VALID_EXPLORE_MODES.includes(mode)) {
+            return reply.code(400).send({ error: `Invalid Explore mode. Use one of: ${VALID_EXPLORE_MODES.join(', ')}` })
+        }
+
+        // Find preferences that include this mode
+        const preferences = await app.db.preference.findMany({
+            where: { lookingFor: { has: mode } },
+            select: { userId: true },
+        })
+
+        const matchingUserIds = preferences.map((p) => p.userId).filter((id) => id !== request.userId)
+
+        if (matchingUserIds.length === 0) {
+            return reply.send({ mode, profiles: [] })
+        }
+
+        // exclude users the requester has already swiped on
+        const swipes = await app.db.swipe.findMany({
+            where: {
+                fromUserId: request.userId,
+                toUserId: { in: matchingUserIds },
+            },
+            select: { toUserId: true },
+        })
+
+        // exclude any users involved in a block with the requester
+        const blockedRecords = await app.db.block.findMany({
+            where: {
+                OR: [
+                    { blockerId: request.userId },
+                    { blockedId: request.userId },
+                ],
+            },
+            select: { blockerId: true, blockedId: true },
+        })
+
+        const excludedUserIds = new Set([request.userId, ...swipes.map((s) => s.toUserId)])
+        for (const b of blockedRecords) {
+            if (b.blockerId) excludedUserIds.add(b.blockerId)
+            if (b.blockedId) excludedUserIds.add(b.blockedId)
+        }
+
+        const allowedUserIds = matchingUserIds.filter((id) => !excludedUserIds.has(id))
+        if (allowedUserIds.length === 0) {
+            return reply.send({ mode, profiles: [] })
+        }
+
+        const profiles = await app.db.profile.findMany({
+            where: {
+                userId: { in: allowedUserIds },
+                verificationStatus: { in: ['VERIFIED', 'UNDER_REVIEW'] },
+            },
+            include: { photos: { orderBy: { position: 'asc' } } },
+            orderBy: { updatedAt: 'desc' },
+            take: 50,
+        })
+
+        const safeProfiles = await Promise.all(
+            profiles.map(async (profile) => {
+                const safe = sanitizeForOtherUsers(profile)
+                safe.photos = await Promise.all(
+                    (profile.photos || []).map(async (photo) => ({
+                        ...photo,
+                        url: await generatePresignedReadUrl(photo.key),
+                    }))
+                )
+                return safe
+            })
+        )
+
+        return reply.send({ mode, profiles: safeProfiles })
     })
 }
 

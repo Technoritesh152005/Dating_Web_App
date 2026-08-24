@@ -30,6 +30,22 @@ const PROFESSION_OPTIONS = [
   { value: "OTHER", label: "Other" },
 ];
 
+const LOOKING_FOR_OPTIONS = [
+  { value: 'LONG_TERM_RELATIONSHIP', label: 'Long-term relationship' },
+  { value: 'SERIOUS_RELATIONSHIP', label: 'Serious relationship' },
+  { value: 'CASUAL_DATING', label: 'Casual dating' },
+  { value: 'FRIENDSHIP', label: 'Friendship' },
+  { value: 'NEW_CONNECTIONS', label: 'New connections' },
+  { value: 'OPEN_TO_ANYTHING', label: 'Open to anything' },
+  { value: 'NOT_SURE_YET', label: 'Not sure yet' },
+  { value: 'JUST_CHAT', label: 'Just chatting' },
+  { value: 'TRAVEL_BUDDY', label: 'Travel buddy' },
+  { value: 'GAMING_BUDDY', label: 'Gaming buddy' },
+  { value: 'ACTIVITY_PARTNER', label: 'Activity partner' },
+  { value: 'COFFEE_DATE', label: 'Coffee & conversation' },
+  { value: 'FREE_TONIGHT', label: 'Free tonight' },
+];
+
 const INTEREST_OPTIONS = [
   "Travel",
   "Music",
@@ -103,7 +119,7 @@ const INTEREST_OPTIONS = [
   "Karaoke",
 ].map((i) => ({ value: i, label: i }));
 
-const totalSteps = 4;
+const totalSteps = 5;
 
 export default function onBoardingSteps() {
   const { user, loading, refetch } = useAuth();
@@ -122,6 +138,7 @@ export default function onBoardingSteps() {
     bio: "",
     interests: [],
     profession: "",
+    lookingFor:[],
   });
   const [photos, setPhotos] = useState([]);
   const [uploadingPhotos, setUploadingPhotos] = useState(false);
@@ -189,8 +206,13 @@ export default function onBoardingSteps() {
         gender: form.gender,
         bio: form.bio,
         interests: form.interests,
+        lookingFor: form.lookingFor,
         profession: form.profession,
       });
+
+      await api.put('/preferences',{
+        lookingFor:form.lookingFor
+      })
       setStep(2);
     } catch (error) {
       setError(error.message);
@@ -470,15 +492,23 @@ export default function onBoardingSteps() {
             />
           )}
           {step === 2 && (
+          <StepLookingFor
+          value={form.lookingFor}
+          onChange={(value) => updateForm({ lookingFor: value })}
+          onNext={() => setStep(3)}
+          onBack={() => setStep(1)}
+          />
+          )}
+          {step === 3 && (
             <StepPhotos
               photos={photos}
               uploadingPhotos={uploadingPhotos}
               onSelect={handlePhotoSelect}
-              onNext={() => setStep(3)}
+              onNext={() => setStep(4)}
               error={error}
             />
           )}
-          {step === 3 && (
+          {step === 4 && (
             <StepVerification
               selfieFile={selfieFile}
               setSelfieFile={setSelfieFile}
@@ -601,6 +631,47 @@ function StepAbout({ form, updateForm, onNext, onBack, saving, error }) {
       </div>
     </div>
   );
+}
+
+function StepLookingFor({ value, onChange, onNext, onBack }) {
+  return (
+    <div className="flex flex-col gap-5">
+      <div>
+        <h2 className="font-display text-2xl text-cream">
+          What are you open to?
+        </h2>
+        <p className="mt-1 text-[14px] text-cream-dim">
+          Choose as many as feel right.
+        </p>
+      </div>
+
+      <ChoicePills
+        options={LOOKING_FOR_OPTIONS}
+        value={value}
+        onChange={onChange}
+        multiple
+      />
+
+      <div className="flex gap-3">
+        <Button
+          variant="secondary"
+          onClick={onBack}
+          className="flex-1"
+        >
+          Back
+        </Button>
+
+        <Button
+          variant="primary"
+          onClick={onNext}
+          disabled={value.length === 0}
+          className="flex-1"
+        >
+          Continue
+        </Button>
+      </div>
+    </div>
+  )
 }
 
 //   / STEP 3 — Photos, via the presigned-upload flow

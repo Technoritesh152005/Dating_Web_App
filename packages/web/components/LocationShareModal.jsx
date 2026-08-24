@@ -15,7 +15,7 @@ const DURATION_OPTIONS = [
 
 const UPDATE_INTERVAL_MS = 45_000
 
-export function LocationShareModal({ open, close }) {
+export function LocationShareModal({ open, onClose }) {
 
     const [duration, setDuration] = useState(60)
     const [contactName, setContactName] = useState('')
@@ -82,7 +82,7 @@ export function LocationShareModal({ open, close }) {
             await api.post(`/safety/location-share/${share.shareId}/stop`).catch(() => {})
         }
         setShare(null)
-        close()
+        onClose()
     }
 
     const copyLink = async () => {
@@ -124,7 +124,7 @@ export function LocationShareModal({ open, close }) {
                         {error && <p className="mt-3 text-[13px] text-sindoor-light">{error}</p>}
 
                         <div className="mt-6 flex gap-3">
-                            <Button variant="secondary" onClick={close} className="flex-1">Cancel</Button>
+                            <Button variant="secondary" onClick={onClose} className="flex-1">Cancel</Button>
                             <Button variant="primary" onClick={startSharing} disabled={starting} className="flex-1">
                                 {starting ? 'Starting…' : 'Start sharing'}
                             </Button>

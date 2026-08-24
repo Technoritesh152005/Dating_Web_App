@@ -9,6 +9,8 @@ const accessCookieOpts = (config) => ({
     httpOnly: true,
     secure: config.nodeEnv === 'production',// this tells to use https only when production
     sameSite: 'lax', /* Same site prevent to share http config to other web apps */
+    // The realtime service is on a sibling subdomain and must receive this cookie.
+    ...(config.nodeEnv === 'production' ? { domain: '.melodis.in' } : {}),
     path: '/',
     maxAge: 15 * 60 //same as access token
 

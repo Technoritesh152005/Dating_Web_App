@@ -1,6 +1,21 @@
 const VALID_GENDERS= ['MALE','FEMALE','NON_BINARY','OTHER']
 const VALID_PROFESSIONS= ['STUDENT', 'ENGINEER', 'DOCTOR', 'BUSINESS', 'GOVERNMENT', 'ARTIST', 'OTHER'];
-
+const VALID_LOOKING_FOR = [
+  'SHORT_TERM',
+  'LONG_TERM',
+  'CASUAL_DATING',
+  'SERIOUS_RELATIONSHIP',
+  'FRIENDSHIP',
+  'NEW_CONNECTIONS',
+  'OPEN_TO_ANYTHING',
+  'NOT_SURE_YET',
+  'JUST_CHAT',
+  'COFFEE_DATE',
+  'ADVENTURE_BUDDY',
+  'TRAVEL_BUDDY',
+  'GAMING_BUDDY',
+  'FREE_TONIGHT',
+];
 export function registerPreferencesRoutes(app){
 
     app.put('/preferences', {preHandler:app.authenticate, config:{ authenticated: true }}, async(request,reply)=>{
@@ -13,6 +28,7 @@ export function registerPreferencesRoutes(app){
             professionFilter,
             religionFilter,
             casteFilter,
+            lookingFor
         }= request.body?? {}
 
         if (minAge != null && maxAge != null && minAge > maxAge) {
@@ -24,7 +40,11 @@ export function registerPreferencesRoutes(app){
           if (professionFilter && !professionFilter.every((p) => VALID_PROFESSIONS.includes(p))) {
             return reply.code(400).send({ error: `professionFilter values must be one of: ${VALID_PROFESSIONS.join(', ')}` });
           }
-
+          if(lookingFor && (Array.isArray(loookingFor)) && !loookingFor.every((l) => VALID_LOOKING_FOR.includes(l))){
+            return reply.code(400).send({error:
+              'Lookingfor value must be: '`${VALID_LOOKING_FOR.join(', ')}`
+            })
+          }
         //   only whose details r present they appear in data as key value pair
           const data = {
             ...(minAge != null && {minAge}),
@@ -34,6 +54,7 @@ export function registerPreferencesRoutes(app){
             ...(professionFilter && { professionFilter }),
             ...(religionFilter && { religionFilter }),
             ...(casteFilter && { casteFilter }),
+             ...(lookingFor && { lookingFor }),
           }
 
         //   upsert means if record exist update else create
@@ -49,6 +70,7 @@ export function registerPreferencesRoutes(app){
                 professionFilter: professionFilter ?? [],
                 religionFilter: religionFilter ?? [],
                 casteFilter: casteFilter ?? [],  
+                lookingFor: lookingFor ?? []
             }
 
           })
