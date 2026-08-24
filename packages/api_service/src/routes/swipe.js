@@ -100,7 +100,7 @@ export function registerSwipesRoutes(app) {
                 matchId: match.id,
                 matchedAt: match.matchedAt,
                 otherUser: profileByUserId.get(otherUserId) ?? null,
-                icebreakerSuggestion: match.icebreakerSuggestion,
+                icebreakerSuggestion: match.iceBreakerSuggestion,
             };
         });
 

@@ -13,9 +13,11 @@ import { ConfirmModal } from '@/components/ConfirmModal'
 import { ReportModal } from '@/components/ReportModal'
 import { LocationShareModal } from '@/components/LocationShareModal'
 import { VerifiedLayout } from '@/components/VerifiedLayout'
+import { presignAndUpload } from '@/lib/uploadS3'
 
 
 const TYPING_DEBOUNCE_MS = 1500
+const CHAT_FILE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'application/pdf']
 
 function ChatPageContent() {
     const { matchId } = useParams()
@@ -36,6 +38,9 @@ function ChatPageContent() {
     const [confirmUnmatch, setConfirmUnmatch] = useState(false)
     const [reportOpen, setReportOpen] = useState(false)
     const [locationShareOpen, setLocationShareOpen] = useState(false)
+    const [attachment, setAttachment] = useState(null)
+    const [uploadingAttachment, setUploadingAttachment] = useState(false)
+    const [attachmentError, setAttachmentError] = useState(null)
 
 
 
@@ -54,6 +59,8 @@ function ChatPageContent() {
             return
         }
 
+        let iceBreakerPoll
+
         Promise.all([
             api.get(`/matches/${matchId}`),
             api.get(`/matches/${matchId}/messages`),
@@ -62,8 +69,26 @@ function ChatPageContent() {
             setMessages(data.messages)
             setHasMoreHistory(data.hasMore)
             if (data.messages.length > 0) setOldestLoadedId(data.messages[0].id)
-            if (match.iceBreakerSuggestion) setIceBreaker(match.iceBreakerSuggestion)
+            if (match.iceBreakerSuggestion) {
+                setIceBreaker(match.iceBreakerSuggestion)
+                return
+            }
+
+            // Icebreakers are generated asynchronously after a match is created.
+            iceBreakerPoll = window.setInterval(async () => {
+                try {
+                    const updatedMatch = await api.get(`/matches/${matchId}`)
+                    if (updatedMatch.iceBreakerSuggestion) {
+                        setIceBreaker(updatedMatch.iceBreakerSuggestion)
+                        window.clearInterval(iceBreakerPoll)
+                    }
+                } catch (error) {
+                    console.error('Icebreaker refresh failed:', error)
+                }
+            }, 5000)
         })
+
+        return () => window.clearInterval(iceBreakerPoll)
     }, [loading, user, matchId, router])
 
     /* this is to maintains socket lifecycle */
@@ -152,18 +177,39 @@ function ChatPageContent() {
         e.preventDefault()
         const content = input.trim()
 
-        if (!content || sending || !socketRef.current) return
+        if ((!content && !attachment) || sending || uploadingAttachment || !socketRef.current) return
 
         setSending(true)
         /* after server processing call this callback with the result */
-        socketRef.current.emit('send-message', { matchId, content }, (response) => {
+        socketRef.current.emit('send-message', { matchId, content, attachment }, (response) => {
             setSending(false)
             if (response.ok) {
                 setInput('')
+                setAttachment(null)
             } else {
                 setConnectionError(response.error)
             }
         })
+    }
+
+    const handleAttachmentSelect = async (file) => {
+        if (!file) return
+        setAttachmentError(null)
+        setUploadingAttachment(true)
+
+        try {
+            const { key, publicUrl } = await presignAndUpload({
+                file,
+                presignPath: '/media/chat/presign',
+                allowedTypes: CHAT_FILE_TYPES,
+                maxFileSize: 10 * 1024 * 1024,
+            })
+            setAttachment({ url: publicUrl, key, name: file.name, type: file.type, size: file.size })
+        } catch (error) {
+            setAttachmentError(error.message || 'Could not upload this file')
+        } finally {
+            setUploadingAttachment(false)
+        }
     }
 
     const useIcebreaker = () => {
@@ -252,7 +298,17 @@ function ChatPageContent() {
                                         <div
                                             className={`max-w-[78%] rounded-[1.4rem] px-4 py-2.5 text-[15px] leading-relaxed shadow-[0_14px_30px_rgba(0,0,0,0.18)] backdrop-blur-sm ${mine ? 'bg-gradient-to-r from-[#f04f65] via-[#e96d45] to-[#f0a202] text-[#1b0e14] shadow-[0_14px_25px_rgba(240,120,70,0.35)]' : 'border border-white/8 bg-white/5 text-cream'} `}
                                         >
-                                            <span className="break-words">{message.content}</span>
+                                            {message.attachmentUrl && (
+                                                message.attachmentType?.startsWith('image/') ? (
+                                                    // eslint-disable-next-line @next/next/no-img-element
+                                                    <img src={message.attachmentUrl} alt={message.attachmentName || 'Shared image'} className="mb-2 max-h-64 max-w-full rounded-xl object-cover" />
+                                                ) : (
+                                                    <a href={message.attachmentUrl} target="_blank" rel="noreferrer" className="mb-2 block max-w-[220px] truncate rounded-lg border border-current/20 px-3 py-2 text-sm underline underline-offset-2">
+                                                        {message.attachmentName || 'Shared PDF'}
+                                                    </a>
+                                                )
+                                            )}
+                                            {message.content && <span className="break-words">{message.content}</span>}
                                             {mine && (
                                                 <span className="ml-2 align-middle font-mono text-[9px] opacity-70">{message.readAt ? '✓✓' : '✓'}</span>
                                             )}
@@ -274,15 +330,26 @@ function ChatPageContent() {
                         </button>
                     )}
 
-                    <form onSubmit={sendMessage} className="mt-2 flex items-center gap-3 rounded-[1.4rem] border border-white/8 bg-[#2b1620]/80 p-2 shadow-[0_12px_28px_rgba(0,0,0,0.22)] backdrop-blur-sm">
+                    {attachmentError && <p className="mb-2 text-center text-[12px] text-sindoor-light">{attachmentError}</p>}
+                    {attachment && (
+                        <div className="mb-2 flex items-center justify-between rounded-xl border border-marigold/30 bg-marigold/10 px-3 py-2 text-xs text-cream-dim">
+                            <span className="max-w-[80%] truncate">{attachment.name}</span>
+                            <button type="button" onClick={() => setAttachment(null)} className="text-cream transition hover:text-sindoor-light" aria-label="Remove attachment">×</button>
+                        </div>
+                    )}
+                    <form onSubmit={sendMessage} className="mt-2 flex items-center gap-2 rounded-[1.4rem] border border-white/8 bg-[#2b1620]/80 p-2 shadow-[0_12px_28px_rgba(0,0,0,0.22)] backdrop-blur-sm">
+                        <label className="flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border border-white/10 bg-white/5 text-xl text-cream-dim transition hover:border-marigold/50 hover:text-marigold" aria-label="Attach image or PDF">
+                            <span aria-hidden="true">+</span>
+                            <input type="file" accept="image/*,.pdf" className="hidden" disabled={uploadingAttachment || sending} onChange={(e) => { handleAttachmentSelect(e.target.files?.[0]); e.target.value = '' }} />
+                        </label>
                         <input
                             value={input}
                             onChange={handleInputChange}
                             placeholder="Write something…"
                             className="flex-1 rounded-full border border-transparent bg-[#1d0d13]/70 px-4 py-3 text-[15px] text-cream placeholder:text-cream/45 outline-none transition focus:border-marigold/50"
                         />
-                        <Button type="submit" variant="primary" disabled={!input.trim() || sending} className="h-11 rounded-full px-5 text-[14px]">
-                            Send
+                        <Button type="submit" variant="primary" disabled={(!input.trim() && !attachment) || sending || uploadingAttachment} className="h-11 rounded-full px-5 text-[14px]">
+                            {uploadingAttachment ? 'Uploading…' : 'Send'}
                         </Button>
                     </form>
                 </div>

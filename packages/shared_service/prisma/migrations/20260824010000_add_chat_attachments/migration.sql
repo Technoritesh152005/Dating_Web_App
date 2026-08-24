@@ -1,0 +1,6 @@
+ALTER TABLE "messages"
+  ADD COLUMN IF NOT EXISTS "attachmentUrl" TEXT,
+  ADD COLUMN IF NOT EXISTS "attachmentKey" TEXT,
+  ADD COLUMN IF NOT EXISTS "attachmentName" TEXT,
+  ADD COLUMN IF NOT EXISTS "attachmentType" TEXT,
+  ADD COLUMN IF NOT EXISTS "attachmentSize" INTEGER;

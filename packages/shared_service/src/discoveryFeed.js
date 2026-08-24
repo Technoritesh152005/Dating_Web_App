@@ -62,12 +62,12 @@ export async function buildCandidatePool(db, { userId, ownProfile, prefs, page =
     // if user gave any gender then any clause do that set gender to any value the user gave else empty
     const genderClause =
         prefs.genderPreference.length > 0
-            ? Prisma.sql`AND p.gender = ANY(${prefs.genderPreference})`
+            ? Prisma.sql`AND p.gender::text = ANY(${prefs.genderPreference}::text[])`
             : Prisma.empty;
 
     const professionClause =
         prefs.professionFilter.length > 0
-            ? Prisma.sql`AND p.profession = ANY(${prefs.professionFilter})`
+            ? Prisma.sql`AND p.profession::text = ANY(${prefs.professionFilter}::text[])`
             : Prisma.empty;
 
     const religionClause =

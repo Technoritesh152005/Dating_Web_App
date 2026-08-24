@@ -28,11 +28,9 @@ export async function generateIceBreaker({ userABio, userBBio, userAInterest, us
     })
 
     if(!response.ok){
-        const errorBody = response.text().catch(()=> '');
-        console.log(errorBody)
+        const errorBody = await response.text().catch(()=> '')
         throw new Error(`Groq request failed :${response.status} ${errorBody}`)
     }
-    console.log(response)
     const data = await response.json()
     const suggestion = data?.choices?.[0]?.message?.content?.trim()
 

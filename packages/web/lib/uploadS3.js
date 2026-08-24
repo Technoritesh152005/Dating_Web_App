@@ -6,24 +6,24 @@ import { api } from './api'
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp']
 const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
 
-export async function presignAndUpload({ file, presignPath, confirmPath, extraConfirmFields = {} }) {
+export async function presignAndUpload({ file, presignPath, confirmPath, extraConfirmFields = {}, allowedTypes = ALLOWED_TYPES, maxFileSize = MAX_FILE_SIZE }) {
     if (!file) {
         throw new Error('Please select an image before continuing')
     }
 
     // Validate file type
-    if (!ALLOWED_TYPES.includes(file.type)) {
-        throw new Error('Invalid file type. Allowed: JPEG, PNG, or WebP')
+    if (!allowedTypes.includes(file.type)) {
+        throw new Error('Unsupported file type')
     }
 
     // Validate file size
-    if (file.size > MAX_FILE_SIZE) {
-        throw new Error('File too large. Maximum size is 5MB')
+    if (file.size > maxFileSize) {
+        throw new Error(`File too large. Maximum size is ${Math.round(maxFileSize / (1024 * 1024))}MB`)
     }
 
     const fileExtension = file.name.split('.').pop().toLowerCase()
 
-    const { uploadUrl, key, publicUrl } = await api.post(presignPath, { fileExtension })
+    const { uploadUrl, key, publicUrl } = await api.post(presignPath, { fileExtension, mimeType: file.type })
 
     /* fetch the given upload url and post */
     const uploadResponse = await fetch(uploadUrl, {
