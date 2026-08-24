@@ -162,6 +162,8 @@ model Preference {
   religionFilter   String[]
   casteFilter      String[]
 
+  lookingFor       String[] @default([])
+
   updatedAt DateTime @updatedAt
 
   @@map("preferences")
@@ -332,3 +334,4 @@ model LocationShare {
   @@index([userId])
   @@map("location_shares")
 }
+

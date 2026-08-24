@@ -4,7 +4,7 @@ import { createQueue } from '@dating-app/shared/src/queue.js'
 
 const MAX_REPORT_THRESHOLD = 5
 const REPORT_WINDOW_HOURS = 24
-const MAX_SHARE_DURATION_MINUTES = 12 /* U can share max 12 hrs only bro */
+const MAX_SHARE_DURATION_MINUTES = 12 * 60 /* maximum share duration: 12 hours */
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 
 function isValidUuid(id) {
@@ -127,8 +127,8 @@ export function registerSafetyRoutes(app) {
         const { durationMinutes, contactName } = request.body ?? {}
 
         const duration = Number(durationMinutes)
-        if (!duration || !Number.isFinite(duration) || duration <= 0 || duration >= MAX_SHARE_DURATION_MINUTES) {
-            return reply.code(400).send({ error: 'Duration not provided or duration is less than 0, or duration is above maximum limit' })
+        if (!duration || !Number.isFinite(duration) || duration <= 0 || duration > MAX_SHARE_DURATION_MINUTES) {
+            return reply.code(400).send({ error: 'Duration must be greater than 0 and no more than 12 hours' })
         }
         const { rawToken, hash, expiresAt } = await generateOpaqueToken(duration * 60 * 1000)
         const share = await app.db.locationShare.create({
