@@ -233,9 +233,14 @@ model Message {
   senderId String
   sender   User   @relation(fields: [senderId], references: [id], onDelete: Cascade)
 
-  content   String
-  createdAt DateTime  @default(now())
-  readAt    DateTime?
+  content         String
+  attachmentUrl  String?
+  attachmentKey  String?
+  attachmentName String?
+  attachmentType String?
+  attachmentSize Int?
+  createdAt      DateTime  @default(now())
+  readAt         DateTime?
 
   // Fetching "all messages in this match, newest first" is the single most
   // frequent chat query - this index makes it fast even with millions of rows.

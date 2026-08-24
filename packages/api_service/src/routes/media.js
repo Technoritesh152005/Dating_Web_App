@@ -7,6 +7,8 @@ import {
 } from "@dating-app/shared";
 const allowed_extension = ["jpg", "jpeg", "png", "webp"];
 const allowed_mime_types = ["image/jpeg", "image/png", "image/webp"];
+const chat_allowed_extensions = ["jpg", "jpeg", "png", "webp", "gif", "pdf"];
+const chat_allowed_mime_types = ["image/jpeg", "image/png", "image/webp", "image/gif", "application/pdf"];
 const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024; // 10MB
 export function generateMediaRoutes(app) {
   // we user first ask backend permission that we need to store the images
@@ -32,6 +34,28 @@ export function generateMediaRoutes(app) {
       });
 
       // nowclient use this upload url to upload in s3 ,further when succeed status received we store it in database
+      return reply.send({ uploadUrl, key, publicUrl });
+    },
+  );
+
+  app.post(
+    "/media/chat/presign",
+    { preHandler: app.authenticate, config: { authenticated: true, rateLimit: { max: 30, timeWindow: '1 minute' } } },
+    async (request, reply) => {
+      const { fileExtension, mimeType } = request.body ?? {};
+      const normalizedExtension = String(fileExtension || '').toLowerCase();
+      const normalizedMimeType = String(mimeType || '').toLowerCase();
+
+      if (!chat_allowed_extensions.includes(normalizedExtension) || !chat_allowed_mime_types.includes(normalizedMimeType)) {
+        return reply.code(400).send({ error: 'Only JPG, PNG, WEBP, GIF, and PDF files are allowed' });
+      }
+
+      const { key, uploadUrl, publicUrl } = await generatePresignedUploadUrl({
+        userId: request.userId,
+        fileExtension: normalizedExtension,
+        folder: 'chat-attachments',
+      });
+
       return reply.send({ uploadUrl, key, publicUrl });
     },
   );

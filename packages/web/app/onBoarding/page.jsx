@@ -474,7 +474,7 @@ export default function onBoardingSteps() {
             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#f0a202] text-[19px] text-[#1b0e14] shadow-[0_0_20px_rgba(240,162,2,0.7)]">
               ❤
             </div>
-            <div className="font-display text-3xl font-medium italic text-cream">Kindred</div>
+            <div className="font-display text-3xl font-medium italic text-cream">Melodis</div>
           </div>
 
           <div className="mt-8 pt-4">
@@ -510,7 +510,7 @@ export default function onBoardingSteps() {
               {step === 4 && (
                 <>
                   <h1 className="font-display text-[4rem] leading-[0.9] tracking-[-0.06em] text-cream">Almost there — one selfie.</h1>
-                  <p className="mt-5 max-w-xs text-[1.05rem] leading-[1.6] text-cream/70">A quick live photo keeps Kindred full of real people.</p>
+                  <p className="mt-5 max-w-xs text-[1.05rem] leading-[1.6] text-cream/70">A quick live photo keeps Melodis full of real people.</p>
                 </>
               )}
             </div>

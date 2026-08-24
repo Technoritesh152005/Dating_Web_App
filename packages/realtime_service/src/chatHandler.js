@@ -70,19 +70,19 @@ export function registerChatHandlers(io, socket, { db, redis, logger }) {
 
 
     // now let the socket listen on send message
-    socket.on('send-message', async ({ matchId, content }, callback) => {
+    socket.on('send-message', async ({ matchId, content, attachment }, callback) => {
 
         try {
             if (!matchId || !isValidUuid(matchId)) {
                 return callback?.({ ok: false, error: 'Invalid match ID' })
             }
 
-            if (!content || !content.trim()) {
+            if ((!content || !content.trim()) && !attachment?.url) {
                 return callback?.({ ok: false, error: 'Message cannot be empty' })
             }
 
-            const sanitized = sanitizeContent(content)
-            if (sanitized.length === 0) {
+            const sanitized = sanitizeContent(content || '')
+            if (sanitized.length === 0 && !attachment?.url) {
                 return callback?.({ ok: false, error: 'Message cannot be empty' })
             }
             if (sanitized.length > MAX_MESSAGE_LENGTH) {
@@ -107,7 +107,12 @@ export function registerChatHandlers(io, socket, { db, redis, logger }) {
                 data: {
                     senderId: socket.userId,
                     matchId,
-                    content: sanitized
+                    content: sanitized,
+                    attachmentUrl: attachment?.url || null,
+                    attachmentKey: attachment?.key || null,
+                    attachmentName: attachment?.name || null,
+                    attachmentType: attachment?.type || null,
+                    attachmentSize: Number.isInteger(attachment?.size) ? attachment.size : null,
                 }
             })
 
@@ -119,6 +124,11 @@ export function registerChatHandlers(io, socket, { db, redis, logger }) {
                 matchId: msg.matchId,
                 senderId: msg.senderId,
                 content: msg.content,
+                attachmentUrl: msg.attachmentUrl,
+                attachmentKey: msg.attachmentKey,
+                attachmentName: msg.attachmentName,
+                attachmentType: msg.attachmentType,
+                attachmentSize: msg.attachmentSize,
                 createdAt: msg.createdAt
             })
             callback?.({ ok: true, message: msg })
