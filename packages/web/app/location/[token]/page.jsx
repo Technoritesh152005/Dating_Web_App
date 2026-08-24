@@ -12,7 +12,7 @@ export default function PublicLocationPage() {
 
     const { token } = useParams()
     const [location, setLocation] = useState(null)
-    const [status, setStatus] = useState('Loading')   /* location showing status can be loading , active , ended */
+    const [status, setStatus] = useState('loading')   /* location showing status can be loading , active , ended */
 
     useEffect(() => {
         let cancelled = false;
@@ -67,7 +67,7 @@ export default function PublicLocationPage() {
         );
     }
 
-    const hasPosition = location.latitude != null && location.longitude != null;
+    const hasPosition = location && location.latitude != null && location.longitude != null;
     const mapsUrl = hasPosition ? `https://www.google.com/maps?q=${location.latitude},${location.longitude}` : null;
 
     return (
@@ -75,7 +75,7 @@ export default function PublicLocationPage() {
             <Card className="w-full max-w-sm p-8 text-center">
                 <p className="mb-2 font-mono text-[11px] uppercase tracking-[0.2em] text-marigold">Live location</p>
                 <h1 className="font-display text-2xl text-cream">
-                    {location.contactName ? `Shared with ${location.contactName}` : 'Shared with you'}
+                    {location?.contactName ? `Shared with ${location.contactName}` : 'Shared with you'}
                 </h1>
 
                 {hasPosition ? (
@@ -102,9 +102,11 @@ export default function PublicLocationPage() {
                     <p className="mt-4 text-[14px] text-cream-dim">Waiting for the first location update…</p>
                 )}
 
-                <p className="mt-6 font-mono text-[11px] text-cream-dim">
-                    This link stops working at {new Date(location.expiresAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                </p>
+                {location?.expiresAt && (
+                    <p className="mt-6 font-mono text-[11px] text-cream-dim">
+                        This link stops working at {new Date(location.expiresAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </p>
+                )}
             </Card>
         </main>
     );
