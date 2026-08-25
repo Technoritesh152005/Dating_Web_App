@@ -75,6 +75,8 @@ export function registerPreferencesRoutes(app){
 
           })
 
+          await app.redis.del(`feed:${request.userId}`)
+
           return reply.send(prefernce)
     })
 

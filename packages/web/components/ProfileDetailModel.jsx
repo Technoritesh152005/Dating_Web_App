@@ -11,7 +11,7 @@ export function ProfileDetailModal({ profile, onClose, onLike, onPass }) {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/90 backdrop-blur-sm" onClick={onClose}>
       <div
         onClick={(e) => e.stopPropagation()}
-        className="flex h-full w-full max-w-sm flex-col overflow-y-auto sm:h-[90vh] sm:rounded-card sm:border sm:border-cream/10"
+        className="modal-scroll flex h-full max-h-[100dvh] w-full max-w-sm flex-col overflow-y-auto overscroll-contain sm:h-[90vh] sm:rounded-card sm:border sm:border-cream/10"
       >
         <div className="relative aspect-[3/4] flex-shrink-0 bg-dusk">
           {photos.length > 0 ? (
@@ -53,7 +53,7 @@ export function ProfileDetailModal({ profile, onClose, onLike, onPass }) {
           </button>
         </div>
 
-        <div className="flex-1 bg-dusk p-6">
+        <div className="flex-1 bg-dusk p-6 pb-10">
           <div className="flex items-baseline gap-2">
             <h2 className="font-display text-2xl text-cream">{profile.displayName}</h2>
             <span className="font-mono text-[16px] text-cream-dim">{calculateAge(profile.dateOfBirth)}</span>

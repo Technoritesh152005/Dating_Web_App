@@ -75,7 +75,7 @@ export function registerDiscoveryRoutes(app) {
           .add("reactive-refill", {
             userId: request.userId,
             requestId: request.id,
-          })
+          }, { jobId: `feed-refill-${request.userId}` })
           .catch((err) => request.log.error(err));
       }
 
@@ -107,6 +107,33 @@ export function registerDiscoveryRoutes(app) {
         where: { id: { in: candIds } },
         include: { photos: { orderBy: { position: "asc" } } },
       });
+
+      const candidateUserIds = fullProfiles.map((profile) => profile.userId)
+      const blockedRecords = await app.db.block.findMany({
+        where: {
+          OR: [
+            { blockerId: request.userId, blockedId: { in: candidateUserIds } },
+            { blockerId: { in: candidateUserIds }, blockedId: request.userId },
+          ],
+        },
+        select: { blockerId: true, blockedId: true },
+      })
+      const blockedUserIds = new Set()
+      for (const block of blockedRecords) {
+        blockedUserIds.add(block.blockerId === request.userId ? block.blockedId : block.blockerId)
+      }
+      const recentSwipes = await app.db.swipe.findMany({
+        where: {
+          fromUserId: request.userId,
+          toUserId: { in: candidateUserIds },
+          OR: [
+            { action: { in: ['LIKE', 'FIRE_LIKE'] } },
+            { createdAt: { gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) } },
+          ],
+        },
+        select: { toUserId: true },
+      })
+      const swipedUserIds = new Set(recentSwipes.map((swipe) => swipe.toUserId))
 
       //getting personal  embeeding also
       const ownEmbeddingRows = await app.db.$queryRaw`
@@ -146,6 +173,12 @@ export function registerDiscoveryRoutes(app) {
       const orderedProfiles = candIds
         .map((id) => profileById.get(id))
         .filter(Boolean) // in case a profile got deleted between step 1 and step 2
+        .filter((profile) =>
+          ['VERIFIED', 'UNDER_REVIEW'].includes(profile.verificationStatus) &&
+          !profile.safetyFlagged &&
+          !blockedUserIds.has(profile.userId) &&
+          !swipedUserIds.has(profile.userId)
+        )
         .map((profile) => {
             //if compatibility score exist for the user then put in profile else not
           const safeProfile = sanitizeForOtherUsers(profile);

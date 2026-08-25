@@ -2,6 +2,8 @@ import { createServer } from "node:http";
 import {createSocketAuthMiddleware, createVerificationSocketMiddleware} from "./socketAuth.js";
 import { Server } from "socket.io";
 import { createAdapter } from "@socket.io/redis-adapter";
+import {createQueue} from '@dating-app/shared'
+import { QUEUE_NAMES } from '@dating-app/shared/src/queueNames.js'
 import {
   loadConfig,
   createLogger,
@@ -13,6 +15,7 @@ import { registerChatHandlers } from "./chatHandler.js";
 
 const logger = createLogger("realtime");
 const config = loadConfig("realtime");
+
 
 // for socket connection we need http server connection where socket connection gets attach to http server connection
 // http server connection is always required cause browser wot be able direct;y to communicate with the socket
@@ -83,6 +86,12 @@ async function main() {
   io.adapter(createAdapter(pubclient, subclient));
 
   const presenceRedis = createRedisClient(logger, "realtime-presence");
+
+  const scamQueueRedis = createRedisClient(logger, 'realtime-scam-queue')
+  const scamAnalysisQueue = createQueue(
+    QUEUE_NAMES.SCAM_ANALYSIS,
+    scamQueueRedis,
+  )
   // / --- Auth: every connection must present a valid accessToken cookie ---
   io.use(createSocketAuthMiddleware(config, logger));
   // --- Verification: only VERIFIED or UNDER_REVIEW users can access chat ---
@@ -97,6 +106,7 @@ async function main() {
     db: prisma,
     redis: presenceRedis,
     logger,
+    scamAnalysisQueue
   });
 
   socket.on("ping", () => {

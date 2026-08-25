@@ -28,7 +28,10 @@ export function startFeedSchedulerWorker(logger){
 
             let delay = 0
             for(const {userId} of activeProfiles){
-                await refillQueue.add('scheduled-refill', {userId} , {delay})
+                await refillQueue.add('scheduled-refill', {userId} , {
+                    delay,
+                    jobId: `feed-refill-${userId}`,
+                })
                 delay = delay+STAGGER_MS
             }
             logger.info({ scheduledCount: activeProfiles.length }, 'Feed scheduler tick complete');

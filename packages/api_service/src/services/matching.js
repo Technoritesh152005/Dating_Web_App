@@ -6,7 +6,7 @@ function orderedPair(userId1, userId2) {
     return userId1 < userId2 ? [userId1, userId2] : [userId2, userId1]
 }
 
-export async function recordSwipeAndCheckMatch(db, redis, { fromUserId, toUserId, action }) {
+export async function recordSwipeAndCheckMatch(db, redis, { fromUserId, toUserId, targetProfileId, action }) {
 
     // first we try to record the swipe created
     // if already exist the swipe bwn usera to userb we defined in schema that \
@@ -14,7 +14,7 @@ export async function recordSwipeAndCheckMatch(db, redis, { fromUserId, toUserId
     // so if duplicate swipe occurs it send P2002
 
     // Add to seen filter regardless of whether swipe is new or duplicate
-    await addToSeenFilter(redis, fromUserId, toUserId)
+    await addToSeenFilter(redis, fromUserId, targetProfileId)
 
     try {
         await db.swipe.create({

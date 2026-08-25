@@ -41,6 +41,7 @@ function ChatPageContent() {
     const [attachment, setAttachment] = useState(null)
     const [uploadingAttachment, setUploadingAttachment] = useState(false)
     const [attachmentError, setAttachmentError] = useState(null)
+    const[scamWarning, setScamWarning] = useState(null)
 
 
 
@@ -212,6 +213,25 @@ function ChatPageContent() {
         }
     }
 
+    const refreshScamWarning = async()=>{
+
+        try{
+           const response =  await api.get(`/matches/${matchId}/scam-warning`)
+           setScamWarning((response.warning?? null))
+        }catch(error){
+            console.error('Scam warning refresh failed')
+        }
+    }
+
+    useEffect(() => {
+        if (loading || !user) return
+
+        refreshScamWarning()
+        const scamWarningPoll = window.setInterval(refreshScamWarning, 15000)
+
+        return () => window.clearInterval(scamWarningPoll)
+    }, [loading, user, matchId])
+
     const useIcebreaker = () => {
         setInput(iceBreaker);
         setIceBreaker(null);
@@ -275,6 +295,36 @@ function ChatPageContent() {
                     <ActionMenuItem onClick={() => setConfirmUnmatch(true)} danger>Unmatch</ActionMenuItem>
                 </ActionMenu>
             </header>
+
+            {scamWarning && (
+                <div className="flex items-start gap-3 border-b border-marigold/30 bg-marigold/10 px-5 py-3 text-[13px] text-cream">
+                    <span className="mt-0.5 text-marigold" aria-hidden="true">!</span>
+                    <p className="flex-1">
+                        Be careful. This conversation may contain scam warning signs. Never send money, crypto, gift cards, passwords, or verification codes.
+                    </p>
+                    <button
+                        type="button"
+                        onClick={async () => {
+                            try {
+                                await api.post(`/matches/${matchId}/scam-warning/dismiss`, {})
+                                setScamWarning(null)
+                            } catch (error) {
+                                console.error('Scam warning dismissal failed:', error)
+                            }
+                        }}
+                        className="rounded-full border border-cream/20 px-3 py-1 font-mono text-[10px] uppercase tracking-widest text-cream-dim transition hover:border-cream/50 hover:text-cream"
+                    >
+                        Dismiss
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => setConfirmBlock(true)}
+                        className="rounded-full border border-sindoor/50 px-3 py-1 font-mono text-[10px] uppercase tracking-widest text-sindoor-light transition hover:bg-sindoor/15"
+                    >
+                        Block
+                    </button>
+                </div>
+            )}
 
             {connectionError && (
                 <p className="bg-sindoor/10 px-5 py-2 text-center text-[13px] text-sindoor-light">{connectionError}</p>

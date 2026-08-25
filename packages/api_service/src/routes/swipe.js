@@ -30,6 +30,7 @@ export function registerSwipesRoutes(app) {
         const result = await recordSwipeAndCheckMatch(app.db, app.redis, {
             fromUserId: request.userId,
             toUserId,
+            targetProfileId: profile.id,
             action,
             requestId : request.id 
             // Fastify's built-in per-request id - threaded into async jobs for cross-process tracing

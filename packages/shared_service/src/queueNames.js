@@ -12,5 +12,6 @@ export const QUEUE_NAMES = {
   FEED_REFILL: 'feed-refill', // Level 7.5 - precompute one user's candidate batch into Redis
   FEED_SCHEDULER: 'feed-scheduler',
   ICEBREAKER_GENERATION: 'icebreaker-generation',
-  LOCATION_SHARE_CLEANUP: 'location-share-cleanup'
+  LOCATION_SHARE_CLEANUP: 'location-share-cleanup',
+  SCAM_ANALYSIS:'scam-analysis'
   };
