@@ -79,6 +79,14 @@ export function ProfileDetailModal({ profile, onClose, onLike, onPass }) {
               ))}
             </div>
           )}
+          {profile.compatibilityLabel && (
+  <div className="mt-4 flex items-center gap-2 border-y border-mehendi/20 py-3 text-mehendi-light">
+    <span aria-hidden="true">✦</span>
+    <span className="font-mono text-[11px] uppercase tracking-widest">
+      {profile.compatibilityLabel === 'STRONG' ? 'Strong match' : 'Good match'}
+    </span>
+  </div>
+)}
 
           {(onLike || onPass) && (
             <div className="mt-8 flex items-center justify-center gap-6">
