@@ -1,4 +1,5 @@
 import { api } from './api'
+import {compressImage} from './compressImage.js'
 
 /* here we try to get the upload url for s3 and then with that upload url we put that image in s3 */
 
@@ -21,15 +22,16 @@ export async function presignAndUpload({ file, presignPath, confirmPath, extraCo
         throw new Error(`File too large. Maximum size is ${Math.round(maxFileSize / (1024 * 1024))}MB`)
     }
 
-    const fileExtension = file.name.split('.').pop().toLowerCase()
+    const uploadFile = file.type.startsWith('image/') ? await compressImage(file, {}) : file
+    const fileExtension = uploadFile.name.split('.').pop().toLowerCase()
 
-    const { uploadUrl, key, publicUrl } = await api.post(presignPath, { fileExtension, mimeType: file.type })
+    const { uploadUrl, key, publicUrl } = await api.post(presignPath, { fileExtension, mimeType: uploadFile.type })
 
     /* fetch the given upload url and post */
     const uploadResponse = await fetch(uploadUrl, {
         method: 'PUT',
-        body: file,
-        headers: { 'Content-Type': file.type },
+        body: uploadFile,
+        headers: { 'Content-Type': uploadFile.type },
     })
 
     if (!uploadResponse.ok) {
