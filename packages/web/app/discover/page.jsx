@@ -65,7 +65,7 @@ function DiscoverPageContent() {
     /* when the stack list has only threshold amount of profiles , it fetch the fetchFeed */
     useEffect(() => {
         /* at each stage user scrolls this useEffect runs. so at each stage u check this threshold limit */
-        if (stack.length <= LOW_STACK_THRESHOLD && !fetching) {
+        if (stack.length > 0 && stack.length <= LOW_STACK_THRESHOLD && !fetching) {
             fetchFeed()
         }
     }, [stack.length])

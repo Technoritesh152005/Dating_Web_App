@@ -218,6 +218,8 @@ model Match {
   // Null until the async job completes.
   iceBreakerSuggestion String?
 
+  scamRiskFlag ScamRiskFlag?
+
   messages Message[]
 
   @@unique([userAId, userBId])
@@ -340,3 +342,24 @@ model LocationShare {
   @@map("location_shares")
 }
 
+enum ScamRiskLevel{
+  HIGH
+}
+
+model ScamRiskFlag{
+
+  id String @id @default(uuid())
+  matchId String @unique
+  match Match  @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  risk ScamRiskLevel
+  confidence String?
+  signals String[]
+  explanation String?
+  dismissedByUserA  Boolean @default(false)
+  dismissedByUserB Boolean @default(false)
+  createdAt DateTime @default(now())
+  analyzedAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("scam_risk_flags")
+}

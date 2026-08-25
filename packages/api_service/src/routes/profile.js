@@ -134,6 +134,7 @@ export function registerProfileRoutes(app) {
       }
       /* delete the stale copy of profile data cached in redis */
       await app.redis.del(profileRedisKey(request.userId));
+      await app.redis.del(`feed:${request.userId}`);
 
       // now once u created a profile we will create its embedding input
       const embeddingInput = await buildEmbeddingInput({
@@ -158,7 +159,7 @@ export function registerProfileRoutes(app) {
       await feedRefillQueue.add("profile-saved-refill", {
         userId: request.userId,
         requestId: request.id,
-      });
+      }, { jobId: `feed-refill-${request.userId}` });
       return reply.code(201).send(profile);
     },
   );

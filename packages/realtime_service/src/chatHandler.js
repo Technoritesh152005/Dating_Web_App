@@ -29,7 +29,7 @@ async function verifyMatchMembership(db, matchId, userId) {
     return match
 }
 
-export function registerChatHandlers(io, socket, { db, redis, logger }) {
+export function registerChatHandlers(io, socket, { db, redis, logger , scamAnalysisQueue}) {
 
     // first mark the user online
     // this routes start only when middleware comes in place so that anyone should not emit message
@@ -132,6 +132,20 @@ export function registerChatHandlers(io, socket, { db, redis, logger }) {
                 createdAt: msg.createdAt
             })
             callback?.({ ok: true, message: msg })
+
+            //this dont interrupt the message. they r transmitted to their particular match room and saved in db
+            const analysisBucket = Math.floor(Date.now() / 60_000)
+
+            scamAnalysisQueue?.add(
+                'analyze-conversation',
+                {matchId},
+                {
+                    jobId:`scam-${matchId}-${analysisBucket}`,
+                    delay:15_000
+                }
+            ).catch((error)=>{
+                logger.error({error,matchId},'Failed to queue the scam detetcion')
+            })
         } catch (err) {
             logger.error({ err, matchId }, 'Error sending message');
             callback?.({ ok: false, error: 'Failed to send message' });
