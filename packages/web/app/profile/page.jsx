@@ -42,6 +42,8 @@ export default function profileSettingPage() {
     const [saved, setSaved] = useState(false)
     const [error, setError] = useState(null)
     const [confirmLogout, setConfirmLogout] = useState(false)
+    const [confirmDelete, setConfirmDelete] = useState(false)
+    const [deleting, setDeleting] = useState(false)
     const [activePhoto, setActivePhoto] = useState(0)
 
     useEffect(() => {
@@ -130,6 +132,19 @@ export default function profileSettingPage() {
         await logout()
         router.push('/login')
     }
+
+    const deleteAccount = async () => {
+        setDeleting(true)
+        setError(null)
+        try {
+            await api.del('/account')
+            await logout()
+            router.push('/login')
+        } catch (err) {
+            setError(err.message || 'Failed to schedule account deletion')
+            setDeleting(false)
+        }
+    }
     if (loading || !profile || !form) {
         return (
             <main className="flex min-h-screen items-center justify-center">
@@ -186,7 +201,7 @@ export default function profileSettingPage() {
                     <section className="rounded-card border border-cream/10 bg-dusk/80 p-5 backdrop-blur-sm"><p className="mb-3 font-mono text-[11px] uppercase tracking-[0.15em] text-cream-dim">Your signals</p><div className="mb-5"><ChoicePills options={INTEREST_OPTIONS} value={form.interests} onChange={(v) => setForm((f) => ({ ...f, interests: v }))} multiple /></div><p className="mb-3 font-mono text-[11px] uppercase tracking-[0.15em] text-cream-dim">Work and craft</p><ChoicePills options={PROFESSION_OPTIONS} value={form.profession} onChange={(v) => setForm((f) => ({ ...f, profession: v }))} /></section>
 
                     {error && <p className="text-[14px] text-sindoor-light">{error}</p>}
-                    <div className="flex flex-col gap-3 sm:flex-row"><Button variant="primary" onClick={save} disabled={saving} showBloom className="flex-1">{saving ? 'Saving…' : saved ? 'Saved' : 'Save changes'}</Button><Button variant="ghost" onClick={() => setConfirmLogout(true)} className="sm:px-7">Log out</Button></div>
+                    <div className="flex flex-col gap-3 sm:flex-row"><Button variant="primary" onClick={save} disabled={saving} showBloom className="flex-1">{saving ? 'Saving…' : saved ? 'Saved' : 'Save changes'}</Button><Button variant="ghost" onClick={() => setConfirmLogout(true)} className="sm:px-7">Log out</Button><Button variant="ghost" onClick={() => setConfirmDelete(true)} className="text-sindoor-light hover:text-sindoor">Delete account</Button></div>
                 </section>
             </div>
 
@@ -196,6 +211,14 @@ export default function profileSettingPage() {
                 confirmLabel="Log out"
                 onConfirm={() => { setConfirmLogout(false); handleLogout(); }}
                 onCancel={() => setConfirmLogout(false)}
+            />
+            <ConfirmModal
+                open={confirmDelete}
+                title="Delete your account?"
+                description="Your account will disappear immediately and be permanently deleted after 30 days."
+                confirmLabel={deleting ? 'Deleting…' : 'Delete account'}
+                onConfirm={() => { setConfirmDelete(false); deleteAccount(); }}
+                onCancel={() => setConfirmDelete(false)}
             />
         </main>
     );
