@@ -42,6 +42,8 @@ function ChatPageContent() {
     const [uploadingAttachment, setUploadingAttachment] = useState(false)
     const [attachmentError, setAttachmentError] = useState(null)
     const[scamWarning, setScamWarning] = useState(null)
+    const [scamConsent, setScamConsent] = useState(null)
+    const [consentSaving, setConsentSaving] = useState(false)
 
 
 
@@ -65,11 +67,13 @@ function ChatPageContent() {
         Promise.all([
             api.get(`/matches/${matchId}`),
             api.get(`/matches/${matchId}/messages`),
-        ]).then(([match, data]) => {
+            api.get(`/matches/${matchId}/scam-consent`),
+        ]).then(([match, data, consentResult]) => {
             setOtherUser(match?.otherUser ?? null)
             setMessages(data.messages)
             setHasMoreHistory(data.hasMore)
             if (data.messages.length > 0) setOldestLoadedId(data.messages[0].id)
+            setScamConsent(consentResult.consent ?? null)
             if (match.iceBreakerSuggestion) {
                 setIceBreaker(match.iceBreakerSuggestion)
                 return
@@ -223,6 +227,18 @@ function ChatPageContent() {
         }
     }
 
+    const saveScamConsent = async (consent) => {
+        setConsentSaving(true)
+        try {
+            await api.post(`/matches/${matchId}/scam-consent`, { consent })
+            setScamConsent(consent)
+        } catch (error) {
+            setConnectionError(error.message || 'Could not save safety preference')
+        } finally {
+            setConsentSaving(false)
+        }
+    }
+
     useEffect(() => {
         if (loading || !user) return
 
@@ -295,6 +311,26 @@ function ChatPageContent() {
                     <ActionMenuItem onClick={() => setConfirmUnmatch(true)} danger>Unmatch</ActionMenuItem>
                 </ActionMenu>
             </header>
+
+            {scamConsent === null && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/80 px-5 backdrop-blur-sm">
+                    <section className="w-full max-w-md rounded-card border border-marigold/30 bg-dusk p-6 shadow-[0_24px_80px_rgba(0,0,0,0.45)]">
+                        <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-marigold">Safety check</p>
+                        <h2 className="mt-2 font-display text-2xl text-cream">Help us spot scam signals</h2>
+                        <p className="mt-3 text-[14px] leading-relaxed text-cream-dim">
+                            If both people allow it, recent text messages in this chat will be analyzed by our safety system for patterns like money requests, crypto pressure, urgency, or attempts to move off-platform. Messages are sent to Groq for this analysis and are not used to train our app models or routinely reviewed by developers. Results may be wrong.
+                        </p>
+                        <div className="mt-6 flex flex-col gap-3 sm:flex-row-reverse">
+                            <Button variant="primary" onClick={() => saveScamConsent(true)} disabled={consentSaving} className="flex-1">
+                                {consentSaving ? 'Saving…' : 'Allow safety analysis'}
+                            </Button>
+                            <Button variant="secondary" onClick={() => saveScamConsent(false)} disabled={consentSaving} className="flex-1">
+                                Not now
+                            </Button>
+                        </div>
+                    </section>
+                </div>
+            )}
 
             {scamWarning && (
                 <div className="flex items-start gap-3 border-b border-marigold/30 bg-marigold/10 px-5 py-3 text-[13px] text-cream">

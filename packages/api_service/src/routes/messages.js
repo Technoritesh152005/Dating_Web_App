@@ -1,3 +1,6 @@
+import { createQueue } from '@dating-app/shared/src/queue.js';
+import { QUEUE_NAMES } from '@dating-app/shared/src/queueNames.js';
+
 const PAGE_SIZE = 50;
 const UUID_REGEX =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -112,6 +115,81 @@ export function registerGetMessageRoutes(app) {
           signals: match.scamRiskFlag.signals,
         },
       });
+    },
+  );
+
+  app.get(
+    "/matches/:matchId/scam-consent",
+    { preHandler: [app.authenticate, app.requireVerification] },
+    async (request, reply) => {
+      const { matchId } = request.params;
+      if (!isValidUuid(matchId)) {
+        return reply.code(400).send({ error: "Invalid match ID" });
+      }
+
+      const match = await app.db.match.findUnique({
+        where: { id: matchId },
+        select: {
+          userAId: true,
+          userBId: true,
+          scamAnalysisConsentA: true,
+          scamAnalysisConsentB: true,
+        },
+      });
+
+      if (!match || (match.userAId !== request.userId && match.userBId !== request.userId)) {
+        return reply.code(404).send({ error: "Match not found" });
+      }
+
+      const consent = match.userAId === request.userId
+        ? match.scamAnalysisConsentA
+        : match.scamAnalysisConsentB;
+
+      return reply.send({ consent, bothConsented: match.scamAnalysisConsentA === true && match.scamAnalysisConsentB === true });
+    },
+  );
+
+  app.post(
+    "/matches/:matchId/scam-consent",
+    { preHandler: [app.authenticate, app.requireVerification] },
+    async (request, reply) => {
+      const { matchId } = request.params;
+      const { consent } = request.body ?? {};
+      if (!isValidUuid(matchId) || typeof consent !== "boolean") {
+        return reply.code(400).send({ error: "Valid match ID and consent are required" });
+      }
+
+      const match = await app.db.match.findUnique({
+        where: { id: matchId },
+        select: { userAId: true, userBId: true },
+      });
+
+      if (!match || (match.userAId !== request.userId && match.userBId !== request.userId)) {
+        return reply.code(404).send({ error: "Match not found" });
+      }
+
+      const data = match.userAId === request.userId
+        ? { scamAnalysisConsentA: consent, scamAnalysisConsentAtA: new Date() }
+        : { scamAnalysisConsentB: consent, scamAnalysisConsentAtB: new Date() };
+
+      const updatedMatch = await app.db.match.update({
+        where: { id: matchId },
+        data,
+        select: {
+          scamAnalysisConsentA: true,
+          scamAnalysisConsentB: true,
+        },
+      });
+
+      if (updatedMatch.scamAnalysisConsentA === true && updatedMatch.scamAnalysisConsentB === true) {
+        const scamQueue = createQueue(QUEUE_NAMES.SCAM_ANALYSIS, app.redis.duplicate());
+        scamQueue.add(
+          'analyze-conversation',
+          { matchId },
+          { jobId: `scam-${matchId}-${Math.floor(Date.now() / 60_000)}` },
+        ).catch((error) => request.log.error({ error, matchId }, 'Failed to queue scam analysis after consent'));
+      }
+      return reply.send({ ok: true, consent });
     },
   );
 

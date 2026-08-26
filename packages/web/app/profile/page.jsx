@@ -10,6 +10,7 @@ import { Input } from '@/components/user_interface/Input';
 import { Button } from '@/components/user_interface/Button';
 import { ChoicePills } from '@/components/user_interface/ChoicePills';
 import { ConfirmModal } from '@/components/ConfirmModal';
+import { ProfileSettingsNav } from '@/components/ProfileSettingsNav';
 
 const PROFESSION_OPTIONS = [
     { value: 'STUDENT', label: 'Student' },
@@ -45,6 +46,7 @@ export default function profileSettingPage() {
     const [confirmDelete, setConfirmDelete] = useState(false)
     const [deleting, setDeleting] = useState(false)
     const [activePhoto, setActivePhoto] = useState(0)
+    const [activeSection, setActiveSection] = useState('profile')
 
     useEffect(() => {
         if (loading) return
@@ -160,7 +162,11 @@ export default function profileSettingPage() {
     return (
         <main className="min-h-screen overflow-hidden bg-ink px-4 pb-16 pt-4 text-cream sm:px-8 lg:px-12">
             <NavBar />
-            <div className="mx-auto mt-8 grid w-full max-w-7xl gap-6 lg:grid-cols-[minmax(0,1.15fr)_minmax(360px,0.85fr)] lg:gap-10">
+            <div className="mx-auto mt-6 w-full max-w-7xl">
+                <ProfileSettingsNav activeSection={activeSection} onChange={setActiveSection} />
+            </div>
+
+            {activeSection === 'profile' && <div className="mx-auto mt-8 grid w-full max-w-7xl gap-6 lg:grid-cols-[minmax(0,1.15fr)_minmax(360px,0.85fr)] lg:gap-10">
                 <section className="relative min-h-[620px] overflow-hidden rounded-card border border-cream/10 bg-dusk shadow-[0_30px_100px_-40px_rgba(0,0,0,0.9)] animate-[fade-in_600ms_ease-out]">
                     <div className="absolute inset-0 bg-[radial-gradient(circle_at_15%_10%,rgba(245,158,11,0.18),transparent_30%),radial-gradient(circle_at_90%_90%,rgba(218,52,69,0.2),transparent_35%)]" />
                     {displayedPhoto ? (
@@ -202,9 +208,57 @@ export default function profileSettingPage() {
                     <section className="rounded-card border border-cream/10 bg-dusk/80 p-5 backdrop-blur-sm"><p className="mb-3 font-mono text-[11px] uppercase tracking-[0.15em] text-cream-dim">Your signals</p><div className="mb-5"><ChoicePills options={INTEREST_OPTIONS} value={form.interests} onChange={(v) => setForm((f) => ({ ...f, interests: v }))} multiple /></div><p className="mb-3 font-mono text-[11px] uppercase tracking-[0.15em] text-cream-dim">Work and craft</p><ChoicePills options={PROFESSION_OPTIONS} value={form.profession} onChange={(v) => setForm((f) => ({ ...f, profession: v }))} /></section>
 
                     {error && <p className="text-[14px] text-sindoor-light">{error}</p>}
-                    <div className="flex flex-col gap-3 sm:flex-row"><Button variant="primary" onClick={save} disabled={saving} showBloom className="flex-1">{saving ? 'Saving…' : saved ? 'Saved' : 'Save changes'}</Button><Button variant="ghost" onClick={() => setConfirmLogout(true)} className="sm:px-7">Log out</Button><Button variant="ghost" onClick={() => setConfirmDelete(true)} className="text-sindoor-light hover:text-sindoor">Delete account</Button></div>
+                    <div className="flex flex-col gap-3 sm:flex-row"><Button variant="primary" onClick={save} disabled={saving} showBloom className="flex-1">{saving ? 'Saving…' : saved ? 'Saved' : 'Save changes'}</Button></div>
                 </section>
             </div>
+            }
+
+            {activeSection === 'account' && (
+                <section className="mx-auto mt-8 w-full max-w-2xl space-y-5">
+                    <div>
+                        <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-cream-dim">Account</p>
+                        <h1 className="mt-2 font-display text-4xl text-cream">Account settings</h1>
+                    </div>
+                    <section className="rounded-card border border-cream/10 bg-dusk/80 p-5">
+                        <p className="font-mono text-[11px] uppercase tracking-widest text-cream-dim">Email</p>
+                        <p className="mt-2 text-cream">{user.email}</p>
+                    </section>
+                    <section className="rounded-card border border-cream/10 bg-dusk/80 p-5">
+                        <p className="font-mono text-[11px] uppercase tracking-widest text-cream-dim">Session</p>
+                        <Button variant="secondary" onClick={() => setConfirmLogout(true)} className="mt-4">Log out</Button>
+                    </section>
+                    <section className="rounded-card border border-sindoor/30 bg-sindoor/5 p-5">
+                        <p className="font-mono text-[11px] uppercase tracking-widest text-sindoor-light">Danger zone</p>
+                        <p className="mt-2 text-sm text-cream-dim">Your account will be hidden immediately and permanently deleted after 30 days.</p>
+                        <Button variant="ghost" onClick={() => setConfirmDelete(true)} className="mt-4 text-sindoor-light hover:text-sindoor">Delete account</Button>
+                    </section>
+                </section>
+            )}
+
+            {activeSection === 'preferences' && (
+                <section className="mx-auto mt-8 w-full max-w-2xl rounded-card border border-cream/10 bg-dusk/80 p-6">
+                    <p className="font-mono text-[11px] uppercase tracking-widest text-marigold">Preferences</p>
+                    <h1 className="mt-2 font-display text-4xl text-cream">Who you want to meet</h1>
+                    <p className="mt-3 text-cream-dim">Age, distance, gender, profession, and relationship preferences are managed from Discover filters.</p>
+                    <Button variant="secondary" onClick={() => router.push('/discover')} className="mt-6">Open Discover filters</Button>
+                </section>
+            )}
+
+            {activeSection === 'discovery' && (
+                <section className="mx-auto mt-8 w-full max-w-2xl rounded-card border border-cream/10 bg-dusk/80 p-6">
+                    <p className="font-mono text-[11px] uppercase tracking-widest text-marigold">Discovery</p>
+                    <h1 className="mt-2 font-display text-4xl text-cream">Your visibility</h1>
+                    <p className="mt-3 text-cream-dim">Discovery visibility controls will appear here as they become available.</p>
+                </section>
+            )}
+
+            {activeSection === 'safety' && (
+                <section className="mx-auto mt-8 w-full max-w-2xl rounded-card border border-cream/10 bg-dusk/80 p-6">
+                    <p className="font-mono text-[11px] uppercase tracking-widest text-marigold">Safety</p>
+                    <h1 className="mt-2 font-display text-4xl text-cream">Safety controls</h1>
+                    <p className="mt-3 text-cream-dim">Use the profile and chat menus to report or block someone. Safety warnings can be managed inside chats.</p>
+                </section>
+            )}
 
             <ConfirmModal
                 open={confirmLogout}
