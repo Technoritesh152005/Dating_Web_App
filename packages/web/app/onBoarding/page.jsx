@@ -139,6 +139,7 @@ export default function onBoardingSteps() {
     interests: [],
     profession: "",
     lookingFor:[],
+    username:""
   });
   const [photos, setPhotos] = useState([]);
   const [uploadingPhotos, setUploadingPhotos] = useState(false);
@@ -208,6 +209,7 @@ export default function onBoardingSteps() {
         interests: form.interests,
         lookingFor: form.lookingFor,
         profession: form.profession,
+        username:form.username
       });
 
       await api.put('/preferences',{
@@ -625,6 +627,20 @@ function StepBasicInfo({ form, updateForm, onNext }) {
             onChange={(e) => updateForm({ displayName: e.target.value })}
             className="!rounded-[18px] border-cream/10 bg-[#2a1f1d]/80"
           />
+        </div>
+
+        <div>
+          <Input
+            label="Username"
+            value={form.username}
+            placeholder="your_username"
+            minLength={3}
+            maxLength={20}
+            autoComplete="username"
+            onChange={(e) => updateForm({ username: e.target.value.toLowerCase() })}
+            className="!rounded-[18px] border-cream/10 bg-[#2a1f1d]/80"
+          />
+          <p className="mt-2 text-[13px] text-cream/55">3-20 lowercase letters, numbers, or underscores.</p>
         </div>
 
         <div>

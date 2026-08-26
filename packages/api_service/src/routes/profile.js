@@ -23,7 +23,37 @@ const VALID_PROFESSION = [
   "ARTIST",
   "OTHER",
 ];
+const USERNAME_REGEX = /^[a-z0-9_]{3,20}$/;
+const RESERVED_USERNAMES = new Set([
+  "admin",
+  "administrator",
+  "support",
+  "help",
+  "melodis",
+  "official",
+  "moderator",
+]);
 const PROFILE_CACHE_TTL_SECONDS = 60;
+
+//helper function
+function normalizeUsername(value) {
+  if (value == null) return null;
+
+  const username = String(value).trim().toLowerCase();
+
+  if (!USERNAME_REGEX.test(username)) {
+    throw new Error(
+      "Username must be 3-20 characters long using lowercase letters , numbers , or undersocres",
+    );
+  }
+
+  if (RESERVED_USERNAMES.has(username)) {
+    throw new Error("This username is reserved");
+  }
+
+  return username;
+}
+
 export function registerProfileRoutes(app) {
   app.put(
     "/profile",
@@ -47,15 +77,13 @@ export function registerProfileRoutes(app) {
         showReligionCaste,
         latitude,
         longitude,
+        username,
       } = request.body ?? {};
 
       if (!displayName || !dateOfBirth || !gender || !profession) {
-        return reply
-          .code(400)
-          .send({
-            error:
-              "displayName, dateOfBirth, gender and profession are required",
-          });
+        return reply.code(400).send({
+          error: "displayName, dateOfBirth, gender and profession are required",
+        });
       }
       if (!VALID_GENDER.includes(gender)) {
         return reply
@@ -91,37 +119,59 @@ export function registerProfileRoutes(app) {
 
       // prisma has a method known upsert/
       // if record exist update else create
+      let normalizedUsername;
+      try {
+        normalizedUsername = normalizeUsername(username);
+      } catch (error) {
+        return reply.code(400).send({ error: error.message });
+      }
 
-      const profile = await app.db.profile.upsert({
-        // search whether user exist
-        where: { userId: request.userId },
-        // if exist update
-        update: {
-          displayName,
-          dateOfBirth: parsedDateOfBirth,
-          gender,
-          bio: bio ?? "",
-          interests: interests ?? [],
-          profession,
-          religion: religion ?? null,
-          caste: caste ?? null,
-          latitude: latitude ?? null,
-          longitude: longitude ?? null,
-        },
-        create: {
-          userId: request.userId,
-          displayName,
-          dateOfBirth: parsedDateOfBirth,
-          gender,
-          bio: bio ?? "",
-          interests: interests ?? [],
-          profession,
-          religion: religion ?? null,
-          caste: caste ?? null,
-          latitude: latitude ?? null,
-          longitude: longitude ?? null,
-        },
-      });
+      const usernameData =
+        username === undefined ? {} : { username: normalizedUsername };
+
+      let profile;
+      try {
+        profile = await app.db.profile.upsert({
+          // search whether user exist
+          where: { userId: request.userId },
+          // if exist update
+          update: {
+            displayName,
+            dateOfBirth: parsedDateOfBirth,
+            gender,
+            bio: bio ?? "",
+            interests: interests ?? [],
+            profession,
+            religion: religion ?? null,
+            caste: caste ?? null,
+            latitude: latitude ?? null,
+            longitude: longitude ?? null,
+            ...usernameData,
+          },
+          create: {
+            userId: request.userId,
+            displayName,
+            dateOfBirth: parsedDateOfBirth,
+            gender,
+            bio: bio ?? "",
+            interests: interests ?? [],
+            profession,
+            religion: religion ?? null,
+            caste: caste ?? null,
+            latitude: latitude ?? null,
+            longitude: longitude ?? null,
+            username: normalizedUsername,
+          },
+        });
+      } catch (error) {
+        if (error.code === "P2002") {
+          return reply
+            .code(409)
+            .send({ error: "That username is already taken" });
+        }
+
+        throw error;
+      }
 
       // postgres is not avalilable to imlicitly sync the postgis geography column. so we do it explicitly
       if (latitude != null && longitude != null) {
@@ -156,10 +206,14 @@ export function registerProfileRoutes(app) {
         QUEUE_NAMES.FEED_REFILL,
         app.redis.duplicate(),
       );
-      await feedRefillQueue.add("profile-saved-refill", {
-        userId: request.userId,
-        requestId: request.id,
-      }, { jobId: `feed-refill-${request.userId}` });
+      await feedRefillQueue.add(
+        "profile-saved-refill",
+        {
+          userId: request.userId,
+          requestId: request.id,
+        },
+        { jobId: `feed-refill-${request.userId}` },
+      );
       return reply.code(201).send(profile);
     },
   );
@@ -197,7 +251,10 @@ export function registerProfileRoutes(app) {
         PROFILE_CACHE_TTL_SECONDS,
       );
       reply.header("X-Cache", "MISS");
-      return reply.send({ ...profile, photos: await signPhotoUrls(profile.photos) });
+      return reply.send({
+        ...profile,
+        photos: await signPhotoUrls(profile.photos),
+      });
     },
   );
 
