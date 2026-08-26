@@ -307,6 +307,80 @@ export function registerDiscoveryRoutes(app) {
       return reply.send({ mode, profiles: safeProfiles });
     },
   );
+
+  app.get(
+    "/search/users",
+    {
+      preHandler: [app.authenticate, app.requireVerification],
+      config: {
+        authenticated: true,
+        rateLimit: { max: 30, timeWindow: "1 minute" },
+      },
+    },
+    async (request, reply) => {
+      const rawUsername = String(request.query.username || "")
+        .trim()
+        .toLowerCase();
+
+      if (!/^[a-z0-9_]{3,20}$/.test(rawUsername)) {
+        return reply.code(400).send({
+          error: "Enter a valid username",
+        });
+      }
+
+      const searchedProfile = await app.db.profile.findFirst({
+        where: {
+          username: rawUsername,
+          userId: { not: request.userId },
+          verificationStatus: { in: ["VERIFIED", "UNDER_REVIEW"] },
+          safetyFlagged: false,
+          user: {
+            deletedAt: null,
+          },
+        },
+        include: {
+          photos: {
+            orderBy: { position: "desc" },
+          },
+        },
+      });
+
+      if (!searchedProfile) return reply.send({ profile: null });
+
+      //dont search block id from both side if done
+      const block = await app.db.block.findFirst({
+        where: {
+          OR: [
+            {
+              blockerId: request.userId,
+              blockedId: searchedProfile.userId,
+            },
+            {
+              blockerId: searchedProfile.userId,
+              blockedId: request.userId,
+            },
+          ],
+        },
+      });
+
+      if (block) {
+        return reply.send({ profile: null });
+      }
+
+      const safeProfile = sanitizeForOtherUsers(searchedProfile);
+
+      safeProfile.photos = await Promise.all(
+        searchedProfile.photos.map(async (photo) => ({
+          ...photo,
+          url: await generatePresignedReadUrl(photo.key),
+        })),
+      );
+
+      return reply.send({
+        profile: safeProfile,
+      });
+    },
+  );
 }
 
 // Never leak fields other users shouldn't see - even though this data lives
@@ -332,3 +406,12 @@ function sanitizeForOtherUsers(profile) {
     ...(showReligionCaste ? { religion, caste } : {}),
   };
 }
+
+
+//search username works when 
+// Exact username only
+// Deleted accounts excluded
+// Blocked accounts excluded
+// Unverified accounts excluded
+// Safety-flagged accounts excluded
+// Current user excluded

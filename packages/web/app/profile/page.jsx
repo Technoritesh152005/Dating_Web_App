@@ -55,7 +55,7 @@ export default function profileSettingPage() {
         api.get('/profile/me')
             .then((data) => {
                 setProfile(data)
-                setForm({ bio: data.bio ?? '', interests: data.interests ?? [], profession: data.profession })
+                setForm({ username: data.username ?? '', bio: data.bio ?? '', interests: data.interests ?? [], profession: data.profession })
             })
             .catch((err) => setError(err.message || 'Failed to load profile'))
     }, [loading, user])
@@ -70,6 +70,7 @@ export default function profileSettingPage() {
         try {
             await api.put('/profile', {
                 displayName: profile.displayName,
+                username: form.username,
                 dateOfBirth: profile.dateOfBirth,
                 gender: profile.gender,
                 bio: form.bio,
@@ -196,7 +197,7 @@ export default function profileSettingPage() {
                         </div>
                     </section>
 
-                    <section className="rounded-card border border-cream/10 bg-dusk/80 p-5 backdrop-blur-sm"><p className="mb-3 font-mono text-[11px] uppercase tracking-[0.15em] text-cream-dim">About you</p><textarea rows={4} value={form.bio} onChange={(e) => setForm((f) => ({ ...f, bio: e.target.value }))} placeholder="What should someone know about you?" className="w-full resize-none rounded-xl border border-cream/10 bg-ink/50 px-4 py-3 text-[15px] text-cream outline-none transition placeholder:text-cream/30 focus:border-marigold/60" /></section>
+                    <section className="rounded-card border border-cream/10 bg-dusk/80 p-5 backdrop-blur-sm"><p className="mb-3 font-mono text-[11px] uppercase tracking-[0.15em] text-cream-dim">About you</p><Input label="Username" value={form.username} onChange={(e) => setForm((f) => ({ ...f, username: e.target.value.toLowerCase() }))} placeholder="your_username" minLength={3} maxLength={20} autoComplete="username" /><textarea rows={4} value={form.bio} onChange={(e) => setForm((f) => ({ ...f, bio: e.target.value }))} placeholder="What should someone know about you?" className="mt-4 w-full resize-none rounded-xl border border-cream/10 bg-ink/50 px-4 py-3 text-[15px] text-cream outline-none transition placeholder:text-cream/30 focus:border-marigold/60" /></section>
 
                     <section className="rounded-card border border-cream/10 bg-dusk/80 p-5 backdrop-blur-sm"><p className="mb-3 font-mono text-[11px] uppercase tracking-[0.15em] text-cream-dim">Your signals</p><div className="mb-5"><ChoicePills options={INTEREST_OPTIONS} value={form.interests} onChange={(v) => setForm((f) => ({ ...f, interests: v }))} multiple /></div><p className="mb-3 font-mono text-[11px] uppercase tracking-[0.15em] text-cream-dim">Work and craft</p><ChoicePills options={PROFESSION_OPTIONS} value={form.profession} onChange={(v) => setForm((f) => ({ ...f, profession: v }))} /></section>
 

@@ -116,6 +116,8 @@ model Profile {
   latitude  Float?
   longitude Float?
 
+  username String? @unique
+
   // we use geography as it help to do distance calculation
   // prisma ignores this code 
   location Unsupported("geography(Point, 4326)")?
