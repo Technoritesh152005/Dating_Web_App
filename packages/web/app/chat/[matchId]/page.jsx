@@ -43,6 +43,7 @@ function ChatPageContent() {
     const [attachmentError, setAttachmentError] = useState(null)
     const[scamWarning, setScamWarning] = useState(null)
     const [scamConsent, setScamConsent] = useState(null)
+    const [scamConsentLoading, setScamConsentLoading] = useState(true)
     const [consentSaving, setConsentSaving] = useState(false)
 
 
@@ -63,6 +64,7 @@ function ChatPageContent() {
         }
 
         let iceBreakerPoll
+        setScamConsentLoading(true)
 
         Promise.all([
             api.get(`/matches/${matchId}`),
@@ -91,7 +93,7 @@ function ChatPageContent() {
                     console.error('Icebreaker refresh failed:', error)
                 }
             }, 5000)
-        })
+        }).finally(() => setScamConsentLoading(false))
 
         return () => window.clearInterval(iceBreakerPoll)
     }, [loading, user, matchId, router])
@@ -312,7 +314,7 @@ function ChatPageContent() {
                 </ActionMenu>
             </header>
 
-            {scamConsent === null && (
+            {!scamConsentLoading && scamConsent === null && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/80 px-5 backdrop-blur-sm">
                     <section className="w-full max-w-md rounded-card border border-marigold/30 bg-dusk p-6 shadow-[0_24px_80px_rgba(0,0,0,0.45)]">
                         <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-marigold">Safety check</p>

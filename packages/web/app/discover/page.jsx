@@ -6,7 +6,6 @@ import { api } from '@/lib/api'
 import { ProfileCard } from '@/components/ProfileCard'
 import { MatchCelebration as MatchBanner } from '@/components/MatchCelebration'
 import { Button } from '@/components/user_interface/Button'
-import { FiltersDrawer } from '@/components/FiltersDrawer';
 import { NavBar } from '@/components/Navbar';
 import { ActionMenu, ActionMenuItem } from '@/components/ActionMenu';
 import { ConfirmModal } from '@/components/ConfirmModal';
@@ -24,7 +23,6 @@ function DiscoverPageContent() {
     const [stack, setStack] = useState([])
     const router = useRouter()
     const [fetching, setFetching] = useState(false)
-    const [filtersOpen, setFiltersOpen] = useState(false)
     const [celebrating , setCelebrating] = useState(null)
     const [swiping, setSwiping] = useState(false)
     const [confirmBlock , setConfrimBlock] = useState(false)
@@ -126,14 +124,6 @@ function DiscoverPageContent() {
           <div className="flex w-full max-w-sm items-center justify-between">
             <NavBar />
           </div>
-          <button
-            onClick={() => setFiltersOpen(true)}
-            aria-label="Filters"
-            className="mt-3 flex h-9 w-9 self-end items-center justify-center rounded-full border border-cream/15 text-cream-dim hover:border-marigold/50 hover:text-marigold sm:absolute sm:right-6 sm:top-6 sm:mt-0"
-          >
-            <span className="font-mono text-[13px]">⚙</span>
-          </button>
-
           <div className="relative mt-6 h-[560px] w-full max-w-sm">
             {feedError && (
               <div className="flex h-full flex-col items-center justify-center rounded-card border border-dashed border-sindoor/40 text-center">
@@ -147,11 +137,8 @@ function DiscoverPageContent() {
               <div className="flex h-full flex-col items-center justify-center rounded-card border border-dashed border-cream/15 text-center">
                 <p className="font-display text-xl text-cream">You're all caught up</p>
                 <p className="mt-2 max-w-[220px] text-[14px] text-cream-dim">
-                  Check back soon, or widen your filters to see more people.
+                  Check back soon for more people.
                 </p>
-                <Button variant="secondary" className="mt-4" onClick={() => setFiltersOpen(true)}>
-                  Adjust filters
-                </Button>
               </div>
             )}
 
@@ -217,8 +204,6 @@ function DiscoverPageContent() {
               </button>
             </div>
           )}
-
-          <FiltersDrawer open={filtersOpen} onClose={() => setFiltersOpen(false)} onSaved={() => { setStack([]); fetchFeed(); }} />
 
           <ConfirmModal
             open={confirmBlock}

@@ -11,6 +11,7 @@ import { Button } from '@/components/user_interface/Button';
 import { ChoicePills } from '@/components/user_interface/ChoicePills';
 import { ConfirmModal } from '@/components/ConfirmModal';
 import { ProfileSettingsNav } from '@/components/ProfileSettingsNav';
+import { PreferencesForm } from '@/components/PreferencesForm';
 
 const PROFESSION_OPTIONS = [
     { value: 'STUDENT', label: 'Student' },
@@ -236,28 +237,7 @@ export default function profileSettingPage() {
             )}
 
             {activeSection === 'preferences' && (
-                <section className="mx-auto mt-8 w-full max-w-2xl rounded-card border border-cream/10 bg-dusk/80 p-6">
-                    <p className="font-mono text-[11px] uppercase tracking-widest text-marigold">Preferences</p>
-                    <h1 className="mt-2 font-display text-4xl text-cream">Who you want to meet</h1>
-                    <p className="mt-3 text-cream-dim">Age, distance, gender, profession, and relationship preferences are managed from Discover filters.</p>
-                    <Button variant="secondary" onClick={() => router.push('/discover')} className="mt-6">Open Discover filters</Button>
-                </section>
-            )}
-
-            {activeSection === 'discovery' && (
-                <section className="mx-auto mt-8 w-full max-w-2xl rounded-card border border-cream/10 bg-dusk/80 p-6">
-                    <p className="font-mono text-[11px] uppercase tracking-widest text-marigold">Discovery</p>
-                    <h1 className="mt-2 font-display text-4xl text-cream">Your visibility</h1>
-                    <p className="mt-3 text-cream-dim">Discovery visibility controls will appear here as they become available.</p>
-                </section>
-            )}
-
-            {activeSection === 'safety' && (
-                <section className="mx-auto mt-8 w-full max-w-2xl rounded-card border border-cream/10 bg-dusk/80 p-6">
-                    <p className="font-mono text-[11px] uppercase tracking-widest text-marigold">Safety</p>
-                    <h1 className="mt-2 font-display text-4xl text-cream">Safety controls</h1>
-                    <p className="mt-3 text-cream-dim">Use the profile and chat menus to report or block someone. Safety warnings can be managed inside chats.</p>
-                </section>
+                <PreferencesForm />
             )}
 
             <ConfirmModal

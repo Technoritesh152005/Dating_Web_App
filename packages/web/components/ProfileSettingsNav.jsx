@@ -4,8 +4,6 @@ const SECTIONS = [
   { id: 'profile', label: 'Profile' },
   { id: 'account', label: 'Account' },
   { id: 'preferences', label: 'Preferences' },
-  { id: 'discovery', label: 'Discovery' },
-  { id: 'safety', label: 'Safety' },
 ]
 
 export function ProfileSettingsNav({ activeSection, onChange }) {
