@@ -13,5 +13,6 @@ export const QUEUE_NAMES = {
   FEED_SCHEDULER: 'feed-scheduler',
   ICEBREAKER_GENERATION: 'icebreaker-generation',
   LOCATION_SHARE_CLEANUP: 'location-share-cleanup',
-  SCAM_ANALYSIS:'scam-analysis'
+  SCAM_ANALYSIS:'scam-analysis',
+  ACCOUNT_PURGE: 'account-purge'
   };

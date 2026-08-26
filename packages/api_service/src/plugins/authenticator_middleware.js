@@ -15,6 +15,15 @@ export function registerAuthDecorator(app, config) {
 
             const payload = verifyAccessToken(token, config.jwtSecrets)
             request.userId = payload.sub
+
+            const user = await app.db.user.findUnique({
+                where: { id: request.userId },
+                select: { deletedAt: true },
+            })
+
+            if (!user || user.deletedAt) {
+                return reply.code(401).send({ error: 'This account is scheduled for deletion.' })
+            }
         } catch (error) {
             return reply.code(401).send({ error: 'Your session expired. Please log in again.' });
         }

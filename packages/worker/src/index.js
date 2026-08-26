@@ -18,6 +18,7 @@ import { startIceBreakerFunction } from "./workers/iceBreakerWorker.js";
 import { startLocationCleanUpWorker } from "./workers/loactionCleanupWorker.js";
 import { startEmbeddingWorkerForProfile } from "./workers/embeddingWorker.js";
 import { startScamDetectionWorker } from "./workers/scamDetectionWorker.js";
+import { startAccountPurgeWorker } from "./workers/accountPurgeWorker.js";
 
 const logger = createLogger("worker");
 const config = loadConfig("worker");
@@ -78,6 +79,10 @@ async function main() {
     connection: scamDetectionConnection,
     breakerRedisConnection: scamDetectionBreakerRedis,
   } = startScamDetectionWorker(logger);
+  const {
+    worker: accountPurgeWorker,
+    connection: accountPurgeConnection,
+  } = startAccountPurgeWorker(logger);
   const schedulerRegistrationConnection =
     await scheduleFeedSchedulerQueueJobRepeatable(logger);
   logger.info(
@@ -113,6 +118,8 @@ async function main() {
     await scamDetectionWorker.close();
     await scamDetectionConnection.quit();
     await scamDetectionBreakerRedis.quit();
+    await accountPurgeWorker.close();
+    await accountPurgeConnection.quit();
 
     await disconnectDb();
     process.exit(0);

@@ -93,9 +93,9 @@ async function main() {
     scamQueueRedis,
   )
   // / --- Auth: every connection must present a valid accessToken cookie ---
-  io.use(createSocketAuthMiddleware(config, logger));
+  io.use(createSocketAuthMiddleware(config, logger, prisma));
   // --- Verification: only VERIFIED or UNDER_REVIEW users can access chat ---
-  io.use(createVerificationSocketMiddleware(prisma, logger));
+  io.use(createVerificationSocketMiddleware(prisma, logger, prisma));
   // on connection
   // when a new client enters socket is created
 

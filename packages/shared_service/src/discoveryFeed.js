@@ -108,8 +108,10 @@ export async function buildCandidatePool(db, { userId, ownProfile, prefs, page =
       SELECT p.id, p."userId",
       EXTRACT(YEAR FROM AGE(p."dateOfBirth")) AS age
     FROM profiles p
+    JOIN users u ON u.id = p."userId"
     WHERE p."userId" != ${userId}
             AND p."verificationStatus" IN ('VERIFIED', 'UNDER_REVIEW')
+            AND u."deletedAt" IS NULL
             AND p."safetyFlagged" = false
       -- exclude anyone I've already swiped on (in either direction of action)
       AND NOT EXISTS (
