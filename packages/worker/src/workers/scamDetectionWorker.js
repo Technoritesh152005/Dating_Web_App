@@ -27,7 +27,9 @@ export function startScamDetectionWorker(logger){
                 select:{
                     id:true,
                     userAId:true,
-                    userBId:true
+                    userBId:true,
+                    scamAnalysisConsentA:true,
+                    scamAnalysisConsentB:true,
                 }
             })
 
@@ -35,6 +37,10 @@ export function startScamDetectionWorker(logger){
                 return {skipped:true,
                     reason:'Match Not found..'
                 }
+            }
+
+            if (matchProfile.scamAnalysisConsentA !== true || matchProfile.scamAnalysisConsentB !== true) {
+                return { skipped: true, reason: 'scam-analysis-consent-incomplete' }
             }
             //it gets the message of sender and receiver of latest 20 message
             const recentMessage = await prisma.message.findMany({

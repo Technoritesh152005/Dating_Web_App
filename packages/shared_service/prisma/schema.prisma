@@ -224,6 +224,11 @@ model Match {
   // Null until the async job completes.
   iceBreakerSuggestion String?
 
+  scamAnalysisConsentA Boolean?
+  scamAnalysisConsentB Boolean?
+  scamAnalysisConsentAtA DateTime?
+  scamAnalysisConsentAtB DateTime?
+
   scamRiskFlag ScamRiskFlag?
 
   messages Message[]
