@@ -1,45 +1,80 @@
+'use client';
+
 import { ScrollReveal } from '@/components/ScrollReveal';
 
 const STEPS = [
   {
     number: '01',
-    title: 'Verify',
-    description: 'A live selfie, matched against your photos in seconds — so who you meet is who you actually see.',
+    badge: 'Verification',
+    title: 'Selfie Check (No Catfish Allowed)',
+    description:
+      'A 3-second live selfie check verifies your photos before your profile goes live. Zero fake profiles, zero sketchy surprises.',
+    icon: '📸',
   },
   {
     number: '02',
-    title: 'Discover',
-    description: "A feed ranked by compatibility, not just who's nearby or who swiped first.",
+    badge: 'Vector Match',
+    title: 'Discover Real Vibe Compatibility',
+    description:
+      'Our AI matches you based on your bio embeddings, music tastes, late night food debates, and lifestyle — not just static photos.',
+    icon: '✨',
   },
   {
     number: '03',
-    title: 'Connect',
-    description: "Real-time conversation, with a suggested opener if you're not sure where to start.",
+    badge: 'Date & Connect',
+    title: 'Spark the Chat & Date Safe',
+    description:
+      'No dry "Hey" allowed. Use AI icebreakers, audio bio snippets, and share 1-Click Date-Safe live locations with your bestie.',
+    icon: '🔥',
   },
 ];
 
 export function HowItWorks() {
   return (
-    <section className="px-6 py-28 sm:px-10">
-      <div className="mx-auto max-w-2xl">
+    <section id="how-it-works" className="relative px-6 py-28 sm:px-10">
+      <div className="mx-auto max-w-4xl">
         <ScrollReveal>
-          <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-marigold">How it works</p>
-          <h2 className="mt-3 font-display text-3xl text-cream sm:text-4xl">Three steps, no guesswork.</h2>
+          <div className="text-center">
+            <span className="font-mono text-xs font-semibold uppercase tracking-[0.25em] text-gold">
+              Simple 3-Step Journey
+            </span>
+            <h2 className="mt-3 font-display text-3xl font-bold text-pearl sm:text-5xl">
+              Three steps. <span className="text-saffron italic font-normal">Zero awkwardness.</span>
+            </h2>
+            <p className="mt-4 text-base text-pearl-dim">
+              From selfie verification to your first chai date in 3 easy steps.
+            </p>
+          </div>
         </ScrollReveal>
 
-        <div className="relative mt-16">
-          <div className="absolute bottom-4 left-6 top-4 w-px bg-gradient-to-b from-marigold/60 via-sindoor/40 to-transparent sm:left-8" />
+        <div className="relative mt-20">
+          {/* Vertical Glowing Connector Line */}
+          <div className="absolute left-6 top-6 bottom-6 w-0.5 bg-gradient-to-b from-saffron via-gold to-plum-border sm:left-10" />
 
-          <div className="flex flex-col gap-14">
+          <div className="flex flex-col gap-12">
             {STEPS.map((step, i) => (
-              <ScrollReveal key={step.number} delay={i * 100}>
-                <div className="relative flex gap-6 pl-16 sm:gap-8 sm:pl-20">
-                  <span className="absolute left-0 font-mono text-[13px] text-marigold sm:text-[14px]">
-                    {step.number}
-                  </span>
-                  <div>
-                    <h3 className="font-display text-2xl text-cream">{step.title}</h3>
-                    <p className="mt-2 max-w-md text-[15px] leading-relaxed text-cream-dim">{step.description}</p>
+              <ScrollReveal key={step.number} delay={i * 120}>
+                <div className="relative flex items-start gap-6 pl-14 sm:gap-10 sm:pl-24 group">
+                  {/* Step Circle Badge */}
+                  <div className="absolute left-0 top-0 flex h-12 w-12 items-center justify-center rounded-2xl border border-saffron/40 bg-plum-surface shadow-saffron-glow font-mono text-sm font-bold text-gold transition-transform duration-300 group-hover:scale-110 sm:h-14 sm:w-14">
+                    {step.icon}
+                  </div>
+
+                  {/* Step Card Content */}
+                  <div className="flex-1 rounded-2xl border border-plum-border/60 bg-plum-surface/70 p-6 shadow-xl backdrop-blur-xl transition-all duration-300 group-hover:border-saffron/40">
+                    <div className="flex items-center justify-between">
+                      <span className="font-mono text-xs font-bold uppercase tracking-wider text-saffron">
+                        {step.badge}
+                      </span>
+                      <span className="font-mono text-xs text-pearl-muted">{step.number}</span>
+                    </div>
+
+                    <h3 className="mt-2 font-display text-xl font-bold text-pearl sm:text-2xl">
+                      {step.title}
+                    </h3>
+                    <p className="mt-2 text-sm leading-relaxed text-pearl-dim sm:text-base">
+                      {step.description}
+                    </p>
                   </div>
                 </div>
               </ScrollReveal>
