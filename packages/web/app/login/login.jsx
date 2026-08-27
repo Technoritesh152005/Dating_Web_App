@@ -1,83 +1,105 @@
 'use client'
 
-import {useAuth} from '@/lib/authContext'
+import { useAuth } from '@/lib/authContext'
 import Link from 'next/link'
-import {AuthScreen} from '@/components/authScreen'
-import {Input} from '../../components/user_interface/Input'
-import {Button} from '../../components/user_interface/Button.jsx'
+import { AuthScreen, Divider } from '@/components/authScreen'
 import { GoogleSignInButton } from '@/components/google_signIn_Button.jsx'
-import {useState} from 'react'
-import {useRouter} from 'next/navigation'
-import { Divider } from '@/components/authScreen'
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 
-export default function LoginPage(){
+export default function LoginPage() {
+  const { login } = useAuth()
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
+  const [error, setError] = useState('')
+  const [submitting, setSubmitting] = useState(false)
+  const router = useRouter()
 
-const {login} = useAuth()
-const [email,setEmail] = useState('')
-const [password,setPassword] = useState('')
-const [error,setError] = useState('')
-const [submitting, setSubmitting] = useState(false)
-const router = useRouter()
-
-const handleSubmit =  async function(e){
+  const handleSubmit = async function (e) {
     e.preventDefault()
     setError(null)
     setSubmitting(true)
 
-    try{
-        const result = await login(email , password)
-        const status = result.user?.profile?.verificationStatus
-        router.push(status === 'VERIFIED' || status === 'UNDER_REVIEW' ? '/discover' : '/onBoarding')
-    }catch(error){
-        setError(error.message);
-      setSubmitting(false);
+    try {
+      const result = await login(email, password)
+      const status = result.user?.profile?.verificationStatus
+      router.push(status === 'VERIFIED' || status === 'UNDER_REVIEW' ? '/discover' : '/onBoarding')
+    } catch (err) {
+      setError(err.message || 'Login failed. Please check your credentials.')
+      setSubmitting(false)
     }
-}
+  }
 
-return (
-    <AuthScreen eyebrow="Welcome back" title="Log in to Melodis" subtitle="Pick up where your conversations left off.">
+  return (
+    <AuthScreen eyebrow="Account Access" title="Log in to Melodis" subtitle="Welcome back! Please enter your details to continue.">
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-        <Input
-          label="Email"
-          type="email"
-          name="email"
-          autoComplete="email"
-          required
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
-        <Input
-          label="Password"
-          type="password"
-          name="password"
-          autoComplete="current-password"
-          required
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
+        {/* Email Input */}
+        <div>
+          <label className="mb-1.5 block font-mono text-xs font-semibold text-pearl-dim">Email Address</label>
+          <input
+            type="email"
+            name="email"
+            autoComplete="email"
+            required
+            placeholder="you@example.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="w-full rounded-xl border border-plum-border bg-plum-night/80 px-4 py-3 text-sm text-pearl placeholder-pearl-muted outline-none transition-all focus:border-saffron focus:ring-2 focus:ring-saffron/20"
+          />
+        </div>
+
+        {/* Password Input with Show/Hide Toggle */}
+        <div>
+          <div className="flex items-center justify-between mb-1.5">
+            <label className="font-mono text-xs font-semibold text-pearl-dim">Password</label>
+          </div>
+          <div className="relative">
+            <input
+              type={showPassword ? 'text' : 'password'}
+              name="password"
+              autoComplete="current-password"
+              required
+              placeholder="••••••••"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full rounded-xl border border-plum-border bg-plum-night/80 px-4 py-3 pr-11 text-sm text-pearl placeholder-pearl-muted outline-none transition-all focus:border-saffron focus:ring-2 focus:ring-saffron/20"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-pearl-muted hover:text-pearl text-xs font-mono px-1 py-0.5"
+            >
+              {showPassword ? 'HIDE' : 'SHOW'}
+            </button>
+          </div>
+        </div>
 
         {error && (
-          <p role="alert" className="text-[14px] text-sindoor-light">
-            {error}
-          </p>
+          <div role="alert" className="rounded-xl border border-saffron/40 bg-saffron/10 p-3 text-xs text-saffron font-medium">
+            ⚠️ {error}
+          </div>
         )}
 
-        <Button type="submit" variant="primary" disabled={submitting} showBloom className="mt-2 w-full">
-          {submitting ? 'Logging in…' : 'Log in'}
-        </Button>
+        <button
+          type="submit"
+          disabled={submitting}
+          className="mt-2 relative group overflow-hidden w-full rounded-xl bg-saffron-gradient py-3.5 text-sm font-semibold text-pearl shadow-saffron-glow transition-all duration-300 hover:scale-[1.01] active:scale-98 disabled:opacity-50"
+        >
+          <span>{submitting ? 'Authenticating...' : 'Log In'}</span>
+        </button>
       </form>
 
       <Divider>or continue with</Divider>
 
       <GoogleSignInButton />
 
-      <p className="mt-6 text-center text-[14px] text-cream-dim">
-        New to Melodis?{' '}
-        <Link href="/signup" className="text-marigold hover:underline">
+      <p className="mt-6 text-center text-xs text-pearl-dim">
+        Don't have an account?{' '}
+        <Link href="/signup" className="font-semibold text-gold hover:underline">
           Create an account
         </Link>
       </p>
     </AuthScreen>
-)
-
-}
+  )
+}

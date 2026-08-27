@@ -1,15 +1,14 @@
 'use client';
 
 const TICKER_ITEMS = [
-  '⚡ 100% Selfie-Verified Profiles',
-  '🫖 Zero Rishta Pressure',
-  '🤖 AI Icebreakers — No More Dry "Hey"',
-  '🛡️ 1-Click Date-Safe Live Share',
-  '☕ Chai & Filter Coffee Compatibility',
-  '🔒 Encrypted & Screenshot Protected',
-  '✨ Vibe Vector Match Score',
-  '🥟 Late Night Maggi & Momo Debates',
+  '⚡ AWS Rekognition Facial Identity Verification',
+  '🛡️ Encrypted Tokenized Live Location Safety',
+  '🤖 Automated Algorithmic Icebreaker Assistant',
+  '✨ PostgreSQL 768-Dim Vector Bio Embeddings',
+  '🔒 S3-Presigned Media & Anti-Scam Shield',
+  '🌐 WebSocket Real-Time Communication Engine',
 ];
+
 
 export function TickerBar() {
   return (

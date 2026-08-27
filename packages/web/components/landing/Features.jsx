@@ -65,39 +65,73 @@ export function Features() {
         <div className="text-center max-w-3xl mx-auto">
           <ScrollReveal>
             <span className="font-mono text-xs font-semibold uppercase tracking-[0.25em] text-saffron">
-              Engineered for Real Desi Dating
+              System Architecture & Core Capabilities
             </span>
             <h2 className="mt-4 font-display text-3xl font-bold leading-tight text-pearl sm:text-5xl">
-              Dating features built for how you <span className="text-gold italic font-normal">actually</span> connect.
+              Engineering safety, intelligence, and <span className="text-gold font-normal">real-time chemistry</span>.
             </h2>
             <p className="mt-4 text-base text-pearl-dim sm:text-lg">
-              No dry silences, no sketchy profiles, and zero awkward family rishta interrogations.
+              Built on Fastify, BullMQ background workers, AWS Rekognition, PostgreSQL PostGIS, and WebSockets.
             </p>
           </ScrollReveal>
         </div>
 
         {/* Feature Grid with Interactive Live Widgets */}
         <div className="mt-20 grid gap-8 lg:grid-cols-2">
-          {/* FEATURE 1: AI Icebreaker Generator */}
+          {/* FEATURE 1: AI Identity Security */}
           <ScrollReveal delay={100}>
+            <div className="group relative overflow-hidden rounded-[2.2rem] border border-plum-border bg-plum-surface/80 p-8 shadow-2xl backdrop-blur-xl transition-all duration-300 hover:border-mehendi/40">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-mehendi/20 text-mehendi font-bold text-lg">
+                  🛡️
+                </div>
+                <div>
+                  <span className="font-mono text-xs font-bold uppercase tracking-wider text-mehendi-light">Identity Verification</span>
+                  <h3 className="font-display text-2xl font-bold text-pearl">AI-Powered Selfie Verification</h3>
+                </div>
+              </div>
+              <p className="mt-3 text-sm text-pearl-dim leading-relaxed">
+                Background worker jobs execute automated facial comparison against primary profile photos via AWS Rekognition, guaranteeing 100% authentic profiles.
+              </p>
+
+              {/* Live Interactive Verification Widget */}
+              <div className="mt-6 rounded-2xl border border-plum-border/60 bg-plum-night/90 p-5">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <span className="flex h-3 w-3 rounded-full bg-mehendi animate-pulse" />
+                    <span className="font-mono text-xs font-semibold text-pearl">Status: VERIFIED_IDENTITY</span>
+                  </div>
+                  <span className="font-mono text-[11px] text-mehendi font-bold border border-mehendi/40 bg-mehendi/10 px-2.5 py-0.5 rounded-full">
+                    99.4% Face Match Score
+                  </span>
+                </div>
+                <div className="mt-3 text-xs font-mono text-pearl-muted bg-plum-surface/80 p-3 rounded-xl border border-plum-border/40">
+                  ⚡ Worker Job: VERIFICATION_STATUS_SUCCESS • Token Hash Verified
+                </div>
+              </div>
+            </div>
+          </ScrollReveal>
+
+          {/* FEATURE 2: Algorithmic Match & Icebreaker Engine */}
+          <ScrollReveal delay={200}>
             <div className="group relative overflow-hidden rounded-[2.2rem] border border-plum-border bg-plum-surface/80 p-8 shadow-2xl backdrop-blur-xl transition-all duration-300 hover:border-saffron/40">
               <div className="flex items-center gap-3">
                 <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-saffron/20 text-saffron font-bold text-lg">
                   🤖
                 </div>
                 <div>
-                  <span className="font-mono text-xs font-bold uppercase tracking-wider text-saffron">AI Match Assistant</span>
-                  <h3 className="font-display text-2xl font-bold text-pearl">Goodbye to Dry "Hey"</h3>
+                  <span className="font-mono text-xs font-bold uppercase tracking-wider text-saffron">AI Match Intelligence</span>
+                  <h3 className="font-display text-2xl font-bold text-pearl">Automated Icebreaker Generator</h3>
                 </div>
               </div>
               <p className="mt-3 text-sm text-pearl-dim leading-relaxed">
-                When you match, our AI analyzes shared bio vibes and instantly suggests hilarious, personalized openers. Try it live:
+                Upon mutual match, asynchronous background workers analyze shared 768-dimensional bio vector embeddings to generate personalized icebreakers.
               </p>
 
               {/* Live Interactive Simulator */}
               <div className="mt-6 rounded-2xl border border-plum-border/60 bg-plum-night/90 p-5">
                 <p className="font-mono text-[11px] uppercase tracking-wider text-pearl-muted mb-2.5">
-                  Step 1: Pick 2 vibe tags below
+                  Select 2 Profile Keywords:
                 </p>
                 <div className="flex flex-wrap gap-2">
                   {SIMULATOR_INTERESTS.map((tag) => {
@@ -118,11 +152,11 @@ export function Features() {
                   })}
                 </div>
 
-                <div className="mt-5 pt-4 border-t border-plum-border/40">
+                <div className="mt-4 pt-3 border-t border-plum-border/40">
                   <p className="font-mono text-[11px] uppercase tracking-wider text-gold font-bold mb-1.5 flex items-center gap-1.5">
-                    <span>⚡ AI Generated Icebreaker Output:</span>
+                    <span>⚡ AI Icebreaker Output:</span>
                   </p>
-                  <p className="font-sans text-sm italic text-pearl bg-plum-surface/80 p-3 rounded-xl border border-gold/30 shadow-inner">
+                  <p className="font-sans text-sm text-pearl bg-plum-surface/80 p-3 rounded-xl border border-gold/30">
                     "{generatedIcebreaker}"
                   </p>
                 </div>
@@ -130,20 +164,20 @@ export function Features() {
             </div>
           </ScrollReveal>
 
-          {/* FEATURE 2: 1-Click Date-Safe Live Location */}
-          <ScrollReveal delay={200}>
+          {/* FEATURE 3: Encrypted Date Safety System */}
+          <ScrollReveal delay={300}>
             <div id="safety" className="group relative overflow-hidden rounded-[2.2rem] border border-plum-border bg-plum-surface/80 p-8 shadow-2xl backdrop-blur-xl transition-all duration-300 hover:border-gold/40">
               <div className="flex items-center gap-3">
                 <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gold/20 text-gold font-bold text-lg">
-                  🛡️
+                  🔒
                 </div>
                 <div>
-                  <span className="font-mono text-xs font-bold uppercase tracking-wider text-gold">Safety & Peace of Mind</span>
-                  <h3 className="font-display text-2xl font-bold text-pearl">Date Safe, Party Free</h3>
+                  <span className="font-mono text-xs font-bold uppercase tracking-wider text-gold">Safety Infrastructure</span>
+                  <h3 className="font-display text-2xl font-bold text-pearl">Tokenized Live Location Sharing</h3>
                 </div>
               </div>
               <p className="mt-3 text-sm text-pearl-dim leading-relaxed">
-                Heading out for a first date? Share an encrypted, time-boxed live location token link with your bestie or roommate — <em className="text-pearl font-normal">no app download required for them</em>.
+                Users can generate a short-lived, unguessable token link for emergency contacts. Auto-expiration background jobs automatically purge location logs.
               </p>
 
               {/* Live Interactive Location Widget */}
@@ -155,109 +189,61 @@ export function Features() {
                       <span className={`relative inline-flex h-3 w-3 rounded-full ${locationShared ? 'bg-mehendi' : 'bg-pearl-muted'}`} />
                     </span>
                     <span className="font-mono text-xs font-semibold text-pearl">
-                      {locationShared ? 'Live Location Token Active' : 'Location Share Paused'}
+                      {locationShared ? 'Session Token Active' : 'Session Terminated'}
                     </span>
                   </div>
                   <button
                     onClick={() => setLocationShared(!locationShared)}
                     className="rounded-full bg-plum-surface px-3 py-1 font-mono text-[11px] text-gold border border-gold/40 hover:bg-gold/10 transition-colors"
                   >
-                    {locationShared ? 'Simulate Stop' : 'Simulate Share'}
+                    {locationShared ? 'End Session' : 'Start Session'}
                   </button>
                 </div>
 
                 <div className="mt-4 rounded-xl bg-plum-surface/90 p-3.5 border border-plum-border/50">
                   <div className="flex items-center justify-between text-xs text-pearl-dim font-mono">
-                    <span>Contact: Sneha (Bestie)</span>
-                    <span className="text-gold font-bold">Auto-expires in 2h 30m</span>
+                    <span>Emergency Contact: Assigned</span>
+                    <span className="text-gold font-bold">Auto-Purge: 2h 30m</span>
                   </div>
                   <div className="mt-2 text-xs text-pearl-muted truncate font-mono">
-                    🔒 melo.dis/safety?token=9f82a1c0d4e3...
+                    🔒 https://app.melodis.com/location?token=9f82a1c0d4...
                   </div>
                 </div>
               </div>
             </div>
           </ScrollReveal>
 
-          {/* FEATURE 3: Cultural Vibe Filters */}
-          <ScrollReveal delay={300}>
+          {/* FEATURE 4: Real-Time Engine & Media Exchange */}
+          <ScrollReveal delay={400}>
             <div className="group relative overflow-hidden rounded-[2.2rem] border border-plum-border bg-plum-surface/80 p-8 shadow-2xl backdrop-blur-xl transition-all duration-300 hover:border-saffron/40">
               <div className="flex items-center gap-3">
                 <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-saffron/20 text-saffron font-bold text-lg">
-                  🏮
+                  🌐
                 </div>
                 <div>
-                  <span className="font-mono text-xs font-bold uppercase tracking-wider text-saffron">Cultural Harmony</span>
-                  <h3 className="font-display text-2xl font-bold text-pearl">Your Values, Your Rules</h3>
+                  <span className="font-mono text-xs font-bold uppercase tracking-wider text-saffron">Realtime Messaging</span>
+                  <h3 className="font-display text-2xl font-bold text-pearl">Real-Time Messaging & Media Exchange</h3>
                 </div>
               </div>
               <p className="mt-3 text-sm text-pearl-dim leading-relaxed">
-                Filter by what matters to you without awkward questions. Dietary preferences (Pure Veg/Jain), mother tongue, relocation flex, or opt-in traditional roots.
+                Powered by a dedicated Node.js WebSocket service with Redis pub/sub broadcasting, typing indicators, read receipts, and presigned S3 media transfers.
               </p>
 
-              {/* Interactive Filter Demo */}
+              {/* Realtime Chat Preview Widget */}
               <div className="mt-6 rounded-2xl border border-plum-border/60 bg-plum-night/90 p-5">
-                <p className="font-mono text-[11px] uppercase tracking-wider text-pearl-muted mb-3">
-                  Sample Opt-In Filter Tags:
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  {['Veg / Foodie', 'Hindi & Punjabi', 'Tech / Creative', 'Weekend Traveler', 'Jain Food Opt-In'].map((tag) => (
-                    <button
-                      key={tag}
-                      onClick={() => setActiveFilter(tag)}
-                      className={`rounded-full px-3.5 py-1.5 font-mono text-xs transition-all ${
-                        activeFilter === tag
-                          ? 'bg-gold-gradient text-plum-night font-bold shadow-gold-glow scale-105'
-                          : 'bg-plum-surface border border-plum-border text-pearl-dim hover:text-pearl'
-                      }`}
-                    >
-                      {tag}
-                    </button>
-                  ))}
+                <div className="flex items-center justify-between pb-2 border-b border-plum-border/40">
+                  <div className="flex items-center gap-2">
+                    <span className="h-2 w-2 rounded-full bg-mehendi" />
+                    <span className="font-mono text-xs font-bold text-pearl">WebSocket Connection: Active</span>
+                  </div>
+                  <span className="font-mono text-[10px] text-pearl-muted">Latency: 18ms</span>
                 </div>
-              </div>
-            </div>
-          </ScrollReveal>
-
-          {/* FEATURE 4: Audio Vibes & Voice Prompts */}
-          <ScrollReveal delay={400}>
-            <div className="group relative overflow-hidden rounded-[2.2rem] border border-plum-border bg-plum-surface/80 p-8 shadow-2xl backdrop-blur-xl transition-all duration-300 hover:border-mehendi/40">
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-mehendi/20 text-mehendi font-bold text-lg">
-                  🎙️
-                </div>
-                <div>
-                  <span className="font-mono text-xs font-bold uppercase tracking-wider text-mehendi-light">Voice Prompts</span>
-                  <h3 className="font-display text-2xl font-bold text-pearl">Hear the Real Chemistry</h3>
-                </div>
-              </div>
-              <p className="mt-3 text-sm text-pearl-dim leading-relaxed">
-                Photos lie, voice clips don't. Hear 15-second audio snippets on profiles to catch accent vibes, humor, and natural warmth before swiping.
-              </p>
-
-              {/* Interactive Audio Player Mock */}
-              <div className="mt-6 rounded-2xl border border-plum-border/60 bg-plum-night/90 p-5">
-                <div className="flex items-center gap-4">
-                  <button
-                    onClick={() => setIsPlayingAudio(!isPlayingAudio)}
-                    className="flex h-12 w-12 items-center justify-center rounded-full bg-saffron-gradient text-pearl shadow-saffron-glow transition-transform hover:scale-105 active:scale-95"
-                  >
-                    {isPlayingAudio ? '❚❚' : '▶'}
-                  </button>
-                  <div className="flex-1">
-                    <p className="text-xs font-mono text-pearl">"My worst date story involving a monkey in Shimla..."</p>
-                    {/* Sound Wave Animation */}
-                    <div className="mt-2.5 flex items-center gap-1">
-                      {[40, 75, 30, 90, 50, 85, 35, 95, 60, 40, 80, 55, 30].map((h, i) => (
-                        <div
-                          key={i}
-                          className={`w-1 rounded-full transition-all duration-300 ${
-                            isPlayingAudio ? 'bg-saffron animate-pulse' : 'bg-plum-border'
-                          }`}
-                          style={{ height: isPlayingAudio ? `${h * 0.3}px` : '8px' }}
-                        />
-                      ))}
-                    </div>
+                <div className="mt-3 flex flex-col gap-2 font-sans text-xs">
+                  <div className="self-start bg-plum-surface p-2.5 rounded-xl text-pearl-dim max-w-[80%] border border-plum-border/50">
+                    Hey! Saw you're interested in System Architecture & AI?
+                  </div>
+                  <div className="self-end bg-saffron-gradient p-2.5 rounded-xl text-pearl font-semibold max-w-[80%] shadow-saffron-glow">
+                    Yes! Exploring PostGIS vector similarity matching.
                   </div>
                 </div>
               </div>
@@ -268,4 +254,5 @@ export function Features() {
     </section>
   );
 }
+
 

@@ -33,16 +33,20 @@ export function AuthProvider({ children }) {
                 setSessionBanner('')
                 return null
             } else {
-                setUser(null)
-                if (err?.status === 401) {
-                    setSessionBanner(err?.body?.error || 'Your session expired. Please log in again.')
-                }
+                // Only show session expired banner if user was previously authenticated
+                setUser((prevUser) => {
+                    if (prevUser && err?.status === 401) {
+                        setSessionBanner(err?.body?.error || 'Your session expired. Please log in again.')
+                    }
+                    return null
+                })
                 return null
             }
         } finally {
             setLoading(false)
         }
     }, [])
+
 
     /* Whenever a component renders , it calls the auth check */
     useEffect(() => {
