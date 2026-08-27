@@ -4,28 +4,51 @@ export default {
   theme: {
     extend: {
       colors: {
-        // The dusk-jewel palette - see design plan. Named for what they
-        // ARE in the theme's world, not generic "primary/secondary" -
-        // makes intent legible in every component that uses them.
-        ink: '#1B0E14', // primary background - moonless courtyard
-        dusk: '#3A1F2B', // secondary dark surface - cards on ink
-        'dusk-light': '#4F2E3D', // tertiary surface - hover states, inputs
+        // Sunset Saffron & Royal Plum Palette (Palette 1)
+        plum: {
+          DEFAULT: '#6B1D52', // Royal Plum / Wine
+          light: '#8B2C6D',
+          dark: '#3D1030',
+          night: '#140810', // Deep obsidian background
+          surface: '#23101C', // Card surface background
+          border: '#4D1D3D',
+        },
+        saffron: {
+          DEFAULT: '#FF3366', // Crimson Sunset Saffron
+          light: '#FF5E85',
+          glow: '#FF2A5F',
+          dark: '#C81B47',
+        },
+        gold: {
+          DEFAULT: '#F4C430', // Champagne Gold accent
+          light: '#F8D76D',
+          dark: '#C59A16',
+        },
+        pearl: {
+          DEFAULT: '#FFF7F8', // Pure warm cream surface text
+          dim: '#E2CDD5', // Muted subtitle text
+          muted: '#A58B97', // Subtext
+        },
+        // Backwards compatibility tokens
         marigold: {
-          DEFAULT: '#F0A202',
-          light: '#F7C25E',
-          dark: '#C4830A',
+          DEFAULT: '#F4C430',
+          light: '#F8D76D',
+          dark: '#C59A16',
         },
         sindoor: {
-          DEFAULT: '#E63950',
-          light: '#F0677A',
-          dark: '#B82238',
+          DEFAULT: '#FF3366',
+          light: '#FF5E85',
+          dark: '#C81B47',
         },
         mehendi: {
-          DEFAULT: '#4C7A5E',
-          light: '#6B9B7D',
+          DEFAULT: '#22C55E',
+          light: '#4ADE80',
         },
-        cream: '#FBF1E3',
-        'cream-dim': '#D9CBB8', // muted text on dark surfaces
+        ink: '#140810',
+        dusk: '#23101C',
+        'dusk-light': '#3D1030',
+        cream: '#FFF7F8',
+        'cream-dim': '#E2CDD5',
       },
       fontFamily: {
         display: ['var(--font-fraunces)', 'serif'],
@@ -33,30 +56,52 @@ export default {
         mono: ['var(--font-plex-mono)', 'monospace'],
       },
       backgroundImage: {
-        // The "bloom" gradient - the signature motion element's visual
-        // basis, also usable statically as a background accent.
-        bloom: 'radial-gradient(circle, #E63950 0%, #F0A202 60%, transparent 100%)',
-        'bloom-soft': 'radial-gradient(circle, rgba(230,57,80,0.35) 0%, rgba(240,162,2,0.25) 55%, transparent 100%)',
+        'sunset-glow': 'radial-gradient(circle at top center, rgba(255, 51, 102, 0.25) 0%, rgba(107, 29, 82, 0.35) 45%, rgba(20, 8, 16, 0.95) 100%)',
+        'plum-card': 'linear-gradient(145deg, rgba(35, 16, 28, 0.8) 0%, rgba(61, 16, 48, 0.5) 100%)',
+        'saffron-gradient': 'linear-gradient(135deg, #FF3366 0%, #E61E50 50%, #6B1D52 100%)',
+        'gold-gradient': 'linear-gradient(135deg, #F4C430 0%, #FF8A00 100%)',
+        'bloom-soft': 'radial-gradient(circle, rgba(255, 51, 102, 0.3) 0%, rgba(107, 29, 82, 0.2) 60%, transparent 100%)',
       },
       keyframes: {
-        bloomExpand: {
-          '0%': { transform: 'scale(0)', opacity: '0.9' },
-          '70%': { opacity: '0.5' },
-          '100%': { transform: 'scale(1)', opacity: '0' },
-        },
         floatSlow: {
-          '0%, 100%': { transform: 'translateY(0)' },
-          '50%': { transform: 'translateY(-12px)' },
+          '0%, 100%': { transform: 'translateY(0px) rotate(0deg)' },
+          '50%': { transform: 'translateY(-14px) rotate(1.5deg)' },
+        },
+        pulseGlow: {
+          '0%, 100%': { opacity: '0.4', transform: 'scale(1)' },
+          '50%': { opacity: '0.8', transform: 'scale(1.08)' },
+        },
+        shimmer: {
+          '0%': { transform: 'translateX(-100%)' },
+          '100%': { transform: 'translateX(100%)' },
+        },
+        infiniteTicker: {
+          '0%': { transform: 'translateX(0%)' },
+          '100%': { transform: 'translateX(-50%)' },
+        },
+        heartPop: {
+          '0%': { transform: 'scale(0.8)', opacity: '0' },
+          '50%': { transform: 'scale(1.2)', opacity: '1' },
+          '100%': { transform: 'scale(1)', opacity: '1' },
         },
       },
       animation: {
-        bloom: 'bloomExpand 900ms cubic-bezier(0.16, 1, 0.3, 1) forwards',
-        'float-slow': 'floatSlow 6s ease-in-out infinite',
+        'float-slow': 'floatSlow 7s ease-in-out infinite',
+        'pulse-glow': 'pulseGlow 4s ease-in-out infinite',
+        'shimmer': 'shimmer 2.5s infinite',
+        'infinite-ticker': 'infiniteTicker 25s linear infinite',
+        'heart-pop': 'heartPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards',
       },
       borderRadius: {
-        card: '1.75rem', // the soft, tactile "photograph with a mat border" radius used throughout
+        card: '1.75rem',
+      },
+      boxShadow: {
+        'saffron-glow': '0 0 30px -5px rgba(255, 51, 102, 0.5)',
+        'plum-glow': '0 0 35px -5px rgba(107, 29, 82, 0.6)',
+        'gold-glow': '0 0 25px -5px rgba(244, 196, 48, 0.4)',
       },
     },
   },
   plugins: [],
 };
+
