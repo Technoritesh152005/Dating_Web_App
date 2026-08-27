@@ -1,10 +1,8 @@
 'use client'
 
 import { useRef, useState, useEffect, useCallback } from 'react'
-import { Button } from '@/components/user_interface/Button'
 
 export function CameraCapture({ onCapture }) {
-
     const videoRef = useRef(null)
     const canvasRef = useRef(null)
     const streamRef = useRef(null)
@@ -34,7 +32,7 @@ export function CameraCapture({ onCapture }) {
                 setReady(true)
             }
         } catch (err) {
-            setError('Camera access is required for verification. Please allow camera permission and try again.')
+            setError('Camera permission is required for face verification. Please enable camera access in your browser settings.')
         }
     }, [])
 
@@ -83,28 +81,61 @@ export function CameraCapture({ onCapture }) {
     }
 
     return (
-        <div className="flex flex-col items-center">
-            <div className="relative aspect-square w-full max-w-[280px] overflow-hidden rounded-card border border-cream/10 bg-dusk-light">
+        <div className="flex flex-col items-center w-full max-w-sm mx-auto">
+            {/* Camera Viewport Container with Oval Face Target */}
+            <div className="relative aspect-square w-full overflow-hidden rounded-3xl border border-plum-border bg-plum-night shadow-2xl">
                 {error ? (
-                    <div className="flex h-full items-center justify-center p-6 text-center text-[13px] text-sindoor-light">{error}</div>
+                    <div className="flex h-full items-center justify-center p-6 text-center text-xs text-saffron font-medium">
+                        {error}
+                    </div>
                 ) : capturedUrl ? (
-                    <img src={capturedUrl} alt="Captured selfie" className="h-full w-full object-cover" />
+                    <div className="relative h-full w-full">
+                        <img src={capturedUrl} alt="Captured verification selfie" className="h-full w-full object-cover" />
+                        <div className="absolute top-3 left-3 flex items-center gap-1.5 rounded-full border border-mehendi/40 bg-plum-night/80 px-3 py-1 font-mono text-[10px] font-bold text-mehendi-light backdrop-blur-md">
+                            <span className="h-2 w-2 rounded-full bg-mehendi" />
+                            Selfie Captured
+                        </div>
+                    </div>
                 ) : (
-                    <video ref={videoRef} autoPlay playsInline muted className="h-full w-full scale-x-[-1] object-cover" />
+                    <div className="relative h-full w-full">
+                        <video ref={videoRef} autoPlay playsInline muted className="h-full w-full scale-x-[-1] object-cover" />
+
+                        {/* Face Alignment Target Oval Overlay */}
+                        <div className="pointer-events-none absolute inset-0 flex items-center justify-center p-6">
+                            <div className="h-64 w-48 rounded-[50%] border-2 border-dashed border-saffron/80 shadow-[0_0_30px_rgba(255,51,102,0.3)] animate-pulse" />
+                        </div>
+
+                        {/* Top Alignment Guide Label */}
+                        <div className="absolute top-4 inset-x-0 flex justify-center">
+                            <span className="rounded-full border border-saffron/40 bg-plum-night/85 px-3.5 py-1 font-mono text-[10px] uppercase tracking-wider text-pearl font-semibold backdrop-blur-md">
+                                Fit face inside the frame
+                            </span>
+                        </div>
+                    </div>
                 )}
             </div>
 
             <canvas ref={canvasRef} className="hidden" />
 
-            <div className="mt-5">
+            {/* Action Buttons */}
+            <div className="mt-5 w-full">
                 {capturedUrl ? (
-                    <Button type="button" variant="secondary" onClick={retake}>
-                        Retake
-                    </Button>
+                    <button
+                        type="button"
+                        onClick={retake}
+                        className="w-full rounded-xl border border-plum-border bg-plum-surface/80 py-3 font-mono text-xs uppercase tracking-wider text-pearl-dim transition-colors hover:border-gold/50 hover:text-pearl"
+                    >
+                        Retake Photo
+                    </button>
                 ) : (
-                    <Button type="button" variant="primary" onClick={capture} disabled={!ready || !!error} showBloom>
-                        Capture selfie
-                    </Button>
+                    <button
+                        type="button"
+                        onClick={capture}
+                        disabled={!ready || !!error}
+                        className="w-full rounded-xl bg-saffron-gradient py-3.5 font-mono text-xs uppercase tracking-wider text-pearl font-semibold shadow-saffron-glow transition-all hover:scale-[1.01] active:scale-98 disabled:opacity-50"
+                    >
+                        Take Selfie
+                    </button>
                 )}
             </div>
         </div>

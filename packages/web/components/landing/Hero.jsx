@@ -89,26 +89,17 @@ export function Hero() {
         <div className="grid items-center gap-12 lg:grid-cols-12 lg:gap-8">
           {/* Left Hero Text Column */}
           <div className="text-center lg:col-span-7 lg:text-left">
-            {/* Tagline Badge */}
-            <div className="inline-flex items-center gap-2 rounded-full border border-saffron/30 bg-plum-surface/60 px-4 py-1.5 backdrop-blur-md shadow-plum-glow">
-              <span className="flex h-2 w-2 rounded-full bg-saffron animate-ping" />
-              <span className="font-mono text-[11px] uppercase tracking-[0.2em] font-semibold text-gold">
-                Made for how India actually dates
+            {/* Main Professional Headline */}
+            <h1 className="font-display text-4xl leading-[1.08] font-bold text-pearl sm:text-6xl lg:text-6xl">
+              Connect on Compatibility.{' '}
+              <span className="bg-saffron-gradient bg-clip-text text-transparent font-semibold">
+                Date with Complete Confidence.
               </span>
-            </div>
-
-            {/* Witty Headline */}
-            <h1 className="mt-6 font-display text-4xl leading-[1.08] font-bold text-pearl sm:text-6xl lg:text-6xl">
-              Meet someone worth skipping the{' '}
-              <span className="bg-saffron-gradient bg-clip-text text-transparent italic font-normal">
-                Sharma-ji rishta
-              </span>{' '}
-              for.
             </h1>
 
-            {/* Charming Subheadline */}
+            {/* Professional Subheadline */}
             <p className="mt-6 max-w-xl text-lg leading-relaxed text-pearl-dim sm:text-xl">
-              100% Selfie-Verified profiles, AI Icebreakers so you never say a dry <em className="text-gold font-normal">"Hey"</em>, and 1-Click Date-Safe live location for your bestie.
+              AI-powered identity verification, automated icebreakers, and real-time live location security engineered for authentic relationships.
             </p>
 
             {/* Hero CTAs */}
@@ -117,7 +108,7 @@ export function Hero() {
                 href="/signup"
                 className="group relative flex w-full items-center justify-center gap-3 overflow-hidden rounded-2xl bg-saffron-gradient px-8 py-4 text-base font-semibold text-pearl shadow-saffron-glow transition-all duration-300 hover:shadow-saffron-glow/90 hover:scale-[1.02] active:scale-98 sm:w-auto"
               >
-                <span>Find Your Match</span>
+                <span>Create Free Account</span>
                 <svg className="h-5 w-5 transition-transform duration-300 group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
                 </svg>
@@ -127,7 +118,7 @@ export function Hero() {
                 href="/login"
                 className="flex w-full items-center justify-center rounded-2xl border border-plum-border bg-plum-surface/40 px-7 py-4 font-mono text-sm uppercase tracking-wider text-pearl-dim backdrop-blur-md transition-all duration-300 hover:border-saffron/50 hover:text-pearl sm:w-auto"
               >
-                Log in to Account
+                Log in
               </Link>
             </div>
 
@@ -135,18 +126,19 @@ export function Hero() {
             <div className="mt-12 flex flex-wrap items-center justify-center gap-6 text-xs text-pearl-muted lg:justify-start font-mono">
               <div className="flex items-center gap-2">
                 <span className="flex h-5 w-5 items-center justify-center rounded-full bg-mehendi/20 text-mehendi font-bold">✓</span>
-                <span>Selfie-Verified Badges</span>
+                <span>AWS Rekognition Verification</span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="flex h-5 w-5 items-center justify-center rounded-full bg-gold/20 text-gold font-bold">★</span>
-                <span>Zero Rishta Pressure</span>
+                <span>Vector Embedding Compatibility</span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-saffron/20 text-saffron font-bold">♥</span>
-                <span>Live Location Date Safety</span>
+                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-saffron/20 text-saffron font-bold">🛡️</span>
+                <span>Tokenized Date Safety</span>
               </div>
             </div>
           </div>
+
 
           {/* Right Interactive Profile Card Stack Column */}
           <div className="relative flex justify-center lg:col-span-5">

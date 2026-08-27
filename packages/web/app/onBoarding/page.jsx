@@ -402,25 +402,25 @@ export default function onBoardingSteps() {
     }
 
     return (
-      <main className="flex min-h-screen items-center justify-center px-6">
-        <Card className="max-w-md p-8 text-center">
+      <main className="flex min-h-screen items-center justify-center px-6 bg-plum-night text-pearl">
+        <Card className="max-w-md p-8 text-center bg-plum-surface border-plum-border shadow-2xl">
           {locationPromptOpen && status === "VERIFIED" ? (
             <>
-              <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-full border border-marigold/30 bg-marigold/10 text-2xl text-marigold">
-                <span aria-hidden="true">⌖</span>
+              <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-full border border-gold/30 bg-gold/10 text-gold font-bold text-xl shadow-gold-glow">
+                LOCATION
               </div>
-              <p className="mb-3 font-mono text-[11px] uppercase tracking-[0.2em] text-marigold">
-                Make discovery local
+              <p className="mb-3 font-mono text-[11px] uppercase tracking-[0.2em] font-bold text-gold">
+                Enable Nearby Discovery
               </p>
-              <h1 className="font-display text-2xl text-cream">
+              <h1 className="font-display text-2xl font-bold text-pearl">
                 Share your location?
               </h1>
-              <p className="mt-3 text-[15px] leading-relaxed text-cream-dim">
-                Allow your current location so we can show you people nearby.
-                Your exact location is kept private and is never shown on your profile.
+              <p className="mt-3 text-sm leading-relaxed text-pearl-dim">
+                Allow location access so we can show compatible matches near you.
+                Your exact coordinates remain private and are never displayed publicly.
               </p>
               {locationError && (
-                <p className="mt-4 text-[14px] text-sindoor-light">{locationError}</p>
+                <p className="mt-4 text-xs text-saffron font-medium">{locationError}</p>
               )}
               <div className="mt-6 flex flex-col gap-3">
                 <Button
@@ -430,7 +430,7 @@ export default function onBoardingSteps() {
                   showBloom
                   className="w-full"
                 >
-                  {locationRequesting ? "Getting your location…" : "Allow location"}
+                  {locationRequesting ? "Saving Location..." : "Allow Location Access"}
                 </Button>
                 <Button
                   variant="secondary"
@@ -438,27 +438,27 @@ export default function onBoardingSteps() {
                   disabled={locationRequesting}
                   className="w-full"
                 >
-                  Not now
+                  Skip for Now
                 </Button>
               </div>
             </>
           ) : (
             <>
-          <p className="mb-3 font-mono text-[11px] uppercase tracking-[0.2em] text-marigold">
-            {status === "VERIFIED" ? "You're all set" : "Verification needed"}
-          </p>
-          <h1 className="font-display text-2xl text-cream">{statusTitle}</h1>
-          <p className="mt-3 text-[15px] leading-relaxed text-cream-dim">
-            {statusMessage}
-          </p>
-          {(status === "REVERIFICATION_REQUIRED" || status === "REJECTED") && (
-            <button
-              onClick={startVerificationAgain}
-              className="mt-4 w-full btn-primary"
-            >
-              Verify again
-            </button>
-          )}
+              <span className="inline-block mb-3 font-mono text-[11px] uppercase tracking-[0.2em] font-bold text-gold bg-gold/10 px-3 py-1 rounded-full border border-gold/30">
+                {status === "VERIFIED" ? "Profile Verified" : "Verification Status"}
+              </span>
+              <h1 className="font-display text-2xl font-bold text-pearl">{statusTitle}</h1>
+              <p className="mt-3 text-sm leading-relaxed text-pearl-dim">
+                {statusMessage}
+              </p>
+              {(status === "REVERIFICATION_REQUIRED" || status === "REJECTED") && (
+                <button
+                  onClick={startVerificationAgain}
+                  className="mt-6 w-full rounded-xl bg-saffron-gradient py-3.5 text-sm font-semibold text-pearl shadow-saffron-glow transition-all hover:scale-105"
+                >
+                  Start Verification Again
+                </button>
+              )}
             </>
           )}
         </Card>
@@ -467,92 +467,113 @@ export default function onBoardingSteps() {
   }
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-[#120d0b] text-cream">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(240,162,2,0.18),transparent_26%),radial-gradient(circle_at_80%_20%,rgba(230,57,80,0.1),transparent_20%),linear-gradient(90deg,#120d0b_0%,#190f0d_38%,#150d0a_100%)]" />
+    <main className="relative min-h-screen overflow-hidden bg-plum-night text-pearl selection:bg-saffron selection:text-pearl">
+      {/* Background Radial Glows */}
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
+        <div className="absolute -left-32 top-10 h-[36rem] w-[36rem] rounded-full bg-saffron/15 blur-[140px] animate-pulse-glow" />
+        <div className="absolute -right-32 bottom-10 h-[36rem] w-[36rem] rounded-full bg-plum/40 blur-[150px] animate-float-slow" />
+      </div>
 
       <div className="relative mx-auto flex min-h-screen max-w-[1500px]">
-        <aside className="relative hidden w-[38%] border-r border-cream/8 bg-[#120d0b]/85 px-8 py-10 lg:flex lg:flex-col">
+        {/* Sidebar Stepper & Overview */}
+        <aside className="relative hidden w-[38%] border-r border-plum-border/50 bg-plum-surface/70 px-8 py-10 lg:flex lg:flex-col backdrop-blur-xl">
           <div className="mb-8 flex items-center gap-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#f0a202] text-[19px] text-[#1b0e14] shadow-[0_0_20px_rgba(240,162,2,0.7)]">
-              ❤
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-saffron-gradient text-pearl font-bold font-display text-lg shadow-saffron-glow">
+              M
             </div>
-            <div className="font-display text-3xl font-medium italic text-cream">Melodis</div>
+            <div className="font-display text-2xl font-bold text-pearl">
+              Melodis<span className="text-saffron">.</span>
+            </div>
           </div>
 
-          <div className="mt-8 pt-4">
-            <div className="mb-6 font-mono text-[11px] uppercase tracking-[0.24em] text-[#e6b65d]">
-              {step + 1} of {totalSteps}
+          <div className="mt-6 pt-4">
+            <div className="mb-2 flex items-center justify-between">
+              <span className="font-mono text-xs uppercase tracking-widest text-gold font-bold">
+                Step {step + 1} of {totalSteps}
+              </span>
+              <span className="font-mono text-xs text-pearl-muted font-bold">
+                {Math.round(((step + 1) / totalSteps) * 100)}% Complete
+              </span>
             </div>
 
-            <div className="max-w-[360px]">
+            <div className="max-w-[360px] mt-4">
               {step === 0 && (
                 <>
-                  <h1 className="font-display text-[4rem] leading-[0.9] tracking-[-0.06em] text-cream">First, the easy part.</h1>
-                  <p className="mt-5 max-w-xs text-[1.05rem] leading-[1.6] text-cream/70">A name, a birthday, and how you identify — thirty seconds, tops.</p>
+                  <h1 className="font-display text-4xl leading-tight font-bold text-pearl">Basic Profile Information</h1>
+                  <p className="mt-3 text-sm leading-relaxed text-pearl-dim">Enter your display name, username, date of birth, and gender identity to begin.</p>
                 </>
               )}
               {step === 1 && (
                 <>
-                  <h1 className="font-display text-[4rem] leading-[0.9] tracking-[-0.06em] text-cream">Now the interesting part.</h1>
-                  <p className="mt-5 max-w-xs text-[1.05rem] leading-[1.6] text-cream/70">Your story and the things you love. This is what starts conversations.</p>
+                  <h1 className="font-display text-4xl leading-tight font-bold text-pearl">Bio & Profession</h1>
+                  <p className="mt-3 text-sm leading-relaxed text-pearl-dim">Share a short bio, select your primary interests, and specify your profession.</p>
                 </>
               )}
               {step === 2 && (
                 <>
-                  <h1 className="font-display text-[4rem] leading-[0.9] tracking-[-0.06em] text-cream">What are you open to?</h1>
-                  <p className="mt-5 max-w-xs text-[1.05rem] leading-[1.6] text-cream/70">Tell people what kind of connection you’re really looking for.</p>
+                  <h1 className="font-display text-4xl leading-tight font-bold text-pearl">Connection Intent</h1>
+                  <p className="mt-3 text-sm leading-relaxed text-pearl-dim">Select the types of relationships and connections you are looking to discover.</p>
                 </>
               )}
               {step === 3 && (
                 <>
-                  <h1 className="font-display text-[4rem] leading-[0.9] tracking-[-0.06em] text-cream">Let them see you.</h1>
-                  <p className="mt-5 max-w-xs text-[1.05rem] leading-[1.6] text-cream/70">Real photos get real matches. Your first one leads the profile.</p>
+                  <h1 className="font-display text-4xl leading-tight font-bold text-pearl">Profile Photography</h1>
+                  <p className="mt-3 text-sm leading-relaxed text-pearl-dim">Upload up to 6 high-resolution photos. Your first photo will serve as your primary discovery avatar.</p>
                 </>
               )}
               {step === 4 && (
                 <>
-                  <h1 className="font-display text-[4rem] leading-[0.9] tracking-[-0.06em] text-cream">Almost there — one selfie.</h1>
-                  <p className="mt-5 max-w-xs text-[1.05rem] leading-[1.6] text-cream/70">A quick live photo keeps Melodis full of real people.</p>
+                  <h1 className="font-display text-4xl leading-tight font-bold text-pearl">Identity Verification</h1>
+                  <p className="mt-3 text-sm leading-relaxed text-pearl-dim">Capture a live selfie to execute AWS Rekognition facial comparison against your primary photo.</p>
                 </>
               )}
             </div>
 
-            <div className="mt-10 flex w-full max-w-[310px] flex-col gap-4">
+            {/* Stepper Milestones */}
+            <div className="mt-10 flex w-full max-w-[320px] flex-col gap-4">
               {[
-                { label: 'The basics', done: step > 0, active: step === 0 },
-                { label: 'About you', done: step > 1, active: step === 1 },
-                { label: 'Photos', done: step > 3, active: step === 3 },
-                { label: 'Verification', done: step > 4, active: step === 4 },
+                { label: 'Basic Info', done: step > 0, active: step === 0 },
+                { label: 'Bio & Interests', done: step > 1, active: step === 1 },
+                { label: 'Connection Intent', done: step > 2, active: step === 2 },
+                { label: 'Profile Photos', done: step > 3, active: step === 3 },
+                { label: 'Identity Check', done: step > 4, active: step === 4 },
               ].map((item, index) => (
                 <div key={item.label} className="relative flex items-center gap-4">
-                  {index < 3 && (
-                    <div className={`absolute left-[12px] top-[38px] h-6 w-px ${item.done ? 'bg-[#f0a202]' : 'bg-cream/10'}`} />
+                  {index < 4 && (
+                    <div className={`absolute left-[13px] top-[34px] h-6 w-0.5 ${item.done ? 'bg-gold' : 'bg-plum-border'}`} />
                   )}
-                  <div className={`relative z-10 flex h-7 w-7 items-center justify-center rounded-full border text-[12px] ${item.done ? 'border-[#f0a202] bg-[#f0a202] text-[#1b0e14]' : item.active ? 'border-[#f0a202] bg-[#f0a202]/10 text-[#f0a202]' : 'border-cream/15 bg-transparent text-cream/50'}`}>
-                    {item.done ? '✓' : index + 1}
+                  <div className={`relative z-10 flex h-7 w-7 items-center justify-center rounded-full font-mono text-xs font-bold transition-all ${
+                    item.done
+                      ? 'bg-gold text-plum-night shadow-gold-glow'
+                      : item.active
+                      ? 'border border-saffron bg-saffron/20 text-saffron shadow-saffron-glow'
+                      : 'border border-plum-border text-pearl-muted'
+                  }`}>
+                    {item.done ? 'DONE' : index + 1}
                   </div>
-                  <div className={`text-[1.05rem] ${item.active ? 'text-cream font-medium' : 'text-cream/65'}`}>
+                  <div className={`text-sm font-medium ${item.active ? 'text-pearl' : 'text-pearl-dim'}`}>
                     {item.label}
-                    {item.active && <span className="ml-2 text-[#f0a202] text-xs">You’re here</span>}
+                    {item.active && <span className="ml-2 font-mono text-xs text-gold font-bold">• Active</span>}
                   </div>
                 </div>
               ))}
             </div>
           </div>
 
-          <div className="mt-auto flex items-center gap-2 text-cream/55 text-[0.92rem]">
-            <div className="flex h-5 w-5 items-center justify-center rounded-full border border-cream/20 text-[10px]">i</div>
-            Everything you share stays private until you match.
+          <div className="mt-auto flex items-center gap-2 font-mono text-xs text-pearl-muted">
+            <span className="flex h-4 w-4 items-center justify-center rounded-full border border-pearl-muted text-[10px]">i</span>
+            <span>Your personal data remains encrypted and safe.</span>
           </div>
         </aside>
 
+        {/* Main Content Step Form Card */}
         <section className="relative flex w-full flex-1 items-center justify-center px-5 py-10 md:px-10 lg:px-16">
           <div className="w-full max-w-[820px]">
-            <div className="mb-10 flex justify-center">
+            <div className="mb-8 flex justify-center">
               <StepProgress current={step} total={totalSteps} />
             </div>
 
-            <div className="mx-auto w-full max-w-[760px] rounded-[28px] border border-cream/8 bg-[#1b120f]/60 p-6 shadow-[0_40px_120px_-40px_rgba(0,0,0,0.8)] backdrop-blur-xl md:p-8">
+            <div className="mx-auto w-full max-w-[760px] rounded-[2.2rem] border border-plum-border/70 bg-plum-surface/85 p-6 shadow-2xl backdrop-blur-2xl md:p-10">
               {step === 0 && (
                 <StepBasicInfo
                   form={form}
@@ -605,57 +626,59 @@ export default function onBoardingSteps() {
 }
 
 // ---------------------------------------------------------------------------
-// STEP 1 — Basic info (local state only, no API call yet)
+// STEP 1 — Basic info
 // ---------------------------------------------------------------------------
 function StepBasicInfo({ form, updateForm, onNext }) {
   const canContinue = form.displayName && form.dateOfBirth && form.gender;
   return (
     <div className="flex flex-col gap-6">
       <div className="text-center">
-        <h2 className="font-display text-[3.2rem] leading-[0.96] tracking-[-0.06em] text-cream">The basics</h2>
-        <p className="mx-auto mt-3 max-w-md text-[1.05rem] leading-[1.6] text-cream/70">
-          Nothing anyone couldn’t already guess from meeting you — but it helps us find your people.
+        <h2 className="font-display text-3xl font-bold text-pearl sm:text-4xl">Basic Information</h2>
+        <p className="mx-auto mt-2 max-w-md text-sm text-pearl-dim">
+          Enter your display name, username, date of birth, and gender identity.
         </p>
       </div>
 
-      <div className="mx-auto w-full max-w-[620px] space-y-6 pt-2">
+      <div className="mx-auto w-full max-w-[620px] space-y-5 pt-2">
         <div>
-          <Input
-            label="What should we call you?"
+          <label className="mb-1.5 block font-mono text-xs font-semibold text-pearl-dim">Display Name</label>
+          <input
+            type="text"
             value={form.displayName}
             placeholder="Your first name"
             onChange={(e) => updateForm({ displayName: e.target.value })}
-            className="!rounded-[18px] border-cream/10 bg-[#2a1f1d]/80"
+            className="w-full rounded-xl border border-plum-border bg-plum-night/80 px-4 py-3 text-sm text-pearl outline-none focus:border-saffron focus:ring-2 focus:ring-saffron/20"
           />
         </div>
 
         <div>
-          <Input
-            label="Username"
+          <label className="mb-1.5 block font-mono text-xs font-semibold text-pearl-dim">Username</label>
+          <input
+            type="text"
             value={form.username}
             placeholder="your_username"
             minLength={3}
             maxLength={20}
             autoComplete="username"
             onChange={(e) => updateForm({ username: e.target.value.toLowerCase() })}
-            className="!rounded-[18px] border-cream/10 bg-[#2a1f1d]/80"
+            className="w-full rounded-xl border border-plum-border bg-plum-night/80 px-4 py-3 text-sm text-pearl outline-none focus:border-saffron focus:ring-2 focus:ring-saffron/20"
           />
-          <p className="mt-2 text-[13px] text-cream/55">3-20 lowercase letters, numbers, or underscores.</p>
+          <p className="mt-1.5 font-mono text-[11px] text-pearl-muted">3-20 lowercase letters, numbers, or underscores.</p>
         </div>
 
         <div>
-          <Input
-            label="Birthday"
+          <label className="mb-1.5 block font-mono text-xs font-semibold text-pearl-dim">Date of Birth</label>
+          <input
             type="date"
             value={form.dateOfBirth}
             onChange={(e) => updateForm({ dateOfBirth: e.target.value })}
-            className="!rounded-[18px] border-cream/10 bg-[#2a1f1d]/80"
+            className="w-full rounded-xl border border-plum-border bg-plum-night/80 px-4 py-3 text-sm text-pearl outline-none focus:border-saffron focus:ring-2 focus:ring-saffron/20"
           />
-          <p className="mt-2 text-[13px] text-cream/55">You must be 18 or older. Your age, not your birthday, shows on your profile.</p>
+          <p className="mt-1.5 font-mono text-[11px] text-pearl-muted">Must be 18 or older. Only your age will be displayed.</p>
         </div>
 
         <div>
-          <p className="mb-3 font-mono text-[11px] uppercase tracking-[0.16em] text-cream-dim/80">I am a</p>
+          <p className="mb-3 font-mono text-xs font-semibold text-pearl-dim">Gender Identity</p>
           <div className="flex flex-wrap justify-center gap-3">
             <ChoicePills
               options={GENDER_OPTIONS}
@@ -666,50 +689,49 @@ function StepBasicInfo({ form, updateForm, onNext }) {
         </div>
       </div>
 
-      <div className="mt-4 flex items-center justify-between gap-4">
-        <div className="text-[13px] text-cream/50">Fill all three to continue.</div>
-        <Button
-          variant="primary"
+      <div className="mt-4 flex items-center justify-between gap-4 pt-4 border-t border-plum-border/40">
+        <div className="font-mono text-xs text-pearl-muted">Complete all fields to proceed.</div>
+        <button
           disabled={!canContinue}
           onClick={onNext}
-          className="min-w-[180px]"
+          className="rounded-xl bg-saffron-gradient px-7 py-3.5 font-mono text-xs uppercase tracking-wider text-pearl font-semibold shadow-saffron-glow transition-all hover:scale-105 disabled:opacity-50"
         >
-          Continue →
-        </Button>
+          Continue
+        </button>
       </div>
     </div>
   );
 }
-// STEP 2 — About (bio, interests, profession) - submits PUT /profile,
-// creating the actual Profile row for the first time.
-// ---------------------------------------------------------------------------
+
+// STEP 2 — About
 function StepAbout({ form, updateForm, onNext, onBack, saving, error }) {
   return (
     <div className="flex flex-col gap-6">
       <div className="text-center">
-        <h2 className="font-display text-[3.2rem] leading-[0.95] tracking-[-0.06em] text-cream">A little more about you</h2>
-        <p className="mx-auto mt-3 max-w-md text-[1.05rem] leading-[1.6] text-cream/70">This is what people see first — make it sound like you, not a résumé.</p>
+        <h2 className="font-display text-3xl font-bold text-pearl sm:text-4xl">Bio & Profession</h2>
+        <p className="mx-auto mt-2 max-w-md text-sm text-pearl-dim">Share your bio, select your primary interests, and define your profession.</p>
       </div>
 
-      <div className="mx-auto w-full max-w-[620px] space-y-7">
+      <div className="mx-auto w-full max-w-[620px] space-y-6">
         <div>
-          <div className="mb-2 flex items-center justify-between">
-            <label className="font-mono text-[11px] uppercase tracking-[0.16em] text-cream-dim/80">Bio</label>
-            <span className="font-mono text-[11px] uppercase tracking-[0.12em] text-cream/45">0/240</span>
+          <div className="mb-2 flex items-center justify-between font-mono text-xs">
+            <label className="font-semibold text-pearl-dim">Bio</label>
+            <span className="text-pearl-muted">{form.bio.length}/240</span>
           </div>
           <textarea
             rows={4}
+            maxLength={240}
             value={form.bio}
             onChange={(e) => updateForm({ bio: e.target.value })}
-            className="w-full rounded-[18px] border border-cream/10 bg-[#2a1f1d]/80 px-4 py-3.5 text-[15px] text-cream outline-none transition-all placeholder:text-cream-dim/45 focus:border-marigold/60 focus:shadow-[0_0_0_1px_rgba(240,162,2,0.3)]"
-            placeholder="Tell people something real — what a perfect Sunday looks like, the thing you can’t stop talking about."
+            className="w-full rounded-xl border border-plum-border bg-plum-night/80 px-4 py-3 text-sm text-pearl outline-none focus:border-saffron focus:ring-2 focus:ring-saffron/20 placeholder-pearl-muted"
+            placeholder="Share your interests, weekend activities, or what you enjoy discussing."
           />
         </div>
 
         <div>
-          <div className="mb-3 flex items-center justify-between">
-            <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-cream-dim/80">Interests</p>
-            <span className="font-mono text-[11px] uppercase tracking-[0.12em] text-cream/45">1 picked — great profiles show 5+</span>
+          <div className="mb-3 flex items-center justify-between font-mono text-xs">
+            <p className="font-semibold text-pearl-dim">Interests</p>
+            <span className="text-gold font-bold">{form.interests.length} Selected</span>
           </div>
           <ChoicePills
             options={INTEREST_OPTIONS}
@@ -720,9 +742,7 @@ function StepAbout({ form, updateForm, onNext, onBack, saving, error }) {
         </div>
 
         <div>
-          <div className="mb-3 flex items-center justify-between">
-            <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-cream-dim/80">Profession</p>
-          </div>
+          <p className="mb-3 font-mono text-xs font-semibold text-pearl-dim">Profession</p>
           <ChoicePills
             options={PROFESSION_OPTIONS}
             value={form.profession}
@@ -731,20 +751,23 @@ function StepAbout({ form, updateForm, onNext, onBack, saving, error }) {
         </div>
       </div>
 
-      {error && <p className="text-[14px] text-sindoor-light">{error}</p>}
+      {error && (
+        <div role="alert" className="rounded-xl border border-saffron/40 bg-saffron/10 p-3 text-xs text-saffron font-medium">
+          Alert: {error}
+        </div>
+      )}
 
-      <div className="mt-2 flex items-center justify-between gap-4">
-        <Button variant="ghost" onClick={onBack} className="px-0 text-[#f7d9a1] hover:text-cream">
-          ← Back
-        </Button>
-        <Button
-          variant="primary"
+      <div className="mt-4 flex items-center justify-between gap-4 pt-4 border-t border-plum-border/40">
+        <button onClick={onBack} className="font-mono text-xs uppercase tracking-wider text-pearl-dim hover:text-pearl">
+          Back
+        </button>
+        <button
           disabled={saving}
           onClick={onNext}
-          className="min-w-[180px]"
+          className="rounded-xl bg-saffron-gradient px-7 py-3.5 font-mono text-xs uppercase tracking-wider text-pearl font-semibold shadow-saffron-glow transition-all hover:scale-105 disabled:opacity-50"
         >
-          {saving ? 'Saving…' : 'Continue →'}
-        </Button>
+          {saving ? 'Saving...' : 'Save & Continue'}
+        </button>
       </div>
     </div>
   );
@@ -754,8 +777,8 @@ function StepLookingFor({ value, onChange, onNext, onBack }) {
   return (
     <div className="flex flex-col gap-6">
       <div className="text-center">
-        <h2 className="font-display text-[3.2rem] leading-[0.95] tracking-[-0.06em] text-cream">What are you open to?</h2>
-        <p className="mx-auto mt-3 max-w-md text-[1.05rem] leading-[1.6] text-cream/70">Choose as many as feel right — the more honest, the better the matches.</p>
+        <h2 className="font-display text-3xl font-bold text-pearl sm:text-4xl">Connection Intent</h2>
+        <p className="mx-auto mt-2 max-w-md text-sm text-pearl-dim">Select the relationship types and goals you are open to exploring.</p>
       </div>
 
       <div className="mx-auto w-full max-w-[620px]">
@@ -767,74 +790,103 @@ function StepLookingFor({ value, onChange, onNext, onBack }) {
         />
       </div>
 
-      <div className="mt-2 flex items-center justify-between gap-4">
-        <Button variant="ghost" onClick={onBack} className="px-0 text-[#f7d9a1] hover:text-cream">← Back</Button>
-        <Button
-          variant="primary"
+      <div className="mt-4 flex items-center justify-between gap-4 pt-4 border-t border-plum-border/40">
+        <button onClick={onBack} className="font-mono text-xs uppercase tracking-wider text-pearl-dim hover:text-pearl">Back</button>
+        <button
           onClick={onNext}
           disabled={value.length === 0}
-          className="min-w-[180px]"
+          className="rounded-xl bg-saffron-gradient px-7 py-3.5 font-mono text-xs uppercase tracking-wider text-pearl font-semibold shadow-saffron-glow transition-all hover:scale-105 disabled:opacity-50"
         >
-          Continue →
-        </Button>
+          Continue
+        </button>
       </div>
     </div>
   )
 }
 
-//   / STEP 3 — Photos, via the presigned-upload flow
-// ---------------------------------------------------------------------------
+// STEP 4 — Photos with Upload Animation
 function StepPhotos({ photos, uploadingPhotos, onSelect, onNext, error }) {
   return (
     <div className="flex flex-col gap-6">
       <div className="text-center">
-        <h2 className="font-display text-[3.2rem] leading-[0.95] tracking-[-0.06em] text-cream">Add your photos</h2>
-        <p className="mx-auto mt-3 max-w-md text-[1.05rem] leading-[1.6] text-cream/70">Big, clear, unmistakably you. Your first photo becomes your primary — the one everyone sees first.</p>
+        <h2 className="font-display text-3xl font-bold text-pearl sm:text-4xl">Profile Photography</h2>
+        <p className="mx-auto mt-2 max-w-md text-sm text-pearl-dim">
+          Upload up to 6 high-resolution photos. Your first photo will be set as your primary avatar.
+        </p>
       </div>
 
       <div className="mx-auto w-full max-w-[620px]">
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-[1.2fr_0.8fr] md:items-center">
-          <div className="flex min-h-[220px] items-center justify-center rounded-[24px] border border-dashed border-cream/15 bg-[#221915]/60 p-4">
-            {photos[0] ? (
-              <div className="relative w-full max-w-[260px] overflow-hidden rounded-[22px] border border-cream/10 bg-[#2a1f1d] shadow-[0_10px_35px_-20px_rgba(0,0,0,0.9)]">
-                <img src={photos[0].previewUrl || photos[0].publicUrl} alt="Primary profile photo" className="aspect-[4/5] w-full object-cover" />
-                <div className="absolute left-3 top-3 rounded-full bg-[#f0a202] px-2 py-1 font-mono text-[10px] uppercase tracking-[0.14em] text-[#1b0e14]">Primary</div>
+        {/* Upload Cards Grid with Animations */}
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+          {photos.map((photo, index) => (
+            <div
+              key={photo.key || index}
+              className="relative aspect-[4/5] overflow-hidden rounded-2xl border border-plum-border bg-plum-night shadow-xl group"
+            >
+              <img
+                src={photo.previewUrl || photo.publicUrl}
+                alt={`Uploaded profile photo ${index + 1}`}
+                className="h-full w-full object-cover"
+              />
+              {index === 0 && (
+                <div className="absolute top-2 left-2 rounded-full border border-gold/40 bg-plum-night/85 px-2.5 py-0.5 font-mono text-[10px] font-bold text-gold backdrop-blur-md">
+                  Primary Avatar
+                </div>
+              )}
+              <div className="absolute top-2 right-2 rounded-full bg-mehendi px-2 py-0.5 font-mono text-[9px] font-bold text-plum-night">
+                Uploaded
               </div>
-            ) : (
-              <div className="flex h-[220px] w-full max-w-[260px] items-center justify-center rounded-[22px] border border-dashed border-cream/15 bg-[#2a1f1d]/70 text-cream/40">No photo yet</div>
-            )}
-          </div>
+            </div>
+          ))}
 
-          <label className="flex min-h-[220px] cursor-pointer flex-col items-center justify-center rounded-[22px] border border-dashed border-cream/15 bg-[#2a1f1d]/70 text-center transition-all hover:border-marigold/60 hover:bg-[#302420]">
-            <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full border border-cream/15 text-[1.5rem] text-cream/80">＋</div>
-            <div className="text-[1.05rem] text-cream">Add photos</div>
-            <div className="mt-1 text-[13px] text-cream/55">JPG or PNG, up to 6 total</div>
-            <input
-              type="file"
-              accept="image/*"
-              multiple
-              className="hidden"
-              disabled={uploadingPhotos}
-              onChange={(e) => onSelect(e.target.files)}
-            />
-          </label>
+          {/* Uploading Spinner Card */}
+          {uploadingPhotos && (
+            <div className="relative aspect-[4/5] flex flex-col items-center justify-center rounded-2xl border border-saffron/50 bg-saffron/10 p-4 shadow-saffron-glow animate-pulse">
+              <div className="h-8 w-8 rounded-full border-2 border-saffron border-t-transparent animate-spin mb-2" />
+              <span className="font-mono text-[10px] uppercase font-bold text-saffron">Uploading...</span>
+            </div>
+          )}
+
+          {/* Add Photos Button Slot */}
+          {photos.length < 6 && !uploadingPhotos && (
+            <label className="relative aspect-[4/5] flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-plum-border/80 bg-plum-night/50 p-4 text-center transition-all hover:border-saffron hover:bg-plum-surface/60">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-saffron/10 border border-saffron/30 font-bold text-saffron text-lg mb-2">
+                +
+              </div>
+              <span className="font-mono text-xs font-semibold text-pearl">Add Photo</span>
+              <span className="mt-1 font-mono text-[10px] text-pearl-muted">JPG or PNG</span>
+              <input
+                type="file"
+                accept="image/*"
+                multiple
+                className="hidden"
+                disabled={uploadingPhotos}
+                onChange={(e) => onSelect(e.target.files)}
+              />
+            </label>
+          )}
         </div>
 
-        <div className="mt-3 text-center text-[13px] text-cream/50">{photos.length}/6 added — at least one to continue</div>
+        <div className="mt-4 text-center font-mono text-xs text-pearl-dim font-semibold">
+          {photos.length}/6 Uploaded — Add at least 1 photo to continue.
+        </div>
       </div>
 
-      {error && <p className="text-[14px] text-sindoor-light">{error}</p>}
+      {error && (
+        <div role="alert" className="rounded-xl border border-saffron/40 bg-saffron/10 p-3 text-xs text-saffron font-medium">
+          Alert: {error}
+        </div>
+      )}
 
-      <div className="mt-2 flex items-center justify-between gap-4">
-        <Button variant="ghost" onClick={() => {}} className="px-0 text-[#f7d9a1] opacity-0 pointer-events-none">← Back</Button>
-        <Button
-          variant="primary"
+      <div className="mt-4 flex items-center justify-between gap-4 pt-4 border-t border-plum-border/40">
+        <div className="w-16" />
+        <button
           disabled={photos.length === 0 || uploadingPhotos}
           onClick={onNext}
-          className="min-w-[180px]"
+          className="rounded-xl bg-saffron-gradient px-7 py-3.5 font-mono text-xs uppercase tracking-wider text-pearl font-semibold shadow-saffron-glow transition-all hover:scale-105 disabled:opacity-50"
         >
-          Continue →
-        </Button>
+          Continue
+        </button>
       </div>
     </div>
   );
@@ -850,27 +902,32 @@ function StepVerification({
   return (
     <div className="flex flex-col items-center gap-6 text-center">
       <div>
-        <h2 className="font-display text-[3.2rem] leading-[0.95] tracking-[-0.06em] text-cream">Verify it’s really you</h2>
-        <p className="mx-auto mt-3 max-w-lg text-[1.05rem] leading-[1.6] text-cream/70">A quick live photo compared against your profile pictures. It stays private and is never shown on your profile.</p>
+        <h2 className="font-display text-3xl font-bold text-pearl sm:text-4xl">Identity Verification</h2>
+        <p className="mx-auto mt-2 max-w-lg text-sm text-pearl-dim">
+          Capture a quick live selfie. AWS Rekognition executes face comparison against your primary profile photo.
+        </p>
       </div>
 
       <div className="w-full max-w-[520px]">
         <CameraCapture onCapture={setSelfieFile} />
       </div>
 
-      {error && <p className="text-[14px] text-sindoor-light">{error}</p>}
+      {error && (
+        <div role="alert" className="rounded-xl border border-saffron/40 bg-saffron/10 p-3 text-xs text-saffron font-medium">
+          Alert: {error}
+        </div>
+      )}
 
-      <div className="w-full max-w-[420px]">
-        <Button
-          variant="primary"
+      <div className="w-full max-w-[360px]">
+        <button
           disabled={!selfieFile || saving}
           onClick={onSubmit}
-          showBloom
-          className="w-full"
+          className="w-full rounded-xl bg-saffron-gradient py-3.5 font-mono text-xs uppercase tracking-wider text-pearl font-semibold shadow-saffron-glow transition-all hover:scale-[1.01] active:scale-98 disabled:opacity-50"
         >
-          {saving ? 'Submitting…' : 'Submit for verification'}
-        </Button>
+          {saving ? 'Submitting Verification...' : 'Submit Verification'}
+        </button>
       </div>
     </div>
   );
 }
+
