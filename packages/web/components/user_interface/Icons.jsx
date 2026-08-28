@@ -56,6 +56,24 @@ export function CheckIcon({ className = "h-5 w-5", stroke = "currentColor" }) {
   );
 }
 
+export function VerifiedIcon({ className = "h-5 w-5" }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none">
+      <path
+        d="M12 2L15.09 3.26L18.18 2.5L19.5 5.5L22.5 6.82L22 10L24 12.5L22 15L22.5 18.18L19.5 19.5L18.18 22.5L15.09 21.74L12 23L8.91 21.74L5.82 22.5L4.5 19.5L1.5 18.18L2 15L0 12.5L2 10L1.5 6.82L4.5 5.5L5.82 2.5L8.91 3.26L12 2Z"
+        fill="#38BDF8"
+      />
+      <path
+        d="M9 12L11 14L15 9.5"
+        stroke="white"
+        strokeWidth="2.2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
 export function GithubIcon({ className = "h-5 w-5", fill = "currentColor" }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill={fill}>

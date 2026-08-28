@@ -3,16 +3,16 @@
 import { useState, useRef } from 'react';
 import { ProfileCard } from './ProfileCard';
 
-const SWIPE_THRESHOLD = 120; // px of horizontal drag before it counts as a decision, not a nudge
-const EXIT_DISTANCE = 600; // how far the card flies off-screen on release past threshold
-const TAP_MOVEMENT_THRESHOLD = 6; // px - below this, a pointer down/up counts as a tap, not a drag
+const SWIPE_THRESHOLD = 120;
+const EXIT_DISTANCE = 600;
+const TAP_MOVEMENT_THRESHOLD = 8;
 
 export function SwipeableCard({ profile, onSwipe, onTap, disabled, topRightSlot }) {
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const [dragging, setDragging] = useState(false);
-  const [exiting, setExiting] = useState(null); // 'LIKE' | 'PASS' | null
+  const [exiting, setExiting] = useState(null);
   const startRef = useRef({ x: 0, y: 0 });
-  const movedRef = useRef(0); // total distance moved this gesture - what distinguishes a tap from a drag
+  const movedRef = useRef(0);
 
   const handlePointerDown = (e) => {
     if (disabled || exiting) return;
@@ -30,17 +30,12 @@ export function SwipeableCard({ profile, onSwipe, onTap, disabled, topRightSlot 
     setOffset({ x: dx, y: dy });
   };
 
-  const handlePointerUp = () => {
+  const handlePointerUp = (e) => {
     if (!dragging) return;
     setDragging(false);
 
-    // A tap: barely moved, so treat it as "open the detail view" instead
-    // of a swipe decision - a real gesture library distinguishes these by
-    // total travel distance, not by which handler fired, since both taps
-    // and drags fire the same pointerdown/up sequence.
     if (movedRef.current < TAP_MOVEMENT_THRESHOLD) {
       setOffset({ x: 0, y: 0 });
-      onTap?.();
       return;
     }
 
@@ -53,13 +48,13 @@ export function SwipeableCard({ profile, onSwipe, onTap, disabled, topRightSlot 
     }
   };
 
-  const rotation = offset.x * 0.05;
+  const rotation = offset.x * 0.04;
   const likeOpacity = Math.min(Math.max(offset.x / SWIPE_THRESHOLD, 0), 1);
   const passOpacity = Math.min(Math.max(-offset.x / SWIPE_THRESHOLD, 0), 1);
   const superLikeOpacity = Math.min(Math.max(Math.abs(offset.x) / (SWIPE_THRESHOLD * 1.5), 0), 1);
 
   const transform = exiting
-    ? `translateX(${exiting === 'LIKE' ? EXIT_DISTANCE : exiting === 'FIRE_LIKE' ? EXIT_DISTANCE * 0.65 : -EXIT_DISTANCE}px) rotate(${exiting === 'LIKE' ? 30 : exiting === 'FIRE_LIKE' ? 18 : -30}deg)`
+    ? `translateX(${exiting === 'LIKE' ? EXIT_DISTANCE : exiting === 'FIRE_LIKE' ? EXIT_DISTANCE * 0.65 : -EXIT_DISTANCE}px) rotate(${exiting === 'LIKE' ? 25 : exiting === 'FIRE_LIKE' ? 15 : -25}deg)`
     : `translate(${offset.x}px, ${offset.y}px) rotate(${rotation}deg)`;
 
   return (
@@ -68,37 +63,38 @@ export function SwipeableCard({ profile, onSwipe, onTap, disabled, topRightSlot 
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
       onPointerCancel={handlePointerUp}
-      className="absolute inset-0 cursor-grab touch-none active:cursor-grabbing"
+      className="absolute inset-0 cursor-grab touch-none active:cursor-grabbing select-none"
       style={{
         transform,
         transition: dragging ? 'none' : 'transform 300ms cubic-bezier(0.16, 1, 0.3, 1)',
       }}
     >
-      <ProfileCard profile={profile} />
+      <ProfileCard profile={profile} onOpenDetail={onTap} />
 
       {topRightSlot && (
-        <div className="absolute right-4 top-4 z-10" onPointerDown={(e) => e.stopPropagation()}>
+        <div className="absolute right-4 top-4 z-30" onPointerDown={(e) => e.stopPropagation()}>
           {topRightSlot}
         </div>
       )}
 
+      {/* Elegant Drag Badges */}
       <div
-        className="pointer-events-none absolute left-6 top-8 rotate-[-18deg] rounded-full border-4 border-mehendi bg-mehendi/10 px-4 py-1.5 font-display text-2xl font-semibold uppercase text-mehendi shadow-[0_10px_30px_rgba(76,122,94,0.35)]"
+        className="pointer-events-none absolute left-8 top-10 rotate-[-15deg] rounded-2xl border-2 border-mehendi bg-mehendi/20 px-5 py-2 font-mono text-xl font-bold uppercase text-mehendi-light shadow-[0_0_20px_rgba(46,204,113,0.4)] backdrop-blur-md"
         style={{ opacity: likeOpacity }}
       >
-        Like
+        LIKE
       </div>
       <div
-        className="pointer-events-none absolute right-6 top-8 rotate-[18deg] rounded-full border-4 border-sindoor bg-sindoor/10 px-4 py-1.5 font-display text-2xl font-semibold uppercase text-sindoor shadow-[0_10px_30px_rgba(230,57,80,0.35)]"
+        className="pointer-events-none absolute right-8 top-10 rotate-[15deg] rounded-2xl border-2 border-sindoor bg-sindoor/20 px-5 py-2 font-mono text-xl font-bold uppercase text-sindoor-light shadow-[0_0_20px_rgba(230,57,80,0.4)] backdrop-blur-md"
         style={{ opacity: passOpacity }}
       >
-        Nope
+        PASS
       </div>
       <div
-        className="pointer-events-none absolute left-1/2 top-8 -translate-x-1/2 rounded-full border-4 border-marigold bg-[rgba(240,162,2,0.08)] px-4 py-1.5 font-display text-2xl font-semibold uppercase text-marigold shadow-[0_10px_30px_rgba(240,162,2,0.3)]"
+        className="pointer-events-none absolute left-1/2 top-10 -translate-x-1/2 rounded-2xl border-2 border-gold bg-gold/20 px-5 py-2 font-mono text-xl font-bold uppercase text-gold shadow-[0_0_20px_rgba(240,162,2,0.4)] backdrop-blur-md"
         style={{ opacity: superLikeOpacity }}
       >
-        Super
+        SUPER LIKE
       </div>
     </div>
   );

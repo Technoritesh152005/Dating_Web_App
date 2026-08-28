@@ -178,8 +178,7 @@ export default function OnboardingPage() {
     try {
       const { key } = await presignAndUpload({
         file: selfieFile,
-        presignPath: "/media/photos/presign",
-        confirmPath: "/media/photos/confirm",
+        presignPath: "/media/selfie/presign",
       });
       await api.post("/verification/selfie", { selfieKey: key });
       await refetch();

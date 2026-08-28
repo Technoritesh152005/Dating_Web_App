@@ -25,10 +25,7 @@ export function VoiceBioRecorder({ value, onChange }) {
   const startRecording = async () => {
     try {
       setError(null)
-
-    //   /streams r data that flows //tiny data
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
-      //the recorder which stores the audio in browser
       const mimeType = ['audio/webm;codecs=opus', 'audio/mp4', 'audio/mpeg']
         .find((type) => MediaRecorder.isTypeSupported(type))
       const recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined)
@@ -36,19 +33,16 @@ export function VoiceBioRecorder({ value, onChange }) {
       chunksRef.current = []
       recorderRef.current = recorder
 
-      //when started listen all the chunks and save it in stream
       recorder.ondataavailable = (event) => {
         if (event.data.size > 0) chunksRef.current.push(event.data)
       }
 
       recorder.onstop = () => {
         stream.getTracks().forEach((track) => track.stop())
-        // /convert in blob where blob is a collection of chubks
         const audioBlob = new Blob(chunksRef.current, {
           type: recorder.mimeType || 'audio/webm',
         })
 
-        //convert the audioblob in file type
         const extension = audioBlob.type.includes('mp4') ? 'm4a' : audioBlob.type.includes('mpeg') ? 'mp3' : 'webm'
         const audioFile = new File([audioBlob], `voice-bio-${Date.now()}.${extension}`, { type: audioBlob.type })
 
@@ -70,7 +64,7 @@ export function VoiceBioRecorder({ value, onChange }) {
         })
       }, 1000)
     } catch {
-      setError('Microphone permission is required to record your voice introduction')
+      setError('Microphone permission is required to record your voice introduction.')
     }
   }
 
@@ -87,30 +81,48 @@ export function VoiceBioRecorder({ value, onChange }) {
     setRecording(false)
   }
 
+  const audioSrc = typeof value === 'string' ? value : value ? URL.createObjectURL(value) : null
+
   return (
-    <div>
-      <p>Voice introduction</p>
-      <p>Record a short introduction, up to 15 seconds.</p>
+    <div className="space-y-3">
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="font-mono text-xs font-semibold uppercase tracking-wider text-pearl">Voice Introduction</p>
+          <p className="text-xs text-pearl-dim">Record a short audio introduction (up to 15 seconds).</p>
+        </div>
+      </div>
 
-      {recording ? (
-        <button type="button" onClick={stopRecording}>
-          Stop recording ({seconds}s)
-        </button>
-      ) : (
-        <button type="button" onClick={startRecording}>
-          Record voice introduction
-        </button>
-      )}
+      <div className="flex flex-col gap-3">
+        {recording ? (
+          <button
+            type="button"
+            onClick={stopRecording}
+            className="flex items-center justify-center gap-2 rounded-xl border border-saffron bg-saffron/20 px-4 py-3 font-mono text-xs font-bold text-saffron shadow-saffron-glow animate-pulse"
+          >
+            <span className="h-2.5 w-2.5 rounded-full bg-saffron" />
+            <span>Stop Recording ({seconds}s / 15s)</span>
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={startRecording}
+            className="flex items-center justify-center gap-2.5 rounded-xl border border-gold/40 bg-gold/10 px-4 py-3 font-mono text-xs font-semibold text-gold transition-colors hover:bg-gold/20"
+          >
+            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+            </svg>
+            <span>{audioSrc ? 'Re-record Voice Introduction' : 'Record Voice Introduction'}</span>
+          </button>
+        )}
 
-      {value && (
-        <audio
-          controls
-          src={typeof value === 'string' ? value : URL.createObjectURL(value)}
-          className="mt-3 w-full"
-        />
-      )}
+        {audioSrc && (
+          <div className="rounded-xl border border-plum-border bg-plum-night/90 p-3">
+            <audio controls src={audioSrc} className="w-full h-8" />
+          </div>
+        )}
 
-      {error && <p>{error}</p>}
+        {error && <p className="text-xs text-saffron font-medium">{error}</p>}
+      </div>
     </div>
   )
 }
