@@ -37,7 +37,7 @@ export function SidebarNav() {
   const displayName = user?.profile?.displayName || user?.email?.split('@')[0] || 'You';
 
   return (
-    <aside className="hidden md:flex w-80 lg:w-[320px] shrink-0 flex-col h-screen sticky top-0 border-r border-plum-border/50 bg-plum-surface/90 backdrop-blur-xl z-30">
+    <aside className="hidden md:flex w-[360px] lg:w-[400px] shrink-0 flex-col h-screen sticky top-0 border-r border-plum-border/50 bg-plum-surface/90 backdrop-blur-xl z-30">
       {/* Sidebar Header with User Avatar */}
       <div className="flex items-center justify-between border-b border-plum-border/50 bg-saffron-gradient p-4 text-pearl shadow-sm">
         <Link href="/profile" className="flex items-center gap-3 group">
@@ -108,7 +108,7 @@ export function SidebarNav() {
         </Link>
       </div>
 
-      {/* Tinder-style Matches / Messages Tabs */}
+      {/* Matches / Messages Tabs */}
       <div className="flex border-b border-plum-border/50 bg-plum-surface">
         <button
           onClick={() => setActiveTab('matches')}

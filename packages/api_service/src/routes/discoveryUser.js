@@ -28,6 +28,10 @@ const VALID_EXPLORE_MODES = [
   "GAMING_BUDDY",
   "FREE_TONIGHT",
 ];
+const EXPLORE_MODE_ALIASES = {
+  LONG_TERM_RELATIONSHIP: "LONG_TERM",
+  ACTIVITY_PARTNER: "ADVENTURE_BUDDY",
+};
 
 function feedListKey(userId) {
   return `feed:${userId}`;
@@ -230,7 +234,8 @@ export function registerDiscoveryRoutes(app) {
     "/discovery/explore",
     { preHandler: [app.authenticate, app.requireVerification] },
     async (request, reply) => {
-      const mode = String(request.query.mode || "").toUpperCase();
+      const requestedMode = String(request.query.mode || "").toUpperCase();
+      const mode = EXPLORE_MODE_ALIASES[requestedMode] || requestedMode;
 
       if (!VALID_EXPLORE_MODES.includes(mode)) {
         return reply.code(400).send({
@@ -239,8 +244,13 @@ export function registerDiscoveryRoutes(app) {
       }
 
       // Find preferences that include this mode
+      const legacyModes = Object.entries(EXPLORE_MODE_ALIASES)
+        .filter(([, canonicalMode]) => canonicalMode === mode)
+        .map(([legacyMode]) => legacyMode);
       const preferences = await app.db.preference.findMany({
-        where: { lookingFor: { has: mode } },
+        where: {
+          lookingFor: { hasSome: [mode, ...legacyModes] },
+        },
         select: { userId: true },
       });
 

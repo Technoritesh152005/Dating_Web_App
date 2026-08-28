@@ -16,6 +16,15 @@ const VALID_LOOKING_FOR = [
   'GAMING_BUDDY',
   'FREE_TONIGHT',
 ];
+const LOOKING_FOR_ALIASES = {
+  LONG_TERM_RELATIONSHIP: 'LONG_TERM',
+  ACTIVITY_PARTNER: 'ADVENTURE_BUDDY',
+};
+
+function normalizeLookingFor(values) {
+  return values.map((value) => LOOKING_FOR_ALIASES[value] ?? value);
+}
+
 export function registerPreferencesRoutes(app){
 
     app.put('/preferences', {preHandler:app.authenticate, config:{ authenticated: true }}, async(request,reply)=>{
@@ -30,6 +39,9 @@ export function registerPreferencesRoutes(app){
             casteFilter,
             lookingFor
         }= request.body?? {}
+        const normalizedLookingFor = Array.isArray(lookingFor)
+          ? normalizeLookingFor(lookingFor)
+          : lookingFor;
 
         if (minAge != null && maxAge != null && minAge > maxAge) {
             return reply.code(400).send({ error: 'minAge cannot be greater than maxAge' });
@@ -40,7 +52,7 @@ export function registerPreferencesRoutes(app){
           if (professionFilter && !professionFilter.every((p) => VALID_PROFESSIONS.includes(p))) {
             return reply.code(400).send({ error: `professionFilter values must be one of: ${VALID_PROFESSIONS.join(', ')}` });
           }
-          if (Array.isArray(lookingFor) && !lookingFor.every((l) => VALID_LOOKING_FOR.includes(l))) {
+          if (Array.isArray(normalizedLookingFor) && !normalizedLookingFor.every((l) => VALID_LOOKING_FOR.includes(l))) {
             return reply.code(400).send({
               error: `Looking for values must be one of: ${VALID_LOOKING_FOR.join(', ')}`
             });
@@ -54,7 +66,7 @@ export function registerPreferencesRoutes(app){
             ...(professionFilter && { professionFilter }),
             ...(religionFilter && { religionFilter }),
             ...(casteFilter && { casteFilter }),
-             ...(lookingFor && { lookingFor }),
+             ...(normalizedLookingFor && { lookingFor: normalizedLookingFor }),
           }
 
         //   upsert means if record exist update else create
@@ -70,7 +82,7 @@ export function registerPreferencesRoutes(app){
                 professionFilter: professionFilter ?? [],
                 religionFilter: religionFilter ?? [],
                 casteFilter: casteFilter ?? [],  
-                lookingFor: lookingFor ?? []
+                lookingFor: normalizedLookingFor ?? []
             }
 
           })
