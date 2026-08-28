@@ -4,7 +4,7 @@ import { useState, useRef } from 'react';
 import { ProfileCard } from './ProfileCard';
 
 const SWIPE_THRESHOLD = 120;
-const EXIT_DISTANCE = 600;
+const EXIT_DISTANCE = 700;
 const TAP_MOVEMENT_THRESHOLD = 8;
 
 export function SwipeableCard({ profile, onSwipe, onTap, disabled, topRightSlot }) {
@@ -30,7 +30,7 @@ export function SwipeableCard({ profile, onSwipe, onTap, disabled, topRightSlot 
     setOffset({ x: dx, y: dy });
   };
 
-  const handlePointerUp = (e) => {
+  const handlePointerUp = () => {
     if (!dragging) return;
     setDragging(false);
 
@@ -63,10 +63,10 @@ export function SwipeableCard({ profile, onSwipe, onTap, disabled, topRightSlot 
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
       onPointerCancel={handlePointerUp}
-      className="absolute inset-0 cursor-grab touch-none active:cursor-grabbing select-none"
+      className="absolute inset-0 flex items-center justify-center cursor-grab touch-none active:cursor-grabbing select-none"
       style={{
         transform,
-        transition: dragging ? 'none' : 'transform 300ms cubic-bezier(0.16, 1, 0.3, 1)',
+        transition: dragging ? 'none' : 'transform 320ms cubic-bezier(0.16, 1, 0.3, 1)',
       }}
     >
       <ProfileCard profile={profile} onOpenDetail={onTap} />
@@ -77,7 +77,7 @@ export function SwipeableCard({ profile, onSwipe, onTap, disabled, topRightSlot 
         </div>
       )}
 
-      {/* Elegant Drag Badges */}
+      {/* Drag Badges */}
       <div
         className="pointer-events-none absolute left-8 top-10 rotate-[-15deg] rounded-2xl border-2 border-mehendi bg-mehendi/20 px-5 py-2 font-mono text-xl font-bold uppercase text-mehendi-light shadow-[0_0_20px_rgba(46,204,113,0.4)] backdrop-blur-md"
         style={{ opacity: likeOpacity }}
