@@ -26,10 +26,17 @@ export function VoiceBioRecorder({ value, onChange }) {
     try {
       setError(null)
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
-      const mimeType = ['audio/webm;codecs=opus', 'audio/mp4', 'audio/mpeg']
-        .find((type) => MediaRecorder.isTypeSupported(type))
-      const recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined)
+      
+      let options = undefined;
+      const supportedTypes = ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4', 'audio/mpeg'];
+      for (const type of supportedTypes) {
+        if (MediaRecorder.isTypeSupported(type)) {
+          options = { mimeType: type };
+          break;
+        }
+      }
 
+      const recorder = new MediaRecorder(stream, options)
       chunksRef.current = []
       recorderRef.current = recorder
 
@@ -59,12 +66,15 @@ export function VoiceBioRecorder({ value, onChange }) {
           if (current + 1 >= MAX_DURATION_SECONDS) {
             stopRecording()
           }
-
           return current + 1
         })
       }, 1000)
-    } catch {
-      setError('Microphone permission is required to record your voice introduction.')
+    } catch (err) {
+      if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+        setError('Microphone permission was denied. Please allow microphone access in your browser settings.')
+      } else {
+        setError(err.message || 'Unable to start audio recording. Please try again.')
+      }
     }
   }
 
@@ -121,7 +131,7 @@ export function VoiceBioRecorder({ value, onChange }) {
           </div>
         )}
 
-        {error && <p className="text-xs text-saffron font-medium">{error}</p>}
+        {error && <p className="text-xs text-sindoor-light font-medium">{error}</p>}
       </div>
     </div>
   )

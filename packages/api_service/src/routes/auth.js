@@ -10,6 +10,8 @@ import {
   sanitizePhone,
 } from "../plugins/validation_middleware.js";
 import { createQueue } from "@dating-app/shared/src/queue.js";
+
+const ACCOUNT_PURGE_DELAY_MS = 60 * 1000;
 import { QUEUE_NAMES } from "@dating-app/shared/src/queueNames.js";
 
 // Configuration setting for access token and refresh token to be stored in cookies
@@ -339,7 +341,7 @@ export function registerAuthRoutes(app, config) {
       },
     },
     async (request, reply) => {
-      const deleteAfter = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+      const deleteAfter = new Date(Date.now() + ACCOUNT_PURGE_DELAY_MS);
 
       const result = await app.db.user.updateMany({
         where: {
@@ -364,7 +366,7 @@ export function registerAuthRoutes(app, config) {
       await app.redis.del(`feed:${request.userId}`);
       await app.redis.del(`seen:${request.userId}`);
 
-      //the delete queue runs after 30days
+      // The purge worker permanently deletes the account after the grace period.
       const queue = createQueue(
         QUEUE_NAMES.ACCOUNT_PURGE,
         app.redis.duplicate(),
@@ -374,7 +376,7 @@ export function registerAuthRoutes(app, config) {
         "account-purge-deletion",
         { userId: request.userId },
         {
-          delay: 30 * 24 * 60 * 60 * 1000,
+          delay: ACCOUNT_PURGE_DELAY_MS,
           jobId: `account-purge-${request.userId}`,
         },
       );
