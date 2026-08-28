@@ -23,9 +23,23 @@ export function ProfileCard({ profile, onOpenDetail, className = '' }) {
     }
   };
 
+  // Calculate dynamic active status based on profile.updatedAt
+  const getActiveStatus = () => {
+    if (!profile.updatedAt) return null;
+    const diffHours = (Date.now() - new Date(profile.updatedAt).getTime()) / (1000 * 60 * 60);
+    if (diffHours <= 36) {
+      return { label: 'Recently Active', isRecent: true };
+    } else if (diffHours <= 168) {
+      return { label: 'Active this week', isRecent: false };
+    }
+    return null;
+  };
+
+  const activeStatus = getActiveStatus();
+
   return (
     <div
-      className={`relative h-full w-full overflow-hidden rounded-3xl border border-plum-border bg-plum-surface shadow-[0_30px_90px_-20px_rgba(0,0,0,0.9)] select-none ${className}`}
+      className={`relative h-[640px] w-full max-w-[460px] overflow-hidden rounded-[32px] border border-plum-border bg-plum-surface shadow-[0_30px_90px_-20px_rgba(0,0,0,0.9)] select-none ${className}`}
     >
       {/* Photo Image */}
       {currentPhoto ? (
@@ -43,7 +57,7 @@ export function ProfileCard({ profile, onOpenDetail, className = '' }) {
 
       {/* Real AI Vector Compatibility Match Badge */}
       {profile.compatibilityLabel && (
-        <div className="absolute left-4 top-5 z-20 flex items-center gap-1.5 rounded-full border border-gold/40 bg-plum-night/80 px-3.5 py-1.5 font-mono text-xs font-bold text-gold shadow-gold-glow backdrop-blur-md">
+        <div className="absolute left-4 top-5 z-20 flex items-center gap-1.5 rounded-full border border-gold/40 bg-plum-night/85 px-3.5 py-1.5 font-mono text-xs font-bold text-gold shadow-gold-glow backdrop-blur-md">
           <SparklesIcon className="h-3.5 w-3.5 text-gold" />
           <span>{profile.compatibilityLabel === 'STRONG' ? 'Strong AI Match' : 'Good AI Match'}</span>
         </div>
@@ -63,38 +77,70 @@ export function ProfileCard({ profile, onOpenDetail, className = '' }) {
         </div>
       )}
 
-      {/* Left/Right Photo Tap Navigation Controls */}
+      {/* Left/Right Photo Tap Navigation Controls & Arrow Buttons */}
       {photos.length > 1 && (
-        <div className="absolute inset-0 z-10 flex">
-          <button
-            type="button"
-            aria-label="Previous Photo"
-            onClick={handlePrevPhoto}
-            className="w-1/2 h-4/5 outline-none cursor-pointer"
-          />
-          <button
-            type="button"
-            aria-label="Next Photo"
-            onClick={handleNextPhoto}
-            className="w-1/2 h-4/5 outline-none cursor-pointer"
-          />
-        </div>
+        <>
+          <div className="absolute inset-0 z-10 flex">
+            <button
+              type="button"
+              aria-label="Previous Photo"
+              onClick={handlePrevPhoto}
+              className="w-1/2 h-4/5 outline-none cursor-pointer"
+            />
+            <button
+              type="button"
+              aria-label="Next Photo"
+              onClick={handleNextPhoto}
+              className="w-1/2 h-4/5 outline-none cursor-pointer"
+            />
+          </div>
+
+          {/* Visible Arrow Buttons for Photo Switching */}
+          {photoIndex > 0 && (
+            <button
+              type="button"
+              onClick={handlePrevPhoto}
+              aria-label="Previous photo"
+              className="absolute left-3 top-1/2 z-20 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-pearl/20 bg-plum-night/70 text-lg font-bold text-pearl backdrop-blur-md transition-all hover:bg-plum-night hover:scale-110 active:scale-95"
+            >
+              ‹
+            </button>
+          )}
+          {photoIndex < photos.length - 1 && (
+            <button
+              type="button"
+              onClick={handleNextPhoto}
+              aria-label="Next photo"
+              className="absolute right-3 top-1/2 z-20 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-pearl/20 bg-plum-night/70 text-lg font-bold text-pearl backdrop-blur-md transition-all hover:bg-plum-night hover:scale-110 active:scale-95"
+            >
+              ›
+            </button>
+          )}
+        </>
       )}
 
       {/* Bottom Gradient Overlay & Information */}
       <div className="absolute inset-x-0 bottom-0 z-20 bg-gradient-to-t from-plum-night via-plum-night/85 to-transparent px-6 pb-6 pt-24 pointer-events-none">
-        {/* Status Indicator */}
-        <div className="mb-2 flex items-center gap-1.5">
-          <span className="h-2.5 w-2.5 rounded-full bg-mehendi shadow-[0_0_8px_rgba(46,204,113,0.8)]" />
-          <span className="font-mono text-xs font-semibold text-mehendi-light tracking-wide">
-            Recently Active
-          </span>
-        </div>
+        {/* Dynamic Activity Status Indicator */}
+        {activeStatus && (
+          <div className="mb-2 flex items-center gap-1.5">
+            <span
+              className={`h-2.5 w-2.5 rounded-full ${
+                activeStatus.isRecent
+                  ? 'bg-mehendi shadow-[0_0_8px_rgba(46,204,113,0.8)]'
+                  : 'bg-gold shadow-[0_0_8px_rgba(240,162,2,0.8)]'
+              }`}
+            />
+            <span className="font-mono text-xs font-semibold text-pearl-dim tracking-wide">
+              {activeStatus.label}
+            </span>
+          </div>
+        )}
 
         {/* Display Name, Age & Verified Badge */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <h2 className="font-display text-4xl font-bold text-pearl drop-shadow-md">
+            <h2 className="font-sans text-4xl font-extrabold text-pearl drop-shadow-md tracking-tight">
               {profile.displayName}
             </h2>
             <span className="font-mono text-2xl font-light text-pearl-dim">
@@ -136,17 +182,24 @@ export function ProfileCard({ profile, onOpenDetail, className = '' }) {
           </p>
         )}
 
-        {/* Interests */}
+        {/* Interests Pills matching reference image */}
         {profile.interests?.length > 0 && (
-          <div className="mt-3.5 flex flex-wrap gap-1.5">
-            {profile.interests.slice(0, 4).map((interest) => (
-              <span
-                key={interest}
-                className="rounded-full border border-pearl/10 bg-plum-surface/90 px-3 py-1 font-mono text-xs text-pearl-dim backdrop-blur-sm"
-              >
-                {interest}
-              </span>
-            ))}
+          <div className="mt-3.5 flex flex-wrap gap-2">
+            {profile.interests.slice(0, 5).map((interest, idx) => {
+              const isHighlight = idx < 2;
+              return (
+                <span
+                  key={interest}
+                  className={`rounded-full px-3.5 py-1 font-mono text-xs font-semibold backdrop-blur-sm transition-all ${
+                    isHighlight
+                      ? 'bg-[linear-gradient(135deg,rgba(244,114,182,0.9),rgba(232,121,249,0.9))] text-plum-night font-bold shadow-md'
+                      : 'border border-pearl/20 bg-plum-night/80 text-pearl'
+                  }`}
+                >
+                  {interest}
+                </span>
+              );
+            })}
           </div>
         )}
       </div>

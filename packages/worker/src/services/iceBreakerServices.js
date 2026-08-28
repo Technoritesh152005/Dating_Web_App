@@ -13,7 +13,7 @@ export async function generateIceBreaker({ userABio, userBBio, userAInterest, us
             'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-            model: 'llama-3.1-8b-instant',
+            model: 'llama-3.3-70b-versatile',
             messages: [
                 {
                     role: 'system',
@@ -44,7 +44,6 @@ function buildPrompt({ userABio, userAInterest, userBBio, userBInterest }) {
     `
     Person A - Bio: ${userABio || 'No Bio Provided'}
     Person B - Bio:${userBBio || 'No Bio provided'}
-    //  means if null take []
     Person A - Interests: ${(userAInterest ?? []).join(', ') || '(none listed)'},
     Person B - Interests: ${(userBInterest ?? []).join(', ') || '(none listed)'},
     `

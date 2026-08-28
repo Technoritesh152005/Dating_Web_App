@@ -115,7 +115,7 @@ function DiscoverPageContent() {
 
       {/* Main Swipeable Profile Area */}
       <main className="flex flex-1 flex-col items-center justify-center px-4 py-8 relative overflow-hidden">
-        <div className="relative h-[620px] w-full max-w-md">
+        <div className="relative h-[640px] w-full max-w-[460px]">
           {feedError && (
             <div className="flex h-full flex-col items-center justify-center rounded-3xl border border-dashed border-sindoor/40 bg-plum-surface/60 p-8 text-center">
               <p className="text-sm text-sindoor-light font-mono">{feedError}</p>
