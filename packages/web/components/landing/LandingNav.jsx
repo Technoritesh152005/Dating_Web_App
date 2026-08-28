@@ -55,12 +55,6 @@ export function LandingNav() {
           >
             How It Works
           </a>
-          <a
-            href="#stories"
-            className="text-sm font-medium text-pearl-dim transition-colors hover:text-saffron"
-          >
-            Desi Stories
-          </a>
         </nav>
 
         {/* Right CTA Actions */}
@@ -75,7 +69,7 @@ export function LandingNav() {
             href="/signup"
             className="relative group overflow-hidden rounded-full bg-saffron-gradient px-5 py-2.5 text-xs font-semibold uppercase tracking-wider text-pearl shadow-saffron-glow transition-all duration-300 hover:shadow-saffron-glow/80 hover:scale-105 active:scale-95"
           >
-            <span className="relative z-10">Get App</span>
+            <span className="relative z-10">Get Started</span>
             <div className="absolute inset-0 bg-white/20 translate-y-full transition-transform duration-300 group-hover:translate-y-0" />
           </Link>
         </div>
@@ -83,4 +77,3 @@ export function LandingNav() {
     </header>
   );
 }
-

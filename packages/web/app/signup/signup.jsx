@@ -46,7 +46,7 @@ export default function SignUpPage() {
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         {/* Email Input */}
         <div>
-          <label className="mb-1.5 block font-mono text-xs font-semibold text-pearl-dim">Email Address</label>
+          <label className="mb-2 block font-mono text-xs font-semibold uppercase tracking-wider text-pearl">Email Address</label>
           <input
             type="email"
             name="email"
@@ -55,13 +55,13 @@ export default function SignUpPage() {
             placeholder="you@example.com"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full rounded-xl border border-plum-border bg-plum-night/80 px-4 py-3 text-sm text-pearl placeholder-pearl-muted outline-none transition-all focus:border-saffron focus:ring-2 focus:ring-saffron/20"
+            className="w-full rounded-xl border border-plum-border bg-plum-night/80 px-4 py-3.5 text-sm text-pearl placeholder-pearl-muted outline-none transition-all focus:border-saffron focus:ring-2 focus:ring-saffron/20"
           />
         </div>
 
         {/* Password Input */}
         <div>
-          <label className="mb-1.5 block font-mono text-xs font-semibold text-pearl-dim">Password (min 8 chars)</label>
+          <label className="mb-2 block font-mono text-xs font-semibold uppercase tracking-wider text-pearl">Password (min 8 chars)</label>
           <div className="relative">
             <input
               type={showPassword ? 'text' : 'password'}
@@ -72,7 +72,7 @@ export default function SignUpPage() {
               placeholder="••••••••"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full rounded-xl border border-plum-border bg-plum-night/80 px-4 py-3 pr-11 text-sm text-pearl placeholder-pearl-muted outline-none transition-all focus:border-saffron focus:ring-2 focus:ring-saffron/20"
+              className="w-full rounded-xl border border-plum-border bg-plum-night/80 px-4 py-3.5 pr-12 text-sm text-pearl placeholder-pearl-muted outline-none transition-all focus:border-saffron focus:ring-2 focus:ring-saffron/20"
             />
             <button
               type="button"
@@ -86,7 +86,7 @@ export default function SignUpPage() {
 
         {/* Confirm Password Input */}
         <div>
-          <label className="mb-1.5 block font-mono text-xs font-semibold text-pearl-dim">Confirm Password</label>
+          <label className="mb-2 block font-mono text-xs font-semibold uppercase tracking-wider text-pearl">Confirm Password</label>
           <input
             type={showPassword ? 'text' : 'password'}
             name="confirmPassword"
@@ -95,13 +95,13 @@ export default function SignUpPage() {
             placeholder="••••••••"
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
-            className="w-full rounded-xl border border-plum-border bg-plum-night/80 px-4 py-3 text-sm text-pearl placeholder-pearl-muted outline-none transition-all focus:border-saffron focus:ring-2 focus:ring-saffron/20"
+            className="w-full rounded-xl border border-plum-border bg-plum-night/80 px-4 py-3.5 text-sm text-pearl placeholder-pearl-muted outline-none transition-all focus:border-saffron focus:ring-2 focus:ring-saffron/20"
           />
         </div>
 
         {error && (
-          <div role="alert" className="rounded-xl border border-saffron/40 bg-saffron/10 p-3 text-xs text-saffron font-medium">
-            ⚠️ {error}
+          <div role="alert" className="rounded-xl border border-saffron/40 bg-saffron/10 p-3.5 text-xs text-saffron font-medium">
+            {error}
           </div>
         )}
 
