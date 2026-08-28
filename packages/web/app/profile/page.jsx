@@ -12,6 +12,7 @@ import { ChoicePills } from '@/components/user_interface/ChoicePills';
 import { ConfirmModal } from '@/components/ConfirmModal';
 import { ProfileSettingsNav } from '@/components/ProfileSettingsNav';
 import { PreferencesForm } from '@/components/PreferencesForm';
+import { VoiceBioRecorder } from '@/components/voiceBioRecorder';
 
 const PROFESSION_OPTIONS = [
     { value: 'STUDENT', label: 'Student' },
@@ -48,6 +49,7 @@ export default function profileSettingPage() {
     const [deleting, setDeleting] = useState(false)
     const [activePhoto, setActivePhoto] = useState(0)
     const [activeSection, setActiveSection] = useState('profile')
+    const [voiceBioFile, setVoiceBioFile] = useState(null)
 
     useEffect(() => {
         if (loading) return
@@ -80,12 +82,34 @@ export default function profileSettingPage() {
                 interests: form.interests,
                 profession: form.profession,
             })
+            if (voiceBioFile) {
+                const uploaded = await presignAndUpload({
+                    file: voiceBioFile,
+                    presignPath: '/media/voice-bio/presign',
+                    confirmPath: '/media/voice-bio/confirm',
+                    allowedTypes: ['audio/webm', 'audio/mp4', 'audio/mpeg'],
+                    maxFileSize: 5 * 1024 * 1024,
+                })
+                setProfile(await api.get('/profile/me'))
+                setVoiceBioFile(null)
+            }
             setSaved(true)
             setTimeout(() => setSaved(false), 2000)
         } catch (err) {
             setError(err.message || 'Failed to save')
         } finally {
             setSaving(false)
+        }
+    }
+
+    const removeVoiceBio = async () => {
+        setError(null)
+        try {
+            await api.del('/media/voice-bio')
+            setProfile((current) => ({ ...current, voiceBioUrl: null }))
+            setVoiceBioFile(null)
+        } catch (err) {
+            setError(err.message || 'Failed to remove voice introduction')
         }
     }
 
@@ -205,6 +229,11 @@ export default function profileSettingPage() {
                     </section>
 
                     <section className="rounded-card border border-cream/10 bg-dusk/80 p-5 backdrop-blur-sm"><p className="mb-3 font-mono text-[11px] uppercase tracking-[0.15em] text-cream-dim">About you</p><Input label="Username" value={form.username} onChange={(e) => setForm((f) => ({ ...f, username: e.target.value.toLowerCase() }))} placeholder="your_username" minLength={3} maxLength={20} autoComplete="username" /><textarea rows={4} value={form.bio} onChange={(e) => setForm((f) => ({ ...f, bio: e.target.value }))} placeholder="What should someone know about you?" className="mt-4 w-full resize-none rounded-xl border border-cream/10 bg-ink/50 px-4 py-3 text-[15px] text-cream outline-none transition placeholder:text-cream/30 focus:border-marigold/60" /></section>
+
+                    <section className="rounded-card border border-cream/10 bg-dusk/80 p-5">
+                        <VoiceBioRecorder value={voiceBioFile ?? profile.voiceBioUrl} onChange={setVoiceBioFile} />
+                        {(profile.voiceBioUrl || voiceBioFile) && <Button variant="ghost" onClick={removeVoiceBio} className="mt-3 text-sindoor-light">Remove voice introduction</Button>}
+                    </section>
 
                     <section className="rounded-card border border-cream/10 bg-dusk/80 p-5 backdrop-blur-sm"><p className="mb-3 font-mono text-[11px] uppercase tracking-[0.15em] text-cream-dim">Your signals</p><div className="mb-5"><ChoicePills options={INTEREST_OPTIONS} value={form.interests} onChange={(v) => setForm((f) => ({ ...f, interests: v }))} multiple /></div><p className="mb-3 font-mono text-[11px] uppercase tracking-[0.15em] text-cream-dim">Work and craft</p><ChoicePills options={PROFESSION_OPTIONS} value={form.profession} onChange={(v) => setForm((f) => ({ ...f, profession: v }))} /></section>
 

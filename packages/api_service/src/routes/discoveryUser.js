@@ -205,6 +205,10 @@ export function registerDiscoveryRoutes(app) {
         });
 
       for (const profile of orderedProfiles) {
+        if (profile.voiceBioKey) {
+          profile.voiceBioUrl = await generatePresignedReadUrl(profile.voiceBioKey);
+          delete profile.voiceBioKey;
+        }
         profile.photos = await Promise.all(
           profile.photos.map(async (photo) => ({
             ...photo,
@@ -294,6 +298,7 @@ export function registerDiscoveryRoutes(app) {
       const safeProfiles = await Promise.all(
         profiles.map(async (profile) => {
           const safe = sanitizeForOtherUsers(profile);
+          if (profile.voiceBioKey) safe.voiceBioUrl = await generatePresignedReadUrl(profile.voiceBioKey);
           safe.photos = await Promise.all(
             (profile.photos || []).map(async (photo) => ({
               ...photo,
@@ -369,6 +374,10 @@ export function registerDiscoveryRoutes(app) {
 
       const safeProfile = sanitizeForOtherUsers(searchedProfile);
 
+      if (searchedProfile.voiceBioKey) {
+        safeProfile.voiceBioUrl = await generatePresignedReadUrl(searchedProfile.voiceBioKey);
+      }
+
       safeProfile.photos = await Promise.all(
         searchedProfile.photos.map(async (photo) => ({
           ...photo,
@@ -394,6 +403,7 @@ function sanitizeForOtherUsers(profile) {
     showReligionCaste,
     latitude,
     longitude,
+    voiceBioKey,
     ...safeFields
   } = profile;
 

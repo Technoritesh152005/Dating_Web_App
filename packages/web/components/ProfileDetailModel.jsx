@@ -70,6 +70,13 @@ export function ProfileDetailModal({ profile, onClose, onLike, onPass }) {
 
           {profile.bio && <p className="mt-4 text-[15px] leading-relaxed text-cream">{profile.bio}</p>}
 
+          {profile.voiceBioUrl && (
+            <div className="mt-5">
+              <p className="mb-2 font-mono text-[11px] uppercase tracking-widest text-cream-dim">Voice introduction</p>
+              <audio controls src={profile.voiceBioUrl} className="w-full" />
+            </div>
+          )}
+
           {profile.interests?.length > 0 && (
             <div className="mt-4 flex flex-wrap gap-1.5">
               {profile.interests.map((interest) => (
