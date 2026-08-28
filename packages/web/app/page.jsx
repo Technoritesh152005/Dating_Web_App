@@ -1,6 +1,5 @@
 import { LandingNav } from '@/components/landing/LandingNav';
 import { Hero } from '@/components/landing/Hero';
-import { TickerBar } from '@/components/landing/TickerBar';
 import { HowItWorks } from '@/components/landing/HowItWorks';
 import { Features } from '@/components/landing/Features';
 import { Testimonials } from '@/components/landing/Testimonials';
@@ -12,7 +11,6 @@ export default function LandingPage() {
     <main className="min-h-screen bg-plum-night text-pearl selection:bg-saffron selection:text-pearl overflow-x-hidden">
       <LandingNav />
       <Hero />
-      <TickerBar />
       <Features />
       <HowItWorks />
       <Testimonials />
@@ -21,4 +19,3 @@ export default function LandingPage() {
     </main>
   );
 }
-
