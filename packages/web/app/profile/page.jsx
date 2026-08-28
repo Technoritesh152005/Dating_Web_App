@@ -241,6 +241,12 @@ export default function ProfileSettingPage() {
                                 {profile.verificationStatus === 'VERIFIED' && <span className="mb-1 rounded-full border border-mehendi/40 bg-mehendi/20 px-3 py-1 font-mono text-[10px] uppercase tracking-widest text-mehendi-light">Verified</span>}
                             </div>
                             <p className="mt-4 max-w-xl text-base leading-relaxed text-cream-dim">{form.bio || 'Add a little spark to your introduction.'}</p>
+                            {profile.voiceBioUrl && (
+                                <div className="mt-3 flex items-center gap-2.5 rounded-xl border border-gold/30 bg-plum-night/85 p-2.5 backdrop-blur-md max-w-md">
+                                    <span className="font-mono text-xs uppercase font-bold text-gold">Voice Bio</span>
+                                    <audio controls src={profile.voiceBioUrl} className="h-7 flex-1" />
+                                </div>
+                            )}
                         </div>
                         <div className="absolute left-5 top-5 flex gap-1.5 sm:left-7 sm:top-7">
                             {profile.photos?.map((photo, index) => <button key={photo.id ?? photo.key} aria-label={`Show photo ${index + 1}`} onClick={() => setActivePhoto(index)} className={`h-1.5 w-12 rounded-full transition ${index === activePhoto ? 'bg-marigold' : 'bg-cream/30 hover:bg-cream/60'}`} />)}
