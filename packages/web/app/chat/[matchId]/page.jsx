@@ -45,6 +45,7 @@ function ChatPageContent() {
     const [scamConsent, setScamConsent] = useState(null)
     const [scamConsentLoading, setScamConsentLoading] = useState(true)
     const [consentSaving, setConsentSaving] = useState(false)
+    const [icebreakerSpeaking, setIcebreakerSpeaking] = useState(false)
 
 
 
@@ -255,6 +256,21 @@ function ChatPageContent() {
         setIceBreaker(null);
     };
 
+    const speakIcebreaker = () => {
+        if (!iceBreaker || !('speechSynthesis' in window)) return
+        window.speechSynthesis.cancel()
+        if (icebreakerSpeaking) {
+            setIcebreakerSpeaking(false)
+            return
+        }
+        const utterance = new SpeechSynthesisUtterance(iceBreaker)
+        utterance.lang = 'en-IN'
+        utterance.onstart = () => setIcebreakerSpeaking(true)
+        utterance.onend = () => setIcebreakerSpeaking(false)
+        utterance.onerror = () => setIcebreakerSpeaking(false)
+        window.speechSynthesis.speak(utterance)
+    }
+
 
     /* Handle Block */
     const handleBlock = async () => {
@@ -409,13 +425,15 @@ function ChatPageContent() {
                     </div>
 
                     {iceBreaker && (
-                        <button
-                            onClick={useIcebreaker}
-                            className="mb-3 rounded-[1.25rem] border border-marigold/40 bg-[linear-gradient(135deg,rgba(240,162,2,0.18),rgba(230,57,80,0.08))] px-4 py-3 text-left text-[14px] text-cream ring-1 ring-white/5 transition hover:-translate-y-0.5 hover:border-marigold/70"
-                        >
-                            <span className="mb-1 block font-mono text-[10px] uppercase tracking-[0.18em] text-marigold">Suggested opener</span>
-                            <span className="text-cream-dim">{iceBreaker}</span>
-                        </button>
+                        <div className="mb-3 flex items-start gap-3 rounded-[1.25rem] border border-marigold/40 bg-[linear-gradient(135deg,rgba(240,162,2,0.18),rgba(230,57,80,0.08))] px-4 py-3 ring-1 ring-white/5">
+                            <button onClick={useIcebreaker} className="flex-1 text-left text-[14px] text-cream transition hover:text-white">
+                                <span className="mb-1 block font-mono text-[10px] uppercase tracking-[0.18em] text-marigold">Suggested opener</span>
+                                <span className="text-cream-dim">{iceBreaker}</span>
+                            </button>
+                            <button type="button" onClick={speakIcebreaker} aria-label={icebreakerSpeaking ? 'Stop speaking icebreaker' : 'Speak icebreaker'} className="mt-1 text-lg text-marigold hover:text-cream">
+                                {icebreakerSpeaking ? '■' : '🔊'}
+                            </button>
+                        </div>
                     )}
 
                     {attachmentError && <p className="mb-2 text-center text-[12px] text-sindoor-light">{attachmentError}</p>}

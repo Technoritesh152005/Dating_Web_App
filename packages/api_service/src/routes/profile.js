@@ -5,7 +5,13 @@ import { Prisma } from "@prisma/client";
 import { QUEUE_NAMES } from "@dating-app/shared/src/queueNames.js";
 import { createQueue } from "@dating-app/shared/src/queue.js";
 import { buildEmbeddingInput } from "@dating-app/shared/src/buildEmbeddingInput.js";
-import { generatePresignedReadUrl } from "@dating-app/shared/src/storage.js";
+import {
+  generatePresignedReadUrl,
+  generatePresignedUploadUrl,
+  objectExists,
+  getObjectMetadata,
+  deleteObject,
+} from "@dating-app/shared/src/storage.js";
 
 const VALID_GENDER = [
   "MALE",
@@ -28,12 +34,11 @@ const RESERVED_USERNAMES = new Set([
   "admin",
   "administrator",
   "support",
+  "official",
   "help",
   "melodis",
-  "official",
   "moderator",
 ]);
-const PROFILE_CACHE_TTL_SECONDS = 60;
 
 //helper function
 function normalizeUsername(value) {
@@ -228,7 +233,7 @@ export function registerProfileRoutes(app) {
         const cachedProfile = JSON.parse(cachedData);
         cachedProfile.photos = await signPhotoUrls(cachedProfile.photos);
         reply.header("X-Cache", "HIT");
-        return reply.send(cachedProfile);
+        return reply.send(await signProfileAudio(cachedProfile));
       }
       const profile = await app.db.profile.findUnique({
         where: {
@@ -254,6 +259,7 @@ export function registerProfileRoutes(app) {
       return reply.send({
         ...profile,
         photos: await signPhotoUrls(profile.photos),
+        voiceBioUrl: profile.voiceBioKey ? await generatePresignedReadUrl(profile.voiceBioKey) : null,
       });
     },
   );
@@ -310,6 +316,77 @@ export function registerProfileRoutes(app) {
       });
     },
   );
+
+  app.post(
+    "/media/voice-bio/presign",
+    {
+      preHandler: app.authenticate,
+      config: { authenticated: true, rateLimit: { max: 5, timeWindow: "1 minute" } },
+    },
+    async (request, reply) => {
+      const { fileExtension, mimeType } = request.body ?? {};
+      const allowedTypes = ["audio/webm", "audio/mp4", "audio/mpeg"];
+      const allowedExtensions = ["webm", "m4a", "mp3"];
+      const extension = String(fileExtension || "").toLowerCase();
+      const type = String(mimeType || "").toLowerCase();
+
+      if (
+        !allowedTypes.includes(type) ||
+        !allowedExtensions.includes(extension)
+      ) {
+        return reply.code(400).send({ error: "Only supported audio files are allowed" });
+      }
+
+      const result = await generatePresignedUploadUrl({
+        userId: request.userId,
+        fileExtension: extension,
+        folder: "profile-voice-bios",
+      });
+
+      return reply.send(result);
+    },
+  );
+
+  app.post(
+    "/media/voice-bio/confirm",
+    {
+      preHandler: app.authenticate,
+      config: { authenticated: true, rateLimit: { max: 5, timeWindow: "1 minute" } },
+    },
+    async (request, reply) => {
+      const { key } = request.body ?? {};
+      const expectedPrefix = `profile-voice-bios/${request.userId}/`;
+      if (!key || !String(key).startsWith(expectedPrefix)) {
+        return reply.code(400).send({ error: "Invalid voice bio upload" });
+      }
+
+      const metadata = await getObjectMetadata(key);
+      const allowedTypes = ["audio/webm", "audio/mp4", "audio/mpeg"];
+      if (!metadata || metadata.ContentLength > 5 * 1024 * 1024 || !allowedTypes.includes(metadata.ContentType?.toLowerCase())) {
+        await deleteObject(key).catch(() => {});
+        return reply.code(400).send({ error: "Invalid or oversized voice bio" });
+      }
+
+      const profile = await app.db.profile.update({
+        where: { userId: request.userId },
+        data: { voiceBioKey: key },
+      });
+      await app.redis.del(profileRedisKey(request.userId));
+      return reply.send({ voiceBioUrl: await generatePresignedReadUrl(profile.voiceBioKey) });
+    },
+  );
+
+  app.delete(
+    "/media/voice-bio",
+    { preHandler: app.authenticate, config: { authenticated: true } },
+    async (request, reply) => {
+      const profile = await app.db.profile.findUnique({ where: { userId: request.userId } });
+      if (profile?.voiceBioKey) await deleteObject(profile.voiceBioKey).catch(() => {});
+      if (profile) await app.db.profile.update({ where: { id: profile.id }, data: { voiceBioKey: null } });
+      await app.redis.del(profileRedisKey(request.userId));
+      return reply.send({ ok: true });
+    },
+  );
 }
 
 function calculateAge(dob) {
@@ -329,4 +406,12 @@ async function signPhotoUrls(photos = []) {
       url: await generatePresignedReadUrl(photo.key),
     })),
   );
+}
+
+async function signProfileAudio(profile) {
+  const { voiceBioKey, ...safeProfile } = profile;
+  return {
+    ...safeProfile,
+    voiceBioUrl: voiceBioKey ? await generatePresignedReadUrl(voiceBioKey) : null,
+  };
 }

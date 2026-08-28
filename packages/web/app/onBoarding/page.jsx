@@ -346,31 +346,31 @@ export default function onBoardingSteps() {
     }
   };
 
-  const submitVerification = async () => {
-    setError(null);
-    setSaving(true);
+  const handleRemovePhoto = (indexToRemove) => {
+    setPhotos((prev) => {
+      const target = prev[indexToRemove];
+      if (target?.previewUrl) {
+        URL.revokeObjectURL(target.previewUrl);
+        previewUrlsRef.current.delete(target.previewUrl);
+      }
+      return prev.filter((_, i) => i !== indexToRemove);
+    });
+  };
 
-    try {
-      const { key: selfieUploadKey } = await presignAndUpload({
-        file: selfieFile,
-        presignPath: "/media/selfie/presign",
-      });
-      await api.post("/verification/selfie", { selfieKey: selfieUploadKey });
-      setVerificationSubmitted(true);
-      setComplete(true);
-      await refetch();
-    } catch (error) {
-      setError(error.message);
-    } finally {
-      setSaving(false);
-    }
+  const handleSetPrimaryPhoto = (indexToMakePrimary) => {
+    if (indexToMakePrimary === 0) return;
+    setPhotos((prev) => {
+      const newPhotos = [...prev];
+      const [selected] = newPhotos.splice(indexToMakePrimary, 1);
+      return [selected, ...newPhotos];
+    });
   };
 
   if (loading || checkingProfile) {
     return (
-      <main className="flex min-h-screen items-center justify-center">
-        <p className="font-mono text-[13px] uppercase tracking-widest text-cream-dim">
-          Loading…
+      <main className="flex min-h-screen items-center justify-center bg-plum-night">
+        <p className="font-mono text-xs uppercase tracking-widest text-pearl-dim">
+          Loading...
         </p>
       </main>
     );
@@ -475,9 +475,10 @@ export default function onBoardingSteps() {
       </div>
 
       <div className="relative mx-auto flex min-h-screen max-w-[1500px]">
-        {/* Sidebar Stepper & Overview */}
-        <aside className="relative hidden w-[38%] border-r border-plum-border/50 bg-plum-surface/70 px-8 py-10 lg:flex lg:flex-col backdrop-blur-xl">
-          <div className="mb-8 flex items-center gap-3">
+        {/* Vertically Centered Sidebar Stepper & Snake Path */}
+        <aside className="relative hidden w-[40%] border-r border-plum-border/50 bg-plum-surface/70 px-10 py-10 lg:flex lg:flex-col lg:justify-between backdrop-blur-xl">
+          {/* Header Brand */}
+          <div className="flex items-center gap-3">
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-saffron-gradient text-pearl font-bold font-display text-lg shadow-saffron-glow">
               M
             </div>
@@ -486,81 +487,92 @@ export default function onBoardingSteps() {
             </div>
           </div>
 
-          <div className="mt-6 pt-4">
+          {/* Centered Middle Container */}
+          <div className="my-auto py-8">
             <div className="mb-2 flex items-center justify-between">
               <span className="font-mono text-xs uppercase tracking-widest text-gold font-bold">
                 Step {step + 1} of {totalSteps}
               </span>
-              <span className="font-mono text-xs text-pearl-muted font-bold">
+              <span className="font-mono text-xs text-pearl-muted font-bold bg-gold/10 border border-gold/30 px-2.5 py-0.5 rounded-full">
                 {Math.round(((step + 1) / totalSteps) * 100)}% Complete
               </span>
             </div>
 
-            <div className="max-w-[360px] mt-4">
+            <div className="max-w-[360px] mt-3">
               {step === 0 && (
                 <>
-                  <h1 className="font-display text-4xl leading-tight font-bold text-pearl">Basic Profile Information</h1>
-                  <p className="mt-3 text-sm leading-relaxed text-pearl-dim">Enter your display name, username, date of birth, and gender identity to begin.</p>
+                  <h1 className="font-display text-3xl font-bold leading-tight text-pearl">Basic Profile Information</h1>
+                  <p className="mt-2 text-xs leading-relaxed text-pearl-dim">Enter your display name, username, date of birth, and gender identity to begin.</p>
                 </>
               )}
               {step === 1 && (
                 <>
-                  <h1 className="font-display text-4xl leading-tight font-bold text-pearl">Bio & Profession</h1>
-                  <p className="mt-3 text-sm leading-relaxed text-pearl-dim">Share a short bio, select your primary interests, and specify your profession.</p>
+                  <h1 className="font-display text-3xl font-bold leading-tight text-pearl">Bio & Profession</h1>
+                  <p className="mt-2 text-xs leading-relaxed text-pearl-dim">Share a short bio, select your primary interests, and specify your profession.</p>
                 </>
               )}
               {step === 2 && (
                 <>
-                  <h1 className="font-display text-4xl leading-tight font-bold text-pearl">Connection Intent</h1>
-                  <p className="mt-3 text-sm leading-relaxed text-pearl-dim">Select the types of relationships and connections you are looking to discover.</p>
+                  <h1 className="font-display text-3xl font-bold leading-tight text-pearl">Connection Intent</h1>
+                  <p className="mt-2 text-xs leading-relaxed text-pearl-dim">Select the types of relationships and connections you are looking to discover.</p>
                 </>
               )}
               {step === 3 && (
                 <>
-                  <h1 className="font-display text-4xl leading-tight font-bold text-pearl">Profile Photography</h1>
-                  <p className="mt-3 text-sm leading-relaxed text-pearl-dim">Upload up to 6 high-resolution photos. Your first photo will serve as your primary discovery avatar.</p>
+                  <h1 className="font-display text-3xl font-bold leading-tight text-pearl">Profile Photography</h1>
+                  <p className="mt-2 text-xs leading-relaxed text-pearl-dim">Upload up to 6 photos. Click any photo to set it as your Primary Avatar.</p>
                 </>
               )}
               {step === 4 && (
                 <>
-                  <h1 className="font-display text-4xl leading-tight font-bold text-pearl">Identity Verification</h1>
-                  <p className="mt-3 text-sm leading-relaxed text-pearl-dim">Capture a live selfie to execute AWS Rekognition facial comparison against your primary photo.</p>
+                  <h1 className="font-display text-3xl font-bold leading-tight text-pearl">Identity Verification</h1>
+                  <p className="mt-2 text-xs leading-relaxed text-pearl-dim">Capture a live selfie to execute AWS Rekognition facial comparison against your primary photo.</p>
                 </>
               )}
             </div>
 
-            {/* Stepper Milestones */}
-            <div className="mt-10 flex w-full max-w-[320px] flex-col gap-4">
-              {[
-                { label: 'Basic Info', done: step > 0, active: step === 0 },
-                { label: 'Bio & Interests', done: step > 1, active: step === 1 },
-                { label: 'Connection Intent', done: step > 2, active: step === 2 },
-                { label: 'Profile Photos', done: step > 3, active: step === 3 },
-                { label: 'Identity Check', done: step > 4, active: step === 4 },
-              ].map((item, index) => (
-                <div key={item.label} className="relative flex items-center gap-4">
-                  {index < 4 && (
-                    <div className={`absolute left-[13px] top-[34px] h-6 w-0.5 ${item.done ? 'bg-gold' : 'bg-plum-border'}`} />
-                  )}
-                  <div className={`relative z-10 flex h-7 w-7 items-center justify-center rounded-full font-mono text-xs font-bold transition-all ${
-                    item.done
-                      ? 'bg-gold text-plum-night shadow-gold-glow'
-                      : item.active
-                      ? 'border border-saffron bg-saffron/20 text-saffron shadow-saffron-glow'
-                      : 'border border-plum-border text-pearl-muted'
-                  }`}>
-                    {item.done ? 'DONE' : index + 1}
+            {/* Snake Stepper Milestones Path */}
+            <div className="relative mt-8 max-w-[340px]">
+              {/* Wavy Snake Path Connector SVG */}
+              <svg className="pointer-events-none absolute left-3 top-4 h-[210px] w-32" fill="none" stroke="currentColor">
+                <path
+                  d="M 12,10 C 40,40 50,60 25,90 C 0,120 40,140 25,170 C 15,190 12,200 12,210"
+                  stroke="rgba(244,196,48,0.3)"
+                  strokeWidth="2"
+                  strokeDasharray="4 4"
+                />
+              </svg>
+
+              <div className="flex flex-col gap-5">
+                {[
+                  { label: 'Basic Info', offset: 'translate-x-0', done: step > 0, active: step === 0 },
+                  { label: 'Bio & Interests', offset: 'translate-x-8', done: step > 1, active: step === 1 },
+                  { label: 'Connection Intent', offset: 'translate-x-12', done: step > 2, active: step === 2 },
+                  { label: 'Profile Photos', offset: 'translate-x-6', done: step > 3, active: step === 3 },
+                  { label: 'Identity Check', offset: 'translate-x-0', done: step > 4, active: step === 4 },
+                ].map((item, index) => (
+                  <div key={item.label} className={`relative flex items-center gap-3 transition-transform duration-300 ${item.offset}`}>
+                    <div className={`relative z-10 flex h-7 w-7 items-center justify-center rounded-full font-mono text-xs font-bold transition-all ${
+                      item.done
+                        ? 'bg-gold text-plum-night shadow-gold-glow scale-105'
+                        : item.active
+                        ? 'border border-saffron bg-saffron/20 text-saffron shadow-saffron-glow scale-110'
+                        : 'border border-plum-border bg-plum-night text-pearl-muted'
+                    }`}>
+                      {item.done ? '✓' : index + 1}
+                    </div>
+                    <div className={`text-xs font-semibold ${item.active ? 'text-pearl font-bold' : 'text-pearl-dim'}`}>
+                      {item.label}
+                      {item.active && <span className="ml-2 font-mono text-[10px] text-gold font-bold">• Active</span>}
+                    </div>
                   </div>
-                  <div className={`text-sm font-medium ${item.active ? 'text-pearl' : 'text-pearl-dim'}`}>
-                    {item.label}
-                    {item.active && <span className="ml-2 font-mono text-xs text-gold font-bold">• Active</span>}
-                  </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           </div>
 
-          <div className="mt-auto flex items-center gap-2 font-mono text-xs text-pearl-muted">
+          {/* Footer Security Guarantee */}
+          <div className="flex items-center gap-2 font-mono text-xs text-pearl-muted">
             <span className="flex h-4 w-4 items-center justify-center rounded-full border border-pearl-muted text-[10px]">i</span>
             <span>Your personal data remains encrypted and safe.</span>
           </div>
@@ -604,6 +616,8 @@ export default function onBoardingSteps() {
                   photos={photos}
                   uploadingPhotos={uploadingPhotos}
                   onSelect={handlePhotoSelect}
+                  onRemove={handleRemovePhoto}
+                  onMakePrimary={handleSetPrimaryPhoto}
                   onNext={() => setStep(4)}
                   error={error}
                 />
@@ -672,7 +686,7 @@ function StepBasicInfo({ form, updateForm, onNext }) {
             type="date"
             value={form.dateOfBirth}
             onChange={(e) => updateForm({ dateOfBirth: e.target.value })}
-            className="w-full rounded-xl border border-plum-border bg-plum-night/80 px-4 py-3 text-sm text-pearl outline-none focus:border-saffron focus:ring-2 focus:ring-saffron/20"
+            className="w-full rounded-xl border border-plum-border bg-plum-night/80 px-4 py-3 text-sm text-pearl outline-none focus:border-saffron focus:ring-2 focus:ring-saffron/20 [color-scheme:dark]"
           />
           <p className="mt-1.5 font-mono text-[11px] text-pearl-muted">Must be 18 or older. Only your age will be displayed.</p>
         </div>
@@ -804,37 +818,58 @@ function StepLookingFor({ value, onChange, onNext, onBack }) {
   )
 }
 
-// STEP 4 — Photos with Upload Animation
-function StepPhotos({ photos, uploadingPhotos, onSelect, onNext, error }) {
+// STEP 4 — Photos with Delete (X) and Set Primary Controls
+function StepPhotos({ photos, uploadingPhotos, onSelect, onRemove, onMakePrimary, onNext, error }) {
   return (
     <div className="flex flex-col gap-6">
       <div className="text-center">
         <h2 className="font-display text-3xl font-bold text-pearl sm:text-4xl">Profile Photography</h2>
         <p className="mx-auto mt-2 max-w-md text-sm text-pearl-dim">
-          Upload up to 6 high-resolution photos. Your first photo will be set as your primary avatar.
+          Upload up to 6 photos. The first photo is your primary avatar. Click any photo to set it as Primary.
         </p>
       </div>
 
       <div className="mx-auto w-full max-w-[620px]">
-        {/* Upload Cards Grid with Animations */}
+        {/* Upload Cards Grid with Delete & Primary Controls */}
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
           {photos.map((photo, index) => (
             <div
               key={photo.key || index}
-              className="relative aspect-[4/5] overflow-hidden rounded-2xl border border-plum-border bg-plum-night shadow-xl group"
+              className={`relative aspect-[4/5] overflow-hidden rounded-2xl border bg-plum-night shadow-xl group transition-all ${
+                index === 0 ? 'border-gold shadow-gold-glow ring-2 ring-gold/40' : 'border-plum-border hover:border-saffron/60'
+              }`}
             >
               <img
                 src={photo.previewUrl || photo.publicUrl}
                 alt={`Uploaded profile photo ${index + 1}`}
                 className="h-full w-full object-cover"
               />
-              {index === 0 && (
-                <div className="absolute top-2 left-2 rounded-full border border-gold/40 bg-plum-night/85 px-2.5 py-0.5 font-mono text-[10px] font-bold text-gold backdrop-blur-md">
-                  Primary Avatar
-                </div>
-              )}
-              <div className="absolute top-2 right-2 rounded-full bg-mehendi px-2 py-0.5 font-mono text-[9px] font-bold text-plum-night">
-                Uploaded
+
+              {/* Delete (X) Button */}
+              <button
+                type="button"
+                onClick={() => onRemove(index)}
+                className="absolute top-2 right-2 flex h-7 w-7 items-center justify-center rounded-full bg-plum-night/90 text-pearl border border-plum-border shadow-md transition-transform hover:scale-110 hover:bg-saffron hover:text-pearl z-20"
+                title="Remove photo"
+              >
+                ✕
+              </button>
+
+              {/* Primary Avatar Badge / Click to Make Primary */}
+              <div className="absolute top-2 left-2 z-20">
+                {index === 0 ? (
+                  <span className="rounded-full border border-gold/50 bg-plum-night/90 px-2.5 py-0.5 font-mono text-[10px] font-bold text-gold backdrop-blur-md shadow-gold-glow">
+                    Primary Avatar
+                  </span>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => onMakePrimary(index)}
+                    className="rounded-full border border-plum-border bg-plum-night/80 px-2.5 py-0.5 font-mono text-[10px] font-semibold text-pearl-dim hover:text-pearl hover:border-gold backdrop-blur-md transition-colors"
+                  >
+                    Make Primary
+                  </button>
+                )}
               </div>
             </div>
           ))}
@@ -930,4 +965,5 @@ function StepVerification({
     </div>
   );
 }
+
 

@@ -134,6 +134,8 @@ model Profile {
 
   bioEmbedding Unsupported("vector(768)")?
 
+  voiceBioKey String?
+
   @@map("profiles")
 }
 
