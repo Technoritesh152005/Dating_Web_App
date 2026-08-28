@@ -4,15 +4,16 @@ import { useEffect, useState, useCallback } from 'react'
 import { api } from '@/lib/api'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/authContext'
-import { NavBar } from '../../components/Navbar'
+import { SidebarNav } from '@/components/SidebarNav'
 import { presignAndUpload } from '@/lib/uploadS3'
-import { Input } from '@/components/user_interface/Input';
-import { Button } from '@/components/user_interface/Button';
-import { ChoicePills } from '@/components/user_interface/ChoicePills';
-import { ConfirmModal } from '@/components/ConfirmModal';
-import { ProfileSettingsNav } from '@/components/ProfileSettingsNav';
-import { PreferencesForm } from '@/components/PreferencesForm';
-import { VoiceBioRecorder } from '@/components/voiceBioRecorder';
+import { Input } from '@/components/user_interface/Input'
+import { Button } from '@/components/user_interface/Button'
+import { ChoicePills } from '@/components/user_interface/ChoicePills'
+import { ConfirmModal } from '@/components/ConfirmModal'
+import { ProfileSettingsNav } from '@/components/ProfileSettingsNav'
+import { PreferencesForm } from '@/components/PreferencesForm'
+import { VoiceBioRecorder } from '@/components/voiceBioRecorder'
+import { VerifiedIcon, SparklesIcon } from '@/components/user_interface/Icons'
 
 const PROFESSION_OPTIONS = [
     { value: 'STUDENT', label: 'Student' },
@@ -23,6 +24,7 @@ const PROFESSION_OPTIONS = [
     { value: 'ARTIST', label: 'Artist' },
     { value: 'OTHER', label: 'Other' },
 ]
+
 const INTEREST_OPTIONS = [
     'Travel', 'Music', 'Cricket', 'Football', 'Basketball', 'Tennis', 'Badminton', 'Cooking',
     'Baking', 'Reading', 'Fitness', 'Running', 'Yoga', 'Cycling', 'Movies', 'TV Shows', 'Anime',
@@ -41,6 +43,10 @@ export default function ProfileSettingPage() {
 
     const [profile, setProfile] = useState(null)
     const [form, setForm] = useState(null)
+    const [accountUsername, setAccountUsername] = useState('')
+    const [savingUsername, setSavingUsername] = useState(false)
+    const [usernameSaved, setUsernameSaved] = useState(false)
+    const [usernameError, setUsernameError] = useState(null)
     const [saving, setSaving] = useState(false)
     const [saved, setSaved] = useState(false)
     const [fetchingProfile, setFetchingProfile] = useState(true)
@@ -58,10 +64,14 @@ export default function ProfileSettingPage() {
         try {
             const data = await api.get('/profile/me')
             setProfile(data)
-            setForm({ username: data.username ?? '', bio: data.bio ?? '', interests: data.interests ?? [], profession: data.profession })
+            setForm({
+                bio: data.bio ?? '',
+                interests: data.interests ?? [],
+                profession: data.profession ?? 'STUDENT'
+            })
+            setAccountUsername(data.username ?? '')
         } catch (err) {
             if (err?.status === 404) {
-                // User signed up but profile does not exist yet -> navigate to onboarding
                 router.push('/onBoarding')
                 return
             }
@@ -84,7 +94,7 @@ export default function ProfileSettingPage() {
         fetchProfileData()
     }, [loading, user, router, fetchProfileData])
 
-    const save = async () => {
+    const saveProfile = async () => {
         setError(null)
         if (!form.profession) {
             setError('Please select your profession before saving')
@@ -94,7 +104,6 @@ export default function ProfileSettingPage() {
         try {
             await api.put('/profile', {
                 displayName: profile.displayName,
-                username: form.username,
                 dateOfBirth: profile.dateOfBirth,
                 gender: profile.gender,
                 bio: form.bio,
@@ -106,18 +115,52 @@ export default function ProfileSettingPage() {
                     file: voiceBioFile,
                     presignPath: '/media/voice-bio/presign',
                     confirmPath: '/media/voice-bio/confirm',
-                    allowedTypes: ['audio/webm', 'audio/mp4', 'audio/mpeg'],
+                    allowedTypes: ['audio/webm', 'audio/mp4', 'audio/mpeg', 'audio/wav'],
                     maxFileSize: 5 * 1024 * 1024,
                 })
-                setProfile(await api.get('/profile/me'))
                 setVoiceBioFile(null)
             }
+            const refreshed = await api.get('/profile/me')
+            setProfile(refreshed)
             setSaved(true)
             setTimeout(() => setSaved(false), 2000)
         } catch (err) {
-            setError(err.message || 'Failed to save profile')
+            setError(err.message || 'Failed to save profile details')
         } finally {
             setSaving(false)
+        }
+    }
+
+    const saveUsername = async () => {
+        setUsernameError(null)
+        const normalized = accountUsername.trim().toLowerCase()
+        if (!/^[a-z0-9_]{3,20}$/.test(normalized)) {
+            setUsernameError('Username must be 3-20 characters long (letters, numbers, underscores)')
+            return
+        }
+        setSavingUsername(true)
+        try {
+            await api.put('/profile', {
+                displayName: profile.displayName,
+                username: normalized,
+                dateOfBirth: profile.dateOfBirth,
+                gender: profile.gender,
+                bio: profile.bio,
+                interests: profile.interests,
+                profession: profile.profession,
+            })
+            const refreshed = await api.get('/profile/me')
+            setProfile(refreshed)
+            setUsernameSaved(true)
+            setTimeout(() => setUsernameSaved(false), 2000)
+        } catch (err) {
+            if (err.message?.includes('P2002') || err.message?.includes('username')) {
+                setUsernameError('That username is already taken. Please choose another username.')
+            } else {
+                setUsernameError(err.message || 'Failed to update username')
+            }
+        } finally {
+            setSavingUsername(false)
         }
     }
 
@@ -133,42 +176,45 @@ export default function ProfileSettingPage() {
     }
 
     const addPhotos = async (fileList) => {
+        if (!fileList || fileList.length === 0) return
         setError(null)
-        const files = Array.from(fileList)
-            .slice(0, 6 - (profile.photos?.length ?? 0))
+        const currentCount = profile.photos?.length ?? 0
+        const files = Array.from(fileList).slice(0, 6 - currentCount)
+        
         for (const file of files) {
             try {
                 const { key, publicUrl } = await presignAndUpload({
                     file,
                     presignPath: '/media/photos/presign',
                     confirmPath: '/media/photos/confirm',
-                    extraConfirmFields: { isPrimary: (profile.photos?.length ?? 0) === 0 }
+                    extraConfirmFields: { isPrimary: currentCount === 0 }
                 })
-                setProfile((p) => ({ ...p, photos: [...p.photos, { key, url: publicUrl, isPrimary: p.photos.length === 0 }] }))
                 const refreshed = await api.get('/profile/me')
                 setProfile(refreshed)
             } catch (error) {
-                setError(error.message)
+                setError(error.message || 'Failed to upload photo')
             }
         }
     }
 
     const deletePhoto = async (photoId) => {
-        await api.del(`/media/photos/${photoId}`)
-        setProfile((p) => ({
-            ...p, photos: p.photos.filter((i) => i.id != photoId)
-        }))
+        try {
+            await api.del(`/media/photos/${photoId}`)
+            const refreshed = await api.get('/profile/me')
+            setProfile(refreshed)
+        } catch (err) {
+            setError(err.message || 'Failed to delete photo')
+        }
     }
 
     const setPrimary = async (photoId) => {
-        await api.put(`/media/photos/${photoId}/primary`, {})
-        setProfile((p) => ({
-            ...p,
-            photos: p.photos.map((img) => ({
-                ...img,
-                isPrimary: img.id === photoId
-            }))
-        }));
+        try {
+            await api.put(`/media/photos/${photoId}/primary`, {})
+            const refreshed = await api.get('/profile/me')
+            setProfile(refreshed)
+        } catch (err) {
+            setError(err.message || 'Failed to update primary photo')
+        }
     }
 
     const handleLogout = async () => {
@@ -194,13 +240,13 @@ export default function ProfileSettingPage() {
             <main className="flex min-h-screen items-center justify-center bg-plum-night">
                 <p className="font-mono text-xs uppercase tracking-widest text-pearl-dim">Loading profile...</p>
             </main>
-        );
+        )
     }
 
     if (error && !profile) {
         return (
             <main className="flex min-h-screen flex-col items-center justify-center bg-plum-night px-6 text-center text-pearl">
-                <div className="max-w-md rounded-2xl border border-saffron/40 bg-plum-surface p-8 shadow-2xl">
+                <div className="max-w-md rounded-3xl border border-saffron/40 bg-plum-surface p-8 shadow-2xl">
                     <h2 className="font-display text-2xl font-bold text-saffron">Connection Error</h2>
                     <p className="mt-3 text-sm text-pearl-dim leading-relaxed">{error}</p>
                     <div className="mt-6 flex justify-center gap-3">
@@ -210,104 +256,318 @@ export default function ProfileSettingPage() {
                     </div>
                 </div>
             </main>
-        );
+        )
     }
 
     const primaryPhoto = profile?.photos?.find((photo) => photo.isPrimary) ?? profile?.photos?.[0]
     const displayedPhoto = profile?.photos?.[activePhoto] ?? primaryPhoto
 
+    // Format timestamps
+    const joinedDate = profile?.createdAt ? new Date(profile.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : 'Recently'
+    const updatedTimeAgo = profile?.updatedAt ? new Date(profile.updatedAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : null
+
     return (
-        <main className="min-h-screen overflow-hidden bg-ink px-4 pb-16 pt-4 text-cream sm:px-8 lg:px-12">
-            <NavBar />
-            <div className="mx-auto mt-6 w-full max-w-7xl">
-                <ProfileSettingsNav activeSection={activeSection} onChange={setActiveSection} />
-            </div>
+        <div className="flex min-h-screen bg-plum-night text-pearl">
+            {/* 25% Left Sidebar Navigation */}
+            <SidebarNav />
 
-            {activeSection === 'profile' && profile && form && (
-                <div className="mx-auto mt-8 grid w-full max-w-7xl gap-6 lg:grid-cols-[minmax(0,1.15fr)_minmax(360px,0.85fr)] lg:gap-10">
-                    <section className="relative min-h-[620px] overflow-hidden rounded-card border border-cream/10 bg-dusk shadow-[0_30px_100px_-40px_rgba(0,0,0,0.9)] animate-[fade-in_600ms_ease-out]">
-                        <div className="absolute inset-0 bg-[radial-gradient(circle_at_15%_10%,rgba(245,158,11,0.18),transparent_30%),radial-gradient(circle_at_90%_90%,rgba(218,52,69,0.2),transparent_35%)]" />
-                        {displayedPhoto ? (
-                            // eslint-disable-next-line @next/next/no-img-element
-                            <img src={displayedPhoto.url} alt={profile.displayName} className="absolute inset-0 h-full w-full object-cover transition duration-700" onError={(event) => { event.currentTarget.style.display = 'none' }} />
-                        ) : (
-                            <div className="absolute inset-0 flex items-center justify-center bg-dusk-light font-display text-8xl text-cream/30">{profile.displayName?.[0]}</div>
-                        )}
-                        <div className="absolute inset-0 bg-gradient-to-t from-ink via-transparent to-ink/20" />
-                        <div className="absolute inset-x-0 bottom-0 p-7 sm:p-10">
-                            <p className="font-mono text-[11px] uppercase tracking-[0.24em] text-marigold">Your profile</p>
-                            <div className="mt-2 flex flex-wrap items-end gap-x-3 gap-y-2">
-                                <h1 className="font-display text-5xl leading-none text-cream sm:text-7xl">{profile.displayName}</h1>
-                                {profile.verificationStatus === 'VERIFIED' && <span className="mb-1 rounded-full border border-mehendi/40 bg-mehendi/20 px-3 py-1 font-mono text-[10px] uppercase tracking-widest text-mehendi-light">Verified</span>}
-                            </div>
-                            <p className="mt-4 max-w-xl text-base leading-relaxed text-cream-dim">{form.bio || 'Add a little spark to your introduction.'}</p>
-                            {profile.voiceBioUrl && (
-                                <div className="mt-3 flex items-center gap-2.5 rounded-xl border border-gold/30 bg-plum-night/85 p-2.5 backdrop-blur-md max-w-md">
-                                    <span className="font-mono text-xs uppercase font-bold text-gold">Voice Bio</span>
-                                    <audio controls src={profile.voiceBioUrl} className="h-7 flex-1" />
+            {/* Main Profile Workspace */}
+            <main className="flex-1 overflow-y-auto px-6 py-8 sm:px-10">
+                <div className="mx-auto max-w-6xl space-y-8">
+                    {/* Top Navigation Tabs */}
+                    <ProfileSettingsNav activeSection={activeSection} onChange={setActiveSection} />
+
+                    {/* SECTION 1: PROFILE STUDIO */}
+                    {activeSection === 'profile' && profile && form && (
+                        <div className="grid gap-8 lg:grid-cols-[minmax(0,1.1fr)_minmax(380px,0.9fr)]">
+                            {/* Left Side: 70% Screen Height Hero Primary Photo Card */}
+                            <section className="relative h-[70vh] min-h-[580px] w-full overflow-hidden rounded-[32px] border border-plum-border bg-plum-surface shadow-2xl">
+                                {displayedPhoto ? (
+                                    // eslint-disable-next-line @next/next/no-img-element
+                                    <img
+                                        src={displayedPhoto.url}
+                                        alt={profile.displayName}
+                                        className="h-full w-full object-cover transition duration-500"
+                                    />
+                                ) : (
+                                    <div className="flex h-full items-center justify-center bg-plum-night font-display text-8xl text-pearl-dim">
+                                        {profile.displayName?.[0]}
+                                    </div>
+                                )}
+
+                                {/* Top Photo Story Bar */}
+                                {profile.photos?.length > 1 && (
+                                    <div className="absolute inset-x-5 top-5 z-20 flex gap-1.5">
+                                        {profile.photos.map((photo, index) => (
+                                            <button
+                                                key={photo.id ?? photo.key}
+                                                type="button"
+                                                onClick={() => setActivePhoto(index)}
+                                                className={`h-1 flex-1 rounded-full transition-all ${
+                                                    index === activePhoto ? 'bg-pearl shadow-[0_0_8px_rgba(255,255,255,0.8)]' : 'bg-pearl/30'
+                                                }`}
+                                            />
+                                        ))}
+                                    </div>
+                                )}
+
+                                <div className="absolute inset-0 bg-gradient-to-t from-plum-night via-plum-night/60 to-transparent pointer-events-none" />
+
+                                {/* Bottom Info Overlay */}
+                                <div className="absolute inset-x-0 bottom-0 p-8 sm:p-10 space-y-3 z-10">
+                                    <div className="flex items-center gap-2">
+                                        <h1 className="font-sans text-5xl font-extrabold text-pearl tracking-tight">
+                                            {profile.displayName}
+                                        </h1>
+                                        {profile.verificationStatus === 'VERIFIED' && (
+                                            <VerifiedIcon className="h-7 w-7 text-saffron" />
+                                        )}
+                                    </div>
+
+                                    {/* Username Read-Only Badge */}
+                                    <div className="flex items-center gap-2">
+                                        <span className="font-mono text-xs font-bold text-saffron bg-plum-night/80 border border-saffron/30 px-3 py-1 rounded-full">
+                                            @{profile.username}
+                                        </span>
+                                        {profile.verificationStatus === 'REVERIFICATION_REQUIRED' && (
+                                            <span className="font-mono text-[10px] font-bold text-sindoor-light bg-sindoor/20 border border-sindoor/40 px-2.5 py-1 rounded-full">
+                                                Re-verification Required
+                                            </span>
+                                        )}
+                                    </div>
+
+                                    <p className="text-sm leading-relaxed text-pearl-dim max-w-md font-sans">
+                                        {form.bio || 'No bio written yet. Add a short bio to introduce yourself!'}
+                                    </p>
+
+                                    {profile.voiceBioUrl && (
+                                        <div className="mt-2 flex items-center gap-3 rounded-2xl border border-gold/30 bg-plum-night/90 p-3 backdrop-blur-md max-w-sm">
+                                            <span className="font-mono text-xs font-bold text-gold uppercase shrink-0">Voice Intro</span>
+                                            <audio controls src={profile.voiceBioUrl} className="h-7 flex-1" />
+                                        </div>
+                                    )}
                                 </div>
-                            )}
-                        </div>
-                        <div className="absolute left-5 top-5 flex gap-1.5 sm:left-7 sm:top-7">
-                            {profile.photos?.map((photo, index) => <button key={photo.id ?? photo.key} aria-label={`Show photo ${index + 1}`} onClick={() => setActivePhoto(index)} className={`h-1.5 w-12 rounded-full transition ${index === activePhoto ? 'bg-marigold' : 'bg-cream/30 hover:bg-cream/60'}`} />)}
-                        </div>
-                    </section>
+                            </section>
 
-                    <section className="space-y-5 animate-[slide-up_700ms_120ms_both]">
-                        <div className="flex items-center justify-between">
-                            <div><p className="font-mono text-[11px] uppercase tracking-[0.2em] text-cream-dim">Profile studio</p><h2 className="mt-1 font-display text-3xl text-cream">Shape your story</h2></div>
-                            <span className="rounded-full border border-cream/10 bg-dusk px-3 py-1 font-mono text-[10px] uppercase tracking-widest text-cream-dim">{profile.photos?.length ?? 0}/6 photos</span>
-                        </div>
+                            {/* Right Side: Profile Studio Form Controls */}
+                            <section className="space-y-6">
+                                {/* Organized Profile Metadata Card */}
+                                <div className="rounded-3xl border border-plum-border bg-plum-surface p-6 space-y-3 shadow-xl">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-2 text-saffron">
+                                            <SparklesIcon className="h-4 w-4" />
+                                            <span className="font-mono text-xs font-bold uppercase tracking-wider">Account Identity</span>
+                                        </div>
+                                        <span className="font-mono text-[10px] text-pearl-dim">Joined {joinedDate}</span>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-3 pt-2 text-xs font-mono">
+                                        <div className="rounded-2xl border border-plum-border/60 bg-plum-night/60 p-3">
+                                            <p className="text-pearl-dim uppercase text-[10px]">Verification</p>
+                                            <p className="font-bold text-pearl mt-0.5">{profile.verificationStatus}</p>
+                                        </div>
+                                        <div className="rounded-2xl border border-plum-border/60 bg-plum-night/60 p-3">
+                                            <p className="text-pearl-dim uppercase text-[10px]">Photos Count</p>
+                                            <p className="font-bold text-pearl mt-0.5">{profile.photos?.length ?? 0} / 6 Uploaded</p>
+                                        </div>
+                                    </div>
+                                </div>
 
-                        <section className="rounded-card border border-cream/10 bg-dusk/80 p-5 backdrop-blur-sm">
-                            <div className="mb-4 flex items-center justify-between"><p className="font-mono text-[11px] uppercase tracking-[0.15em] text-cream-dim">Photo gallery</p><label className="cursor-pointer font-mono text-[11px] uppercase tracking-widest text-marigold hover:text-cream">Add photos<input type="file" accept="image/*" multiple className="hidden" onChange={(e) => addPhotos(e.target.files)} /></label></div>
-                            <div className="grid grid-cols-3 gap-2.5">
-                                {profile.photos?.map((photo, index) => <div key={photo.id ?? photo.key} className={`group relative aspect-square overflow-hidden rounded-xl bg-dusk-light ${photo.isPrimary ? 'ring-2 ring-marigold ring-offset-2 ring-offset-dusk' : ''}`}><button onClick={() => setActivePhoto(index)} className="h-full w-full">{/* eslint-disable-next-line @next/next/no-img-element */}<img src={photo.url} alt={`${profile.displayName} photo ${index + 1}`} className="h-full w-full object-cover transition duration-500 group-hover:scale-105" onError={(event) => { event.currentTarget.style.display = 'none' }} /></button>{photo.id && <button onClick={() => deletePhoto(photo.id)} aria-label="Delete photo" className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-ink/75 text-xs text-cream opacity-0 transition group-hover:opacity-100">✕</button>}{photo.id && !photo.isPrimary && <button onClick={() => setPrimary(photo.id)} className="absolute inset-x-1 bottom-1 rounded-lg bg-ink/75 py-1.5 font-mono text-[9px] uppercase tracking-wide text-cream opacity-0 transition group-hover:opacity-100">Make primary</button>}</div>)}
-                                {(profile.photos?.length ?? 0) < 6 && <label className="flex aspect-square cursor-pointer items-center justify-center rounded-xl border border-dashed border-cream/20 text-3xl text-cream-dim transition hover:border-marigold hover:text-marigold">+<input type="file" accept="image/*" multiple className="hidden" onChange={(e) => addPhotos(e.target.files)} /></label>}
+                                {/* Photo Gallery Upload & Management */}
+                                <div className="rounded-3xl border border-plum-border bg-plum-surface p-6 shadow-xl space-y-4">
+                                    <div className="flex items-center justify-between">
+                                        <div>
+                                            <p className="font-mono text-xs font-bold uppercase tracking-wider text-pearl">Photo Gallery</p>
+                                            <p className="text-xs text-pearl-dim">Upload up to 6 photos. Changing primary photo sends you for re-verification.</p>
+                                        </div>
+                                        {(profile.photos?.length ?? 0) < 6 && (
+                                            <label className="cursor-pointer rounded-xl bg-saffron-gradient px-4 py-2 font-mono text-xs font-bold text-pearl shadow-saffron-glow transition hover:scale-105">
+                                                + Upload Photo
+                                                <input
+                                                    type="file"
+                                                    accept="image/*"
+                                                    multiple
+                                                    className="hidden"
+                                                    onChange={(e) => addPhotos(e.target.files)}
+                                                />
+                                            </label>
+                                        )}
+                                    </div>
+
+                                    <div className="grid grid-cols-3 gap-3">
+                                        {profile.photos?.map((photo, index) => (
+                                            <div
+                                                key={photo.id ?? photo.key}
+                                                className={`group relative aspect-square overflow-hidden rounded-2xl border border-plum-border bg-plum-night ${
+                                                    photo.isPrimary ? 'ring-2 ring-saffron ring-offset-2 ring-offset-plum-surface' : ''
+                                                }`}
+                                            >
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setActivePhoto(index)}
+                                                    className="h-full w-full"
+                                                >
+                                                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                                                    <img
+                                                        src={photo.url}
+                                                        alt={`${profile.displayName} photo ${index + 1}`}
+                                                        className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+                                                    />
+                                                </button>
+                                                {photo.id && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => deletePhoto(photo.id)}
+                                                        aria-label="Delete photo"
+                                                        className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-plum-night/80 text-xs font-bold text-sindoor-light opacity-0 transition group-hover:opacity-100"
+                                                    >
+                                                        ✕
+                                                    </button>
+                                                )}
+                                                {photo.id && !photo.isPrimary && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setPrimary(photo.id)}
+                                                        className="absolute inset-x-1 bottom-1 rounded-xl bg-plum-night/90 py-1 font-mono text-[10px] font-bold uppercase text-saffron opacity-0 transition group-hover:opacity-100"
+                                                    >
+                                                        Make Primary
+                                                    </button>
+                                                )}
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* About You & Bio */}
+                                <div className="rounded-3xl border border-plum-border bg-plum-surface p-6 shadow-xl space-y-4">
+                                    <p className="font-mono text-xs font-bold uppercase tracking-wider text-pearl">About You</p>
+                                    <div className="space-y-2">
+                                        <label className="font-mono text-xs text-pearl-dim">Bio</label>
+                                        <textarea
+                                            rows={4}
+                                            value={form.bio}
+                                            onChange={(e) => setForm((f) => ({ ...f, bio: e.target.value }))}
+                                            placeholder="Write something memorable about yourself..."
+                                            className="w-full resize-none rounded-2xl border border-plum-border bg-plum-night/60 px-4 py-3 text-sm text-pearl outline-none transition placeholder:text-pearl-dim focus:border-saffron"
+                                        />
+                                    </div>
+                                </div>
+
+                                {/* Voice Bio Recorder */}
+                                <div className="rounded-3xl border border-plum-border bg-plum-surface p-6 shadow-xl space-y-3">
+                                    <VoiceBioRecorder value={voiceBioFile ?? profile.voiceBioUrl} onChange={setVoiceBioFile} />
+                                    {(profile.voiceBioUrl || voiceBioFile) && (
+                                        <button
+                                            type="button"
+                                            onClick={removeVoiceBio}
+                                            className="font-mono text-xs text-sindoor-light hover:underline"
+                                        >
+                                            Remove Voice Introduction
+                                        </button>
+                                    )}
+                                </div>
+
+                                {/* Interests & Profession */}
+                                <div className="rounded-3xl border border-plum-border bg-plum-surface p-6 shadow-xl space-y-5">
+                                    <div>
+                                        <p className="font-mono text-xs font-bold uppercase tracking-wider text-pearl mb-3">Interests & Signals</p>
+                                        <ChoicePills
+                                            options={INTEREST_OPTIONS}
+                                            value={form.interests}
+                                            onChange={(v) => setForm((f) => ({ ...f, interests: v }))}
+                                            multiple
+                                        />
+                                    </div>
+                                    <div className="pt-4 border-t border-plum-border/50">
+                                        <p className="font-mono text-xs font-bold uppercase tracking-wider text-pearl mb-3">Profession / Vocation</p>
+                                        <ChoicePills
+                                            options={PROFESSION_OPTIONS}
+                                            value={form.profession}
+                                            onChange={(v) => setForm((f) => ({ ...f, profession: v }))}
+                                        />
+                                    </div>
+                                </div>
+
+                                {error && <p className="text-sm text-sindoor-light font-mono">{error}</p>}
+
+                                <Button variant="primary" onClick={saveProfile} disabled={saving} className="w-full">
+                                    {saving ? 'Saving Profile…' : saved ? 'Profile Saved!' : 'Save Profile Changes'}
+                                </Button>
+                            </section>
+                        </div>
+                    )}
+
+                    {/* SECTION 2: ACCOUNT SETTINGS */}
+                    {activeSection === 'account' && (
+                        <div className="mx-auto max-w-2xl space-y-6">
+                            <div>
+                                <h1 className="font-display text-4xl font-bold text-pearl">Account Settings</h1>
+                                <p className="mt-1 text-sm text-pearl-dim">Manage your email, username, and active sessions.</p>
                             </div>
-                        </section>
 
-                        <section className="rounded-card border border-cream/10 bg-dusk/80 p-5 backdrop-blur-sm"><p className="mb-3 font-mono text-[11px] uppercase tracking-[0.15em] text-cream-dim">About you</p><Input label="Username" value={form.username} onChange={(e) => setForm((f) => ({ ...f, username: e.target.value.toLowerCase() }))} placeholder="your_username" minLength={3} maxLength={20} autoComplete="username" /><textarea rows={4} value={form.bio} onChange={(e) => setForm((f) => ({ ...f, bio: e.target.value }))} placeholder="What should someone know about you?" className="mt-4 w-full resize-none rounded-xl border border-cream/10 bg-ink/50 px-4 py-3 text-[15px] text-cream outline-none transition placeholder:text-cream/30 focus:border-marigold/60" /></section>
+                            {/* Email */}
+                            <div className="rounded-3xl border border-plum-border bg-plum-surface p-6 shadow-xl space-y-2">
+                                <p className="font-mono text-xs font-bold uppercase tracking-wider text-pearl-dim">Registered Email</p>
+                                <p className="font-mono text-base text-pearl font-bold">{user?.email}</p>
+                            </div>
 
-                        <section className="rounded-card border border-cream/10 bg-dusk/80 p-5">
-                            <VoiceBioRecorder value={voiceBioFile ?? profile.voiceBioUrl} onChange={setVoiceBioFile} />
-                            {(profile.voiceBioUrl || voiceBioFile) && <Button variant="ghost" onClick={removeVoiceBio} className="mt-3 text-sindoor-light">Remove voice introduction</Button>}
-                        </section>
+                            {/* Username Editing */}
+                            <div className="rounded-3xl border border-plum-border bg-plum-surface p-6 shadow-xl space-y-4">
+                                <div>
+                                    <p className="font-mono text-xs font-bold uppercase tracking-wider text-pearl">Username</p>
+                                    <p className="text-xs text-pearl-dim">Your unique username on the app.</p>
+                                </div>
+                                <div className="flex gap-3">
+                                    <input
+                                        value={accountUsername}
+                                        onChange={(e) => setAccountUsername(e.target.value.toLowerCase())}
+                                        maxLength={20}
+                                        className="flex-1 rounded-xl border border-plum-border bg-plum-night/60 px-4 py-3 font-mono text-sm text-pearl outline-none focus:border-saffron"
+                                    />
+                                    <Button variant="primary" onClick={saveUsername} disabled={savingUsername}>
+                                        {savingUsername ? 'Saving…' : usernameSaved ? 'Saved!' : 'Update Username'}
+                                    </Button>
+                                </div>
+                                {usernameError && (
+                                    <p className="text-xs text-sindoor-light font-mono">{usernameError}</p>
+                                )}
+                            </div>
 
-                        <section className="rounded-card border border-cream/10 bg-dusk/80 p-5 backdrop-blur-sm"><p className="mb-3 font-mono text-[11px] uppercase tracking-[0.15em] text-cream-dim">Your signals</p><div className="mb-5"><ChoicePills options={INTEREST_OPTIONS} value={form.interests} onChange={(v) => setForm((f) => ({ ...f, interests: v }))} multiple /></div><p className="mb-3 font-mono text-[11px] uppercase tracking-[0.15em] text-cream-dim">Work and craft</p><ChoicePills options={PROFESSION_OPTIONS} value={form.profession} onChange={(v) => setForm((f) => ({ ...f, profession: v }))} /></section>
+                            {/* Session Logout */}
+                            <div className="rounded-3xl border border-plum-border bg-plum-surface p-6 shadow-xl space-y-3">
+                                <p className="font-mono text-xs font-bold uppercase tracking-wider text-pearl-dim">Active Session</p>
+                                <p className="text-xs text-pearl-dim">Log out of your current session on this device.</p>
+                                <Button variant="secondary" onClick={() => setConfirmLogout(true)}>
+                                    Log Out
+                                </Button>
+                            </div>
 
-                        {error && <p className="text-[14px] text-sindoor-light">{error}</p>}
-                        <div className="flex flex-col gap-3 sm:flex-row"><Button variant="primary" onClick={save} disabled={saving} showBloom className="flex-1">{saving ? 'Saving…' : saved ? 'Saved' : 'Save changes'}</Button></div>
-                    </section>
+                            {/* Danger Zone */}
+                            <div className="rounded-3xl border border-sindoor/40 bg-sindoor/10 p-6 shadow-xl space-y-3">
+                                <p className="font-mono text-xs font-bold uppercase tracking-wider text-sindoor-light">Danger Zone</p>
+                                <p className="text-xs text-pearl-dim leading-relaxed">
+                                    Deleting your account hides your profile immediately and permanently purges your data after 60 seconds.
+                                </p>
+                                <Button
+                                    variant="ghost"
+                                    onClick={() => setConfirmDelete(true)}
+                                    className="text-sindoor-light border border-sindoor/30 hover:bg-sindoor/20"
+                                >
+                                    Delete Account
+                                </Button>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* SECTION 3: PREFERENCES */}
+                    {activeSection === 'preferences' && (
+                        <div className="mx-auto max-w-2xl">
+                            <PreferencesForm />
+                        </div>
+                    )}
                 </div>
-            )}
+            </main>
 
-            {activeSection === 'account' && (
-                <section className="mx-auto mt-8 w-full max-w-2xl space-y-5">
-                    <div>
-                        <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-cream-dim">Account</p>
-                        <h1 className="mt-2 font-display text-4xl text-cream">Account settings</h1>
-                    </div>
-                    <section className="rounded-card border border-cream/10 bg-dusk/80 p-5">
-                        <p className="font-mono text-[11px] uppercase tracking-widest text-cream-dim">Email</p>
-                        <p className="mt-2 text-cream">{user?.email}</p>
-                    </section>
-                    <section className="rounded-card border border-cream/10 bg-dusk/80 p-5">
-                        <p className="font-mono text-[11px] uppercase tracking-widest text-cream-dim">Session</p>
-                        <Button variant="secondary" onClick={() => setConfirmLogout(true)} className="mt-4">Log out</Button>
-                    </section>
-                    <section className="rounded-card border border-sindoor/30 bg-sindoor/5 p-5">
-                        <p className="font-mono text-[11px] uppercase tracking-widest text-sindoor-light">Danger zone</p>
-                        <p className="mt-2 text-sm text-cream-dim">Your account will be hidden immediately and permanently deleted after 30 days.</p>
-                        <Button variant="ghost" onClick={() => setConfirmDelete(true)} className="mt-4 text-sindoor-light hover:text-sindoor">Delete account</Button>
-                    </section>
-                </section>
-            )}
-
-            {activeSection === 'preferences' && (
-                <PreferencesForm />
-            )}
-
+            {/* Modals */}
             <ConfirmModal
                 open={confirmLogout}
                 title="Log out?"
@@ -318,11 +578,11 @@ export default function ProfileSettingPage() {
             <ConfirmModal
                 open={confirmDelete}
                 title="Delete your account?"
-                description="Your account will disappear immediately and be permanently deleted after 30 days."
-                confirmLabel={deleting ? 'Deleting…' : 'Delete account'}
+                description="Your account will disappear immediately and be permanently deleted after 1 minute."
+                confirmLabel={deleting ? 'Deleting…' : 'Delete Account'}
                 onConfirm={() => { setConfirmDelete(false); deleteAccount(); }}
                 onCancel={() => setConfirmDelete(false)}
             />
-        </main>
-    );
+        </div>
+    )
 }
