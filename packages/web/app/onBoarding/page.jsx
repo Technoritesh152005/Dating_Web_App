@@ -30,7 +30,7 @@ const PROFESSION_OPTIONS = [
 ];
 
 const LOOKING_FOR_OPTIONS = [
-  { value: "LONG_TERM_RELATIONSHIP", label: "Long-term relationship" },
+  { value: "LONG_TERM", label: "Long-term relationship" },
   { value: "SERIOUS_RELATIONSHIP", label: "Serious relationship" },
   { value: "CASUAL_DATING", label: "Casual dating" },
   { value: "FRIENDSHIP", label: "Friendship" },
@@ -40,7 +40,7 @@ const LOOKING_FOR_OPTIONS = [
   { value: "JUST_CHAT", label: "Just chatting" },
   { value: "TRAVEL_BUDDY", label: "Travel buddy" },
   { value: "GAMING_BUDDY", label: "Gaming buddy" },
-  { value: "ACTIVITY_PARTNER", label: "Activity partner" },
+  { value: "ADVENTURE_BUDDY", label: "Activity partner" },
   { value: "COFFEE_DATE", label: "Coffee & conversation" },
   { value: "FREE_TONIGHT", label: "Free tonight" },
 ];

@@ -23,7 +23,7 @@ export function ProfileCard({ profile, onOpenDetail, className = '' }) {
     }
   };
 
-  // Calculate dynamic active status based on profile.updatedAt
+  // Dynamic activity status calculation
   const getActiveStatus = () => {
     if (!profile.updatedAt) return null;
     const diffHours = (Date.now() - new Date(profile.updatedAt).getTime()) / (1000 * 60 * 60);
@@ -39,7 +39,7 @@ export function ProfileCard({ profile, onOpenDetail, className = '' }) {
 
   return (
     <div
-      className={`relative h-[640px] w-full max-w-[460px] overflow-hidden rounded-[32px] border border-plum-border bg-plum-surface shadow-[0_30px_90px_-20px_rgba(0,0,0,0.9)] select-none ${className}`}
+      className={`relative h-[680px] w-full max-w-[500px] overflow-hidden rounded-[32px] border border-plum-border bg-plum-surface shadow-[0_30px_90px_-20px_rgba(0,0,0,0.9)] select-none ${className}`}
     >
       {/* Photo Image */}
       {currentPhoto ? (
@@ -77,7 +77,7 @@ export function ProfileCard({ profile, onOpenDetail, className = '' }) {
         </div>
       )}
 
-      {/* Left/Right Photo Tap Navigation Controls & Arrow Buttons */}
+      {/* Left/Right Photo Tap Controls & Visible Arrows */}
       {photos.length > 1 && (
         <>
           <div className="absolute inset-0 z-10 flex">
@@ -151,7 +151,7 @@ export function ProfileCard({ profile, onOpenDetail, className = '' }) {
             )}
           </div>
 
-          {/* Info Modal Toggle Button */}
+          {/* Reverse V (^ Up Arrow) Info Button */}
           {onOpenDetail && (
             <button
               type="button"
@@ -159,10 +159,11 @@ export function ProfileCard({ profile, onOpenDetail, className = '' }) {
                 e.stopPropagation();
                 onOpenDetail();
               }}
-              className="pointer-events-auto flex h-9 w-9 items-center justify-center rounded-full border border-pearl/20 bg-plum-night/70 text-pearl backdrop-blur-md transition-transform hover:scale-110 hover:border-gold/50"
+              aria-label="Open profile details"
+              className="pointer-events-auto flex h-10 w-10 items-center justify-center rounded-full border border-pearl/20 bg-plum-night/70 text-pearl backdrop-blur-md transition-all hover:scale-110 hover:border-gold/50 active:scale-95"
             >
               <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 15l7-7 7 7" />
               </svg>
             </button>
           )}
@@ -182,24 +183,17 @@ export function ProfileCard({ profile, onOpenDetail, className = '' }) {
           </p>
         )}
 
-        {/* Interests Pills matching reference image */}
+        {/* Clean Sans-Serif Interest Pills */}
         {profile.interests?.length > 0 && (
           <div className="mt-3.5 flex flex-wrap gap-2">
-            {profile.interests.slice(0, 5).map((interest, idx) => {
-              const isHighlight = idx < 2;
-              return (
-                <span
-                  key={interest}
-                  className={`rounded-full px-3.5 py-1 font-mono text-xs font-semibold backdrop-blur-sm transition-all ${
-                    isHighlight
-                      ? 'bg-[linear-gradient(135deg,rgba(244,114,182,0.9),rgba(232,121,249,0.9))] text-plum-night font-bold shadow-md'
-                      : 'border border-pearl/20 bg-plum-night/80 text-pearl'
-                  }`}
-                >
-                  {interest}
-                </span>
-              );
-            })}
+            {profile.interests.slice(0, 5).map((interest) => (
+              <span
+                key={interest}
+                className="rounded-full border border-pearl/20 bg-plum-night/80 px-3.5 py-1.5 font-sans text-xs font-semibold text-pearl backdrop-blur-sm transition-all hover:border-saffron/40"
+              >
+                {interest}
+              </span>
+            ))}
           </div>
         )}
       </div>

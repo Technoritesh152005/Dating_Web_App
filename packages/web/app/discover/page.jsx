@@ -114,8 +114,8 @@ function DiscoverPageContent() {
       {celebrating && <MatchBanner match={celebrating} onDismiss={() => setCelebrating(null)} />}
 
       {/* Main Swipeable Profile Area */}
-      <main className="flex flex-1 flex-col items-center justify-center px-4 py-8 relative overflow-hidden">
-        <div className="relative h-[640px] w-full max-w-[460px]">
+      <main className="flex flex-1 flex-col items-center justify-center px-4 py-8 relative overflow-hidden bg-[radial-gradient(circle_at_50%_30%,rgba(230,57,80,0.14),transparent_70%),radial-gradient(circle_at_80%_80%,rgba(240,162,2,0.08),transparent_70%)]">
+        <div className="relative h-[680px] w-full max-w-[500px]">
           {feedError && (
             <div className="flex h-full flex-col items-center justify-center rounded-3xl border border-dashed border-sindoor/40 bg-plum-surface/60 p-8 text-center">
               <p className="text-sm text-sindoor-light font-mono">{feedError}</p>
