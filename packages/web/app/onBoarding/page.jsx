@@ -182,6 +182,7 @@ export default function OnboardingPage() {
         confirmPath: "/media/photos/confirm",
       });
       await api.post("/verification/selfie", { selfieKey: key });
+      await refetch();
       setVerificationSubmitted(true);
       setComplete(true);
     } catch (err) {
@@ -252,26 +253,30 @@ export default function OnboardingPage() {
   }, [user]);
 
   useEffect(() => {
-    const status = user?.profile?.verificationStatus;
-    if (!verificationSubmitted || status !== "UNDER_REVIEW") return undefined;
+    const status = user?.profile?.verificationStatus || user?.verificationStatus;
+    if (!verificationSubmitted && status !== "UNDER_REVIEW") return undefined;
 
     const checkVerification = async () => {
       const refreshedUser = await refetch();
       const refreshedProfile = refreshedUser?.profile;
-      if (
-        refreshedProfile?.verificationStatus === "VERIFIED" &&
-        (refreshedProfile.latitude == null || refreshedProfile.longitude == null)
-      ) {
-        setLocationPromptOpen(true);
+      const refreshedStatus = refreshedProfile?.verificationStatus || refreshedUser?.verificationStatus;
+
+      if (refreshedStatus === "VERIFIED") {
+        const hasLocation = refreshedProfile?.latitude != null && refreshedProfile?.longitude != null;
+        if (hasLocation) {
+          router.push("/discover");
+        } else {
+          setLocationPromptOpen(true);
+        }
       }
     };
 
     const intervalId = window.setInterval(() => {
       checkVerification().catch(() => {});
-    }, 3000);
+    }, 2000);
 
     return () => window.clearInterval(intervalId);
-  }, [refetch, user, verificationSubmitted]);
+  }, [refetch, user, verificationSubmitted, router]);
 
   const handlePhotoSelect = async (fileList) => {
     setError(null);

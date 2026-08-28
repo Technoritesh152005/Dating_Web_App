@@ -39,6 +39,7 @@ const RESERVED_USERNAMES = new Set([
   "melodis",
   "moderator",
 ]);
+const PROFILE_CACHE_TTL_SECONDS = 300;
 
 //helper function
 function normalizeUsername(value) {

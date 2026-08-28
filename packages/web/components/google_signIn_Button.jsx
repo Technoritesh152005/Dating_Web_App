@@ -11,13 +11,11 @@ export function GoogleSignInButton() {
     const router = useRouter()
     const [error, setError] = useState('')
 
-    // Validate required env variable
     const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID
     if (!clientId) {
         console.error('NEXT_PUBLIC_GOOGLE_CLIENT_ID is not configured')
     }
 
-    /* This function is handled when google gives response */
     const handleCredential = useCallback(async (response) => {
         setError('')
         try {
@@ -46,7 +44,6 @@ export function GoogleSignInButton() {
         })
     }, [handleCredential, clientId])
 
-    // Cleanup on unmount
     useEffect(() => {
         return () => {
             if (window.google?.accounts?.id) {
@@ -56,15 +53,14 @@ export function GoogleSignInButton() {
     }, [])
 
     return (
-        <>
-        {/* Load this google js library of google sign in and when loaded call the onload which initialize the google signin button */}
-        <Script
-            src="https://accounts.google.com/gsi/client"
-            strategy="afterInteractive"
-            onLoad={initializeGoogleButton}
-        />
-        {error && <p role="alert" className="mt-3 text-[14px] text-sindoor-light">{error}</p>}
-        <div ref={buttonRef} />
-        </>
+        <div className="flex flex-col items-center justify-center w-full">
+            <Script
+                src="https://accounts.google.com/gsi/client"
+                strategy="afterInteractive"
+                onLoad={initializeGoogleButton}
+            />
+            {error && <p role="alert" className="mt-3 text-xs text-sindoor-light text-center">{error}</p>}
+            <div className="flex justify-center items-center w-full" ref={buttonRef} />
+        </div>
     )
 }
