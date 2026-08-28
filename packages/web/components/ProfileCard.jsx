@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { calculateAge } from '../lib/calculateAge.js';
-import { VerifiedIcon } from './user_interface/Icons.jsx';
+import { VerifiedIcon, SparklesIcon } from './user_interface/Icons.jsx';
 
 export function ProfileCard({ profile, onOpenDetail, className = '' }) {
   const [photoIndex, setPhotoIndex] = useState(0);
@@ -41,6 +41,14 @@ export function ProfileCard({ profile, onOpenDetail, className = '' }) {
         </div>
       )}
 
+      {/* Real AI Vector Compatibility Match Badge */}
+      {profile.compatibilityLabel && (
+        <div className="absolute left-4 top-5 z-20 flex items-center gap-1.5 rounded-full border border-gold/40 bg-plum-night/80 px-3.5 py-1.5 font-mono text-xs font-bold text-gold shadow-gold-glow backdrop-blur-md">
+          <SparklesIcon className="h-3.5 w-3.5 text-gold" />
+          <span>{profile.compatibilityLabel === 'STRONG' ? 'Strong AI Match' : 'Good AI Match'}</span>
+        </div>
+      )}
+
       {/* Top Photo Story Progress Indicators */}
       {photos.length > 1 && (
         <div className="absolute inset-x-4 top-3.5 z-20 flex gap-1.5 pointer-events-none">
@@ -73,30 +81,8 @@ export function ProfileCard({ profile, onOpenDetail, className = '' }) {
         </div>
       )}
 
-      {/* Top Left Navigation Arrow Badges for Multi-Photos */}
-      {photos.length > 1 && (
-        <>
-          {photoIndex > 0 && (
-            <button
-              onClick={handlePrevPhoto}
-              className="absolute left-3 top-1/2 z-20 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-plum-night/60 text-pearl backdrop-blur-md transition-all hover:bg-plum-night hover:scale-110"
-            >
-              ‹
-            </button>
-          )}
-          {photoIndex < photos.length - 1 && (
-            <button
-              onClick={handleNextPhoto}
-              className="absolute right-3 top-1/2 z-20 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-plum-night/60 text-pearl backdrop-blur-md transition-all hover:bg-plum-night hover:scale-110"
-            >
-              ›
-            </button>
-          )}
-        </>
-      )}
-
       {/* Bottom Gradient Overlay & Information */}
-      <div className="absolute inset-x-0 bottom-0 z-20 bg-gradient-to-t from-plum-night via-plum-night/80 to-transparent px-6 pb-6 pt-24 pointer-events-none">
+      <div className="absolute inset-x-0 bottom-0 z-20 bg-gradient-to-t from-plum-night via-plum-night/85 to-transparent px-6 pb-6 pt-24 pointer-events-none">
         {/* Status Indicator */}
         <div className="mb-2 flex items-center gap-1.5">
           <span className="h-2.5 w-2.5 rounded-full bg-mehendi shadow-[0_0_8px_rgba(46,204,113,0.8)]" />
@@ -115,7 +101,7 @@ export function ProfileCard({ profile, onOpenDetail, className = '' }) {
               {calculateAge(profile.dateOfBirth)}
             </span>
             {profile.verificationStatus === 'VERIFIED' && (
-              <VerifiedIcon className="h-6 w-6 text-saffron" />
+              <VerifiedIcon className="h-6 w-6" />
             )}
           </div>
 
