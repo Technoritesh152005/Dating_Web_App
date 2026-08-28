@@ -13,12 +13,11 @@ import { ReportModal } from '@/components/ReportModal';
 import { ProfileDetailModal } from '@/components/ProfileDetailModel'
 import { VerifiedLayout } from '@/components/VerifiedLayout'
 import { SwipeableCard } from '@/components/SwipeableCard'
-
+import { HeartIcon, SuperLikeIcon, PassIcon } from '@/components/user_interface/Icons'
 
 const LOW_STACK_THRESHOLD = 3
 
 function DiscoverPageContent() {
-    /* only discover the feed when user is logged in */
     const { user, loading } = useAuth()
     const [stack, setStack] = useState([])
     const router = useRouter()
@@ -30,27 +29,19 @@ function DiscoverPageContent() {
     const [viewingDetail , setViewingDetail] = useState(false)
     const [feedError, setFeedError] = useState(null)
 
-
     const fetchFeed = useCallback(async () => {
-
         setFetching(true)
         setFeedError(null)
         try {
             const { profiles } = await api.get('/discovery/feed')
-            /* set the profile elements in stack  */
-            /* at each stage it checks one element of profiles with existing profiles in stack. if both id found duplocate it send true and !true becomes false
-            so this element is not kept in setStack... Filters requires boolean condition to keep the current element
-            */
             setStack((prev) => [...prev, ...profiles.filter((p) => !prev.some((existing) => existing.id === p.id))])
           } catch (error) {
             setFeedError(error.message || 'Failed to load profiles')
         } finally {
             setFetching(false)
         }
-
     }, [])
 
-    /* if any one of the dependencies changed run useffect */
     useEffect(() => {
         if (loading) return
         if (!user) {
@@ -60,21 +51,17 @@ function DiscoverPageContent() {
         fetchFeed()
     }, [user, loading, router, fetchFeed])
 
-    /* when the stack list has only threshold amount of profiles , it fetch the fetchFeed */
     useEffect(() => {
-        /* at each stage user scrolls this useEffect runs. so at each stage u check this threshold limit */
         if (stack.length > 0 && stack.length <= LOW_STACK_THRESHOLD && !fetching) {
             fetchFeed()
         }
-    }, [stack.length])
+    }, [stack.length, fetching, fetchFeed])
 
     const handleSwipe = async (action) => {
-        //current profile
         const current = stack[0]
         if (!current || swiping) return
 
         setSwiping(true)
-        /* keep other right side part of profile */
         setStack((prev) => prev.slice(1))
         try {
             const result = await api.post('/swipe', { toUserId: current.userId, action })
@@ -89,7 +76,6 @@ function DiscoverPageContent() {
         } finally {
             setSwiping(false)
         }
-
     }
 
     const triggerLoveBurst = (action) => {
@@ -98,14 +84,13 @@ function DiscoverPageContent() {
         }
     }
 
-
     const handleBlock = async function(){
         const current = stack[0]
         if(!current) return
         await api.post('/safety/block', {userId:current.userId})
         setStack((prev)=> prev.slice(1))
-
     }
+
     if (loading) {
         return (
             <main className="flex min-h-screen items-center justify-center">
@@ -162,7 +147,7 @@ function DiscoverPageContent() {
                     }
                   >
                     <ActionMenuItem onClick={() => setReportOpen(true)}>Report</ActionMenuItem>
-                    <ActionMenuItem onClick={() => setConfirmBlock(true)} danger>Block</ActionMenuItem>
+                    <ActionMenuItem onClick={() => setConfrimBlock(true)} danger>Block</ActionMenuItem>
                   </ActionMenu>
                 }
               />
@@ -175,9 +160,9 @@ function DiscoverPageContent() {
                 onClick={() => handleSwipe('PASS')}
                 disabled={swiping}
                 aria-label="Pass"
-                className="flex h-16 w-16 items-center justify-center rounded-full border border-cream/15 bg-dusk text-2xl text-cream-dim transition-all duration-200 hover:scale-105 hover:border-cream/30 hover:text-cream disabled:opacity-50"
+                className="flex h-16 w-16 items-center justify-center rounded-full border border-cream/15 bg-dusk text-cream-dim transition-all duration-200 hover:scale-105 hover:border-cream/30 hover:text-cream disabled:opacity-50"
               >
-                ✕
+                <PassIcon className="h-6 w-6" stroke="currentColor" />
               </button>
 
               <button
@@ -187,20 +172,18 @@ function DiscoverPageContent() {
                 }}
                 disabled={swiping}
                 aria-label="Super like"
-                className="group relative flex h-14 w-14 items-center justify-center rounded-full border border-marigold/40 bg-[radial-gradient(circle,_rgba(240,162,2,0.14),_rgba(230,57,80,0.12))] text-xl text-marigold transition-all duration-200 hover:scale-110 hover:shadow-[0_0_30px_rgba(240,162,2,0.35)] disabled:opacity-50"
+                className="group relative flex h-14 w-14 items-center justify-center rounded-full border border-marigold/40 bg-[radial-gradient(circle,_rgba(240,162,2,0.14),_rgba(230,57,80,0.12))] text-marigold transition-all duration-200 hover:scale-110 hover:shadow-[0_0_30px_rgba(240,162,2,0.35)] disabled:opacity-50"
               >
-                <span className="absolute inset-0 animate-ping rounded-full bg-marigold/20 opacity-0 group-hover:opacity-100" />
-                ✦
+                <SuperLikeIcon fill="currentColor" className="h-6 w-6" />
               </button>
 
               <button
                 onClick={() => handleSwipe('LIKE')}
                 disabled={swiping}
                 aria-label="Like"
-                className="group relative flex h-20 w-20 items-center justify-center rounded-full bg-[radial-gradient(circle_at_30%_30%,_#ffb765_0%,_#f39d2b_28%,_#de5d43_62%,_#cd2e52_100%)] text-3xl text-white shadow-[0_18px_40px_-12px_rgba(230,57,80,0.7)] transition-all duration-250 hover:scale-110 active:scale-95 disabled:opacity-50"
+                className="group relative flex h-20 w-20 items-center justify-center rounded-full bg-[radial-gradient(circle_at_30%_30%,_#ffb765_0%,_#f39d2b_28%,_#de5d43_62%,_#cd2e52_100%)] text-white shadow-[0_18px_40px_-12px_rgba(230,57,80,0.7)] transition-all duration-250 hover:scale-110 active:scale-95 disabled:opacity-50"
               >
-                <span className="absolute inset-0 rounded-full bg-white/10 opacity-0 transition group-hover:opacity-100" />
-                <span className="relative animate-[pulse_1.6s_ease-in-out_infinite]">♥</span>
+                <HeartIcon fill="currentColor" className="h-8 w-8" />
               </button>
             </div>
           )}
@@ -210,8 +193,8 @@ function DiscoverPageContent() {
             title="Block this profile?"
             description="You won't see them again, and they won't see you."
             confirmLabel="Block"
-            onConfirm={() => { setConfirmBlock(false); handleBlock(); }}
-            onCancel={() => setConfirmBlock(false)}
+            onConfirm={() => { setConfrimBlock(false); handleBlock(); }}
+            onCancel={() => setConfrimBlock(false)}
           />
           <ReportModal open={reportOpen} reportedUserId={topCard?.userId} onClose={() => setReportOpen(false)} />
 

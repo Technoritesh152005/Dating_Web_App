@@ -2,38 +2,30 @@
 
 import { useState } from 'react';
 import { ScrollReveal } from '@/components/ScrollReveal';
+import { ShieldIcon, SparklesIcon, LocationIcon } from '@/components/user_interface/Icons';
 
-// Interest tags for AI Icebreaker Simulator
 const SIMULATOR_INTERESTS = [
-  'Filter Coffee ☕',
-  'Late Night Maggi 🍜',
-  'Kathak & Techno 💃',
-  'Goa Roadtrips 🚗',
-  'Delhi Momos 🥟',
-  'Stand-up Comedy 🎙️',
+  'Filter Coffee',
+  'Late Night Drives',
+  'Kathak & Dance',
+  'Goa Roadtrips',
+  'Street Food',
+  'Stand-up Comedy',
 ];
 
 const ICEBREAKER_OUTPUTS = {
-  'Filter Coffee ☕+Late Night Maggi 🍜': 'So... 2 AM Maggi paired with South Indian filter coffee: culinary genius or sheer chaotic vibe?',
-  'Kathak & Techno 💃+Goa Roadtrips 🚗': 'Imagine blasting techno while practicing Kathak mudras on the road to Goa. Are we booking the car yet?',
-  'Delhi Momos 🥟+Stand-up Comedy 🎙️': 'I will judge you strictly by your favorite momo chutney and your worst joke. Deal?',
+  'Filter Coffee+Late Night Drives': 'So... late night drives paired with South Indian filter coffee: culinary genius or sheer chaotic vibe?',
+  'Kathak & Dance+Goa Roadtrips': 'Imagine listening to great tunes while planning a roadtrip. Are we booking the car yet?',
+  'Street Food+Stand-up Comedy': 'I will judge you strictly by your favorite food spot and your worst joke. Deal?',
 };
 
 export function Features() {
-  // AI Icebreaker Simulator State
-  const [selectedTags, setSelectedTags] = useState(['Filter Coffee ☕', 'Late Night Maggi 🍜']);
+  const [selectedTags, setSelectedTags] = useState(['Filter Coffee', 'Late Night Drives']);
   const [generatedIcebreaker, setGeneratedIcebreaker] = useState(
-    'So... 2 AM Maggi paired with South Indian filter coffee: culinary genius or sheer chaotic vibe?'
+    'So... late night drives paired with South Indian filter coffee: culinary genius or sheer chaotic vibe?'
   );
 
-  // Date Safe Simulator State
   const [locationShared, setLocationShared] = useState(true);
-
-  // Audio Prompt State
-  const [isPlayingAudio, setIsPlayingAudio] = useState(false);
-
-  // Cultural Vibe Tags State
-  const [activeFilter, setActiveFilter] = useState('Veg / Foodie');
 
   const toggleInterestTag = (tag) => {
     let nextTags = [...selectedTags];
@@ -61,7 +53,6 @@ export function Features() {
   return (
     <section id="features" className="relative px-6 py-28 sm:px-10">
       <div className="mx-auto max-w-7xl">
-        {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto">
           <ScrollReveal>
             <span className="font-mono text-xs font-semibold uppercase tracking-[0.25em] text-saffron">
@@ -76,14 +67,13 @@ export function Features() {
           </ScrollReveal>
         </div>
 
-        {/* Feature Grid with Interactive Live Widgets */}
         <div className="mt-20 grid gap-8 lg:grid-cols-2">
-          {/* FEATURE 1: AI Identity Security */}
+          {/* FEATURE 1 */}
           <ScrollReveal delay={100}>
             <div className="group relative overflow-hidden rounded-[2.2rem] border border-plum-border bg-plum-surface/80 p-8 shadow-2xl backdrop-blur-xl transition-all duration-300 hover:border-mehendi/40">
               <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-mehendi/20 text-mehendi font-bold text-lg">
-                  🛡️
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-mehendi/20 text-mehendi font-bold">
+                  <ShieldIcon className="h-5 w-5" />
                 </div>
                 <div>
                   <span className="font-mono text-xs font-bold uppercase tracking-wider text-mehendi-light">Identity Verification</span>
@@ -94,7 +84,6 @@ export function Features() {
                 Background worker jobs execute automated facial comparison against primary profile photos via AWS Rekognition, guaranteeing 100% authentic profiles.
               </p>
 
-              {/* Live Interactive Verification Widget */}
               <div className="mt-6 rounded-2xl border border-plum-border/60 bg-plum-night/90 p-5">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2.5">
@@ -106,18 +95,18 @@ export function Features() {
                   </span>
                 </div>
                 <div className="mt-3 text-xs font-mono text-pearl-muted bg-plum-surface/80 p-3 rounded-xl border border-plum-border/40">
-                  ⚡ Worker Job: VERIFICATION_STATUS_SUCCESS • Token Hash Verified
+                  Worker Job: VERIFICATION_STATUS_SUCCESS • Token Hash Verified
                 </div>
               </div>
             </div>
           </ScrollReveal>
 
-          {/* FEATURE 2: Algorithmic Match & Icebreaker Engine */}
+          {/* FEATURE 2 */}
           <ScrollReveal delay={200}>
             <div className="group relative overflow-hidden rounded-[2.2rem] border border-plum-border bg-plum-surface/80 p-8 shadow-2xl backdrop-blur-xl transition-all duration-300 hover:border-saffron/40">
               <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-saffron/20 text-saffron font-bold text-lg">
-                  🤖
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-saffron/20 text-saffron font-bold">
+                  <SparklesIcon className="h-5 w-5" />
                 </div>
                 <div>
                   <span className="font-mono text-xs font-bold uppercase tracking-wider text-saffron">AI Match Intelligence</span>
@@ -128,7 +117,6 @@ export function Features() {
                 Upon mutual match, asynchronous background workers analyze shared 768-dimensional bio vector embeddings to generate personalized icebreakers.
               </p>
 
-              {/* Live Interactive Simulator */}
               <div className="mt-6 rounded-2xl border border-plum-border/60 bg-plum-night/90 p-5">
                 <p className="font-mono text-[11px] uppercase tracking-wider text-pearl-muted mb-2.5">
                   Select 2 Profile Keywords:
@@ -154,7 +142,7 @@ export function Features() {
 
                 <div className="mt-4 pt-3 border-t border-plum-border/40">
                   <p className="font-mono text-[11px] uppercase tracking-wider text-gold font-bold mb-1.5 flex items-center gap-1.5">
-                    <span>⚡ AI Icebreaker Output:</span>
+                    <span>AI Icebreaker Output:</span>
                   </p>
                   <p className="font-sans text-sm text-pearl bg-plum-surface/80 p-3 rounded-xl border border-gold/30">
                     "{generatedIcebreaker}"
@@ -164,12 +152,12 @@ export function Features() {
             </div>
           </ScrollReveal>
 
-          {/* FEATURE 3: Encrypted Date Safety System */}
+          {/* FEATURE 3 */}
           <ScrollReveal delay={300}>
             <div id="safety" className="group relative overflow-hidden rounded-[2.2rem] border border-plum-border bg-plum-surface/80 p-8 shadow-2xl backdrop-blur-xl transition-all duration-300 hover:border-gold/40">
               <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gold/20 text-gold font-bold text-lg">
-                  🔒
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gold/20 text-gold font-bold">
+                  <LocationIcon className="h-5 w-5" />
                 </div>
                 <div>
                   <span className="font-mono text-xs font-bold uppercase tracking-wider text-gold">Safety Infrastructure</span>
@@ -180,7 +168,6 @@ export function Features() {
                 Users can generate a short-lived, unguessable token link for emergency contacts. Auto-expiration background jobs automatically purge location logs.
               </p>
 
-              {/* Live Interactive Location Widget */}
               <div className="mt-6 rounded-2xl border border-plum-border/60 bg-plum-night/90 p-5">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
@@ -206,19 +193,19 @@ export function Features() {
                     <span className="text-gold font-bold">Auto-Purge: 2h 30m</span>
                   </div>
                   <div className="mt-2 text-xs text-pearl-muted truncate font-mono">
-                    🔒 https://app.melodis.com/location?token=9f82a1c0d4...
+                    https://melodis.in/location?token=9f82a1c0d4...
                   </div>
                 </div>
               </div>
             </div>
           </ScrollReveal>
 
-          {/* FEATURE 4: Real-Time Engine & Media Exchange */}
+          {/* FEATURE 4 */}
           <ScrollReveal delay={400}>
             <div className="group relative overflow-hidden rounded-[2.2rem] border border-plum-border bg-plum-surface/80 p-8 shadow-2xl backdrop-blur-xl transition-all duration-300 hover:border-saffron/40">
               <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-saffron/20 text-saffron font-bold text-lg">
-                  🌐
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-saffron/20 text-saffron font-bold">
+                  <SparklesIcon className="h-5 w-5" />
                 </div>
                 <div>
                   <span className="font-mono text-xs font-bold uppercase tracking-wider text-saffron">Realtime Messaging</span>
@@ -229,7 +216,6 @@ export function Features() {
                 Powered by a dedicated Node.js WebSocket service with Redis pub/sub broadcasting, typing indicators, read receipts, and presigned S3 media transfers.
               </p>
 
-              {/* Realtime Chat Preview Widget */}
               <div className="mt-6 rounded-2xl border border-plum-border/60 bg-plum-night/90 p-5">
                 <div className="flex items-center justify-between pb-2 border-b border-plum-border/40">
                   <div className="flex items-center gap-2">
@@ -240,7 +226,7 @@ export function Features() {
                 </div>
                 <div className="mt-3 flex flex-col gap-2 font-sans text-xs">
                   <div className="self-start bg-plum-surface p-2.5 rounded-xl text-pearl-dim max-w-[80%] border border-plum-border/50">
-                    Hey! Saw you're interested in System Architecture & AI?
+                    Hey! Saw you are interested in System Architecture & AI?
                   </div>
                   <div className="self-end bg-saffron-gradient p-2.5 rounded-xl text-pearl font-semibold max-w-[80%] shadow-saffron-glow">
                     Yes! Exploring PostGIS vector similarity matching.
@@ -254,5 +240,3 @@ export function Features() {
     </section>
   );
 }
-
-

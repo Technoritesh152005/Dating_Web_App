@@ -36,7 +36,7 @@ export default function LoginPage() {
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         {/* Email Input */}
         <div>
-          <label className="mb-1.5 block font-mono text-xs font-semibold text-pearl-dim">Email Address</label>
+          <label className="mb-2 block font-mono text-xs font-semibold uppercase tracking-wider text-pearl">Email Address</label>
           <input
             type="email"
             name="email"
@@ -45,14 +45,14 @@ export default function LoginPage() {
             placeholder="you@example.com"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full rounded-xl border border-plum-border bg-plum-night/80 px-4 py-3 text-sm text-pearl placeholder-pearl-muted outline-none transition-all focus:border-saffron focus:ring-2 focus:ring-saffron/20"
+            className="w-full rounded-xl border border-plum-border bg-plum-night/80 px-4 py-3.5 text-sm text-pearl placeholder-pearl-muted outline-none transition-all focus:border-saffron focus:ring-2 focus:ring-saffron/20"
           />
         </div>
 
         {/* Password Input with Show/Hide Toggle */}
         <div>
-          <div className="flex items-center justify-between mb-1.5">
-            <label className="font-mono text-xs font-semibold text-pearl-dim">Password</label>
+          <div className="flex items-center justify-between mb-2">
+            <label className="font-mono text-xs font-semibold uppercase tracking-wider text-pearl">Password</label>
           </div>
           <div className="relative">
             <input
@@ -63,7 +63,7 @@ export default function LoginPage() {
               placeholder="••••••••"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full rounded-xl border border-plum-border bg-plum-night/80 px-4 py-3 pr-11 text-sm text-pearl placeholder-pearl-muted outline-none transition-all focus:border-saffron focus:ring-2 focus:ring-saffron/20"
+              className="w-full rounded-xl border border-plum-border bg-plum-night/80 px-4 py-3.5 pr-12 text-sm text-pearl placeholder-pearl-muted outline-none transition-all focus:border-saffron focus:ring-2 focus:ring-saffron/20"
             />
             <button
               type="button"
@@ -76,8 +76,8 @@ export default function LoginPage() {
         </div>
 
         {error && (
-          <div role="alert" className="rounded-xl border border-saffron/40 bg-saffron/10 p-3 text-xs text-saffron font-medium">
-            ⚠️ {error}
+          <div role="alert" className="rounded-xl border border-saffron/40 bg-saffron/10 p-3.5 text-xs text-saffron font-medium">
+            {error}
           </div>
         )}
 
@@ -102,4 +102,4 @@ export default function LoginPage() {
       </p>
     </AuthScreen>
   )
-}
+}
