@@ -6,6 +6,7 @@ const MAX_DURATION_SECONDS = 15
 
 export function VoiceBioRecorder({ value, onChange }) {
   const recorderRef = useRef(null)
+  const streamRef = useRef(null)
   const chunksRef = useRef([])
   const timerRef = useRef(null)
 
@@ -18,7 +19,7 @@ export function VoiceBioRecorder({ value, onChange }) {
     return () => {
       if (previewUrlRef.current) URL.revokeObjectURL(previewUrlRef.current)
       if (timerRef.current) clearInterval(timerRef.current)
-      recorderRef.current?.stream?.getTracks().forEach((track) => track.stop())
+      streamRef.current?.getTracks().forEach((track) => track.stop())
     }
   }, [])
 
@@ -26,6 +27,7 @@ export function VoiceBioRecorder({ value, onChange }) {
     try {
       setError(null)
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      streamRef.current = stream
       
       let options = undefined;
       const supportedTypes = ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4', 'audio/mpeg'];
@@ -56,7 +58,6 @@ export function VoiceBioRecorder({ value, onChange }) {
         onChange(audioFile)
       }
 
-      recorder.stream = stream
       recorder.start()
       setRecording(true)
       setSeconds(0)

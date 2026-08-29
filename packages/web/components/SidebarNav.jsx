@@ -1,10 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/authContext';
 import { api } from '@/lib/api';
+import { connectSocket } from '@/lib/connectSocket';
+import { MatchCelebration } from './MatchCelebration';
 import { SparklesIcon } from './user_interface/Icons';
 
 export function SidebarNav() {
@@ -15,67 +17,91 @@ export function SidebarNav() {
   const [activeTab, setActiveTab] = useState('matches');
   const [matches, setMatches] = useState([]);
   const [loadingMatches, setLoadingMatches] = useState(false);
+  const [celebratedMatch, setCelebratedMatch] = useState(null);
+
+  const fetchMatches = useCallback(async () => {
+    setLoadingMatches(true);
+    try {
+      const res = await api.get('/swipe/matches');
+      setMatches(res.matches || res || []);
+    } catch {
+      // Silently fail
+    } finally {
+      setLoadingMatches(false);
+    }
+  }, []);
 
   useEffect(() => {
-    async function fetchMatches() {
-      setLoadingMatches(true);
-      try {
-        const res = await api.get('/swipe/matches');
-        setMatches(res.matches || res || []);
-      } catch {
-        // Silently fail
-      } finally {
-        setLoadingMatches(false);
-      }
-    }
     if (user) {
       fetchMatches();
-    }
-  }, [user]);
 
+      const socket = connectSocket();
+      socket.on('match:created', (data) => {
+        fetchMatches();
+        if (data?.partner) {
+          setCelebratedMatch({
+            id: data.matchId,
+            profile: data.partner,
+          });
+        }
+      });
+
+      return () => {
+        socket.off('match:created');
+      };
+    }
+  }, [user, fetchMatches]);
+
+  const [avatarError, setAvatarError] = useState(false);
   const userAvatar = user?.profile?.photos?.[0]?.url || null;
   const displayName = user?.profile?.displayName || user?.email?.split('@')[0] || 'You';
+  const initial = displayName ? displayName[0].toUpperCase() : 'Y';
 
   return (
     <aside className="hidden md:flex w-[360px] lg:w-[400px] shrink-0 flex-col h-screen sticky top-0 border-r border-plum-border/50 bg-plum-surface/90 backdrop-blur-xl z-30">
       {/* Sidebar Header with User Avatar */}
-      <div className="flex items-center justify-between border-b border-plum-border/50 bg-saffron-gradient p-4 text-pearl shadow-sm">
-        <Link href="/profile" className="flex items-center gap-3 group">
-          <div className="h-10 w-10 overflow-hidden rounded-full border-2 border-pearl/40 bg-plum-night">
-            {userAvatar ? (
+      <div className="flex items-center justify-between border-b border-plum-border/50 bg-saffron-gradient p-5 text-pearl shadow-md">
+        <Link href="/profile" className="flex items-center gap-3.5 group">
+          <div className="h-12 w-12 overflow-hidden rounded-full border-2 border-pearl/60 bg-plum-night shadow-md shrink-0 flex items-center justify-center">
+            {userAvatar && !avatarError ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={userAvatar} alt={displayName} className="h-full w-full object-cover" />
+              <img
+                src={userAvatar}
+                alt={displayName}
+                onError={() => setAvatarError(true)}
+                className="h-full w-full object-cover"
+              />
             ) : (
-              <div className="flex h-full w-full items-center justify-center font-display text-lg text-pearl">
-                {displayName[0]}
+              <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-plum-dark to-saffron/40 font-display text-xl font-bold text-pearl">
+                {initial}
               </div>
             )}
           </div>
           <div>
-            <p className="font-display font-bold text-sm text-pearl leading-tight group-hover:underline">
+            <p className="font-sans font-extrabold text-base text-pearl leading-tight tracking-tight group-hover:underline">
               {displayName}
             </p>
-            <p className="font-mono text-[10px] uppercase text-pearl-dim">My Profile</p>
+            <p className="font-mono text-xs uppercase tracking-wider font-bold text-pearl/90 mt-0.5">MY PROFILE</p>
           </div>
         </Link>
 
         {/* Quick Nav Action Icons */}
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-2">
           <Link
             href="/search"
-            title="Search"
-            className="flex h-8 w-8 items-center justify-center rounded-full bg-plum-night/40 text-pearl hover:bg-plum-night transition"
+            title="Search Matches"
+            className="flex h-10 w-10 items-center justify-center rounded-2xl bg-plum-night/40 text-pearl hover:bg-plum-night/80 hover:scale-105 border border-pearl/20 transition-all shadow-sm"
           >
-            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
           </Link>
           <Link
             href="/explore"
-            title="Explore"
-            className="flex h-8 w-8 items-center justify-center rounded-full bg-plum-night/40 text-pearl hover:bg-plum-night transition"
+            title="Explore Profiles"
+            className="flex h-10 w-10 items-center justify-center rounded-2xl bg-plum-night/40 text-pearl hover:bg-plum-night/80 hover:scale-105 border border-pearl/20 transition-all shadow-sm"
           >
-            <SparklesIcon className="h-4 w-4" />
+            <SparklesIcon className="h-5 w-5" />
           </Link>
         </div>
       </div>
@@ -195,6 +221,9 @@ export function SidebarNav() {
           </div>
         )}
       </div>
+      {celebratedMatch && (
+        <MatchCelebration match={celebratedMatch} onDismiss={() => setCelebratedMatch(null)} />
+      )}
     </aside>
   );
 }

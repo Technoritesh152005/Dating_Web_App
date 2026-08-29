@@ -1,12 +1,12 @@
 'use client';
 
 const HIGHLIGHT_ITEMS = [
-  { label: 'Facial Identity Check', tech: 'AWS Rekognition' },
-  { label: 'Tokenized Date Safety', tech: 'Live Encryption' },
-  { label: 'Icebreaker Pipeline', tech: 'Automated Workers' },
-  { label: 'Bio Compatibility', tech: '768-Dim Vector Embeddings' },
-  { label: 'Anti-Scam Protection', tech: 'S3 Presigned Media' },
-  { label: 'Real-Time Chat Engine', tech: 'WebSockets & Redis' },
+  { label: 'Authentic Profiles', highlight: 'Selfie Verified' },
+  { label: 'Date Safety', highlight: 'Live Link Sharing' },
+  { label: 'Instant Icebreakers', highlight: 'AI Conversation Starters' },
+  { label: 'Vibe Matching', highlight: 'Interest Compatibility' },
+  { label: 'Anti-Scam Protection', highlight: 'Smart Signal Detection' },
+  { label: 'Real-Time Messaging', highlight: 'Instant Chat & Voice' },
 ];
 
 export function TickerBar() {
@@ -19,8 +19,8 @@ export function TickerBar() {
               key={item.label}
               className="flex flex-col items-center justify-center rounded-xl border border-plum-border/50 bg-plum-surface/40 p-3.5 text-center transition-all hover:border-gold/40"
             >
-              <span className="font-mono text-xs font-bold text-pearl">{item.label}</span>
-              <span className="mt-1 font-mono text-[11px] text-gold">{item.tech}</span>
+              <span className="font-sans text-xs font-bold text-pearl">{item.label}</span>
+              <span className="mt-1 font-mono text-[11px] text-gold">{item.highlight}</span>
             </div>
           ))}
         </div>

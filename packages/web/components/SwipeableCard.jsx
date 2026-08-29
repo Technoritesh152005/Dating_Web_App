@@ -1,18 +1,28 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { ProfileCard } from './ProfileCard';
 
 const SWIPE_THRESHOLD = 120;
 const EXIT_DISTANCE = 700;
 const TAP_MOVEMENT_THRESHOLD = 8;
 
-export function SwipeableCard({ profile, onSwipe, onTap, disabled, topRightSlot }) {
+export function SwipeableCard({ profile, onSwipe, onTap, disabled, topRightSlot, triggerAction }) {
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const [dragging, setDragging] = useState(false);
   const [exiting, setExiting] = useState(null);
   const startRef = useRef({ x: 0, y: 0 });
   const movedRef = useRef(0);
+
+  useEffect(() => {
+    if (triggerAction && !exiting) {
+      setExiting(triggerAction);
+      const timer = setTimeout(() => {
+        onSwipe(triggerAction);
+      }, 240);
+      return () => clearTimeout(timer);
+    }
+  }, [triggerAction, exiting, onSwipe]);
 
   const handlePointerDown = (e) => {
     if (disabled || exiting) return;

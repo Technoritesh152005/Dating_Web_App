@@ -118,6 +118,42 @@ async function main() {
   });
 });
 
+  // Subscribe to match:created pubsub events
+  subclient.subscribe('match:created').catch((err) => {
+    logger.error({ err }, 'Failed to subscribe to match:created Redis channel');
+  });
+
+  subclient.on('message', async (channel, message) => {
+    if (channel === 'match:created') {
+      try {
+        const { matchId, userAId, userBId } = JSON.parse(message);
+        
+        const [profileA, profileB] = await Promise.all([
+          prisma.profile.findUnique({
+            where: { userId: userAId },
+            include: { photos: { where: { isPrimary: true }, take: 1 } },
+          }),
+          prisma.profile.findUnique({
+            where: { userId: userBId },
+            include: { photos: { where: { isPrimary: true }, take: 1 } },
+          }),
+        ]);
+
+        io.to(`user:${userAId}`).emit('match:created', {
+          matchId,
+          partner: profileB,
+        });
+
+        io.to(`user:${userBId}`).emit('match:created', {
+          matchId,
+          partner: profileA,
+        });
+      } catch (err) {
+        logger.error({ err }, 'Error broadcasting match:created event');
+      }
+    }
+  });
+
 // START SERVER HERE
 server.listen(config.realtimePort, () => {
   logger.info(`Realtime server listening on port ${config.realtimePort}`);

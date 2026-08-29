@@ -326,8 +326,9 @@ export default function ProfileSettingPage() {
 
                                     {/* Username Read-Only Badge */}
                                     <div className="flex items-center gap-2">
-                                        <span className="font-mono text-xs font-bold text-saffron bg-plum-night/80 border border-saffron/30 px-3 py-1 rounded-full">
-                                            @{profile.username}
+                                        <span className="inline-flex items-center gap-0.5 font-mono text-xs font-bold tracking-wide text-saffron bg-plum-night/90 border border-saffron/40 px-3.5 py-1 rounded-full shadow-[0_0_12px_rgba(240,162,2,0.25)]">
+                                            <span className="text-gold/60 font-semibold">@</span>
+                                            <span>{profile.username}</span>
                                         </span>
                                         {profile.verificationStatus === 'REVERIFICATION_REQUIRED' && (
                                             <span className="font-mono text-[10px] font-bold text-sindoor-light bg-sindoor/20 border border-sindoor/40 px-2.5 py-1 rounded-full">
@@ -570,8 +571,10 @@ export default function ProfileSettingPage() {
             {/* Modals */}
             <ConfirmModal
                 open={confirmLogout}
-                title="Log out?"
+                title="Log out of your account?"
+                description="You will need to log back in to access your matches and messages."
                 confirmLabel="Log out"
+                danger={false}
                 onConfirm={() => { setConfirmLogout(false); handleLogout(); }}
                 onCancel={() => setConfirmLogout(false)}
             />
@@ -580,6 +583,7 @@ export default function ProfileSettingPage() {
                 title="Delete your account?"
                 description="Your account will disappear immediately and be permanently deleted after 1 minute."
                 confirmLabel={deleting ? 'Deleting…' : 'Delete Account'}
+                danger={true}
                 onConfirm={() => { setConfirmDelete(false); deleteAccount(); }}
                 onCancel={() => setConfirmDelete(false)}
             />

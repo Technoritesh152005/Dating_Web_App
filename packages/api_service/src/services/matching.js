@@ -115,5 +115,13 @@ export async function recordSwipeAndCheckMatch(db, redis, { fromUserId, toUserId
         console.error('Failed to enqueue icebreaker generation', err)
     })
 
+    await redis.publish('match:created', JSON.stringify({
+        matchId: match.id,
+        userAId,
+        userBId,
+    })).catch((err) => {
+        console.error('Failed to publish match created event', err)
+    })
+
     return { matched: true, match, alreadySwiped: false };
 }
