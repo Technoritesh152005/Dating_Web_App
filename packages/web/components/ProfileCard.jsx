@@ -6,6 +6,7 @@ import { VerifiedIcon, SparklesIcon } from './user_interface/Icons.jsx';
 
 export function ProfileCard({ profile, onOpenDetail, className = '' }) {
   const [photoIndex, setPhotoIndex] = useState(0);
+  const [imgError, setImgError] = useState(false);
   const photos = profile.photos ?? [];
   const currentPhoto = photos[photoIndex] ?? photos[0];
 
@@ -13,6 +14,7 @@ export function ProfileCard({ profile, onOpenDetail, className = '' }) {
     e.stopPropagation();
     if (photos.length > 1) {
       setPhotoIndex((prev) => (prev + 1) % photos.length);
+      setImgError(false);
     }
   };
 
@@ -20,6 +22,7 @@ export function ProfileCard({ profile, onOpenDetail, className = '' }) {
     e.stopPropagation();
     if (photos.length > 1) {
       setPhotoIndex((prev) => (prev - 1 + photos.length) % photos.length);
+      setImgError(false);
     }
   };
 
@@ -42,16 +45,17 @@ export function ProfileCard({ profile, onOpenDetail, className = '' }) {
       className={`relative h-[680px] w-full max-w-[500px] overflow-hidden rounded-[32px] border border-plum-border bg-plum-surface shadow-[0_30px_90px_-20px_rgba(0,0,0,0.9)] select-none ${className}`}
     >
       {/* Photo Image */}
-      {currentPhoto ? (
+      {currentPhoto && !imgError ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img
           src={currentPhoto.url}
           alt={profile.displayName}
+          onError={() => setImgError(true)}
           className="h-full w-full object-cover transition-all duration-300 pointer-events-none"
         />
       ) : (
-        <div className="flex h-full w-full items-center justify-center bg-plum-night">
-          <span className="font-display text-6xl text-pearl-dim">{profile.displayName?.[0]}</span>
+        <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-plum-night via-plum-surface to-plum-dark">
+          <span className="font-display text-8xl font-bold text-saffron/70">{profile.displayName?.[0]}</span>
         </div>
       )}
 

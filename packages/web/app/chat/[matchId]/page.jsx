@@ -299,21 +299,40 @@ function ChatPageContent() {
                 <Link href="/matches" className="text-cream-dim transition hover:text-cream" aria-label="Back to matches">
                     ←
                 </Link>
-                <div className="h-10 w-10 flex-shrink-0 overflow-hidden rounded-full border border-white/10 bg-dusk-light shadow-[0_10px_30px_rgba(0,0,0,0.35)]">
-                    {otherUser?.photos?.[0] ? (
+                <div className="h-10 w-10 flex-shrink-0 overflow-hidden rounded-full border border-white/10 bg-dusk-light shadow-[0_10px_30px_rgba(0,0,0,0.35)] flex items-center justify-center">
+                    {otherUser?.photos?.[0]?.url ? (
                         // eslint-disable-next-line @next/next/no-img-element
-                        <img src={otherUser.photos[0].url} alt={otherUser.displayName} className="h-full w-full object-cover" />
+                        <img
+                            src={otherUser.photos[0].url}
+                            alt={otherUser.displayName}
+                            onError={(e) => { e.currentTarget.style.display = 'none' }}
+                            className="h-full w-full object-cover"
+                        />
                     ) : (
-                        <div className="flex h-full w-full items-center justify-center font-display text-cream-dim">
+                        <div className="flex h-full w-full items-center justify-center bg-saffron/20 font-display font-bold text-saffron">
                             {otherUser?.displayName?.[0] ?? '?'}
                         </div>
                     )}
                 </div>
                 <div className="flex-1">
-                    <p className="font-display text-[17px] text-cream">{otherUser?.displayName ?? 'Loading…'}</p>
-                    <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-cream-dim">
-                        {partnerTyping ? 'typing…' : partnerOnline ? 'online' : 'away'}
-                    </p>
+                    <p className="font-display text-[17px] font-bold text-pearl">{otherUser?.displayName ?? 'Loading…'}</p>
+                    {partnerTyping ? (
+                        <div className="flex items-center gap-1.5 text-emerald-400 font-sans text-xs font-semibold">
+                            <span>typing</span>
+                            <span className="flex items-center gap-0.5 pt-1">
+                                <span className="h-1 w-1 rounded-full bg-emerald-400 animate-bounce" style={{ animationDelay: '0ms' }} />
+                                <span className="h-1 w-1 rounded-full bg-emerald-400 animate-bounce" style={{ animationDelay: '150ms' }} />
+                                <span className="h-1 w-1 rounded-full bg-emerald-400 animate-bounce" style={{ animationDelay: '300ms' }} />
+                            </span>
+                        </div>
+                    ) : partnerOnline ? (
+                        <p className="font-sans text-xs text-mehendi font-medium flex items-center gap-1.5">
+                            <span className="h-1.5 w-1.5 rounded-full bg-mehendi animate-pulse" />
+                            <span>online</span>
+                        </p>
+                    ) : (
+                        <p className="font-mono text-[10px] uppercase tracking-wider text-pearl-muted">offline</p>
+                    )}
                 </div>
 
                 <ActionMenu

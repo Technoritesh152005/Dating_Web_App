@@ -100,9 +100,22 @@ export function AuthProvider({ children }) {
         return getVerificationStatus() === 'UNDER_REVIEW'
     }, [getVerificationStatus])
 
-    //   this returns an component that whichever cild function call will come in the children and use this
-    // means ay child inside this can access this value
-    // authcontext provides data to authcontext.provider
+    // Auto-redirect to login after session expired banner triggers
+    useEffect(() => {
+        if (sessionBanner) {
+            const timer = setTimeout(() => {
+                setSessionBanner('')
+                if (typeof window !== 'undefined') window.location.href = '/login'
+            }, 3000)
+            return () => clearTimeout(timer)
+        }
+    }, [sessionBanner])
+
+    const handleRedirectToLogin = () => {
+        setSessionBanner('')
+        if (typeof window !== 'undefined') window.location.href = '/login'
+    }
+
     return (
         <authContext.Provider value={{
             user,
@@ -120,9 +133,22 @@ export function AuthProvider({ children }) {
             clearSessionBanner: () => setSessionBanner('')
         }}>
             {sessionBanner && (
-                <div className="fixed inset-x-0 top-4 z-[100] flex justify-center px-4">
-                    <div className="max-w-md rounded-full border border-sindoor/30 bg-[linear-gradient(135deg,rgba(230,57,80,0.16),rgba(240,162,2,0.12))] px-4 py-2 text-center text-sm text-cream shadow-[0_18px_35px_rgba(0,0,0,0.25)] backdrop-blur-sm">
-                        {sessionBanner}
+                <div className="fixed inset-x-0 top-6 z-[100] flex justify-center px-4 animate-fade-in">
+                    <div className="flex items-center gap-4 max-w-lg rounded-2xl border border-saffron/40 bg-plum-night/95 p-4 text-pearl shadow-2xl backdrop-blur-xl">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-saffron/20 text-saffron font-bold">
+                            !
+                        </div>
+                        <div className="flex-1 text-xs">
+                            <p className="font-mono font-bold uppercase text-saffron tracking-wider">Session Expired</p>
+                            <p className="text-pearl-dim mt-0.5">{sessionBanner}</p>
+                        </div>
+                        <button
+                            type="button"
+                            onClick={handleRedirectToLogin}
+                            className="shrink-0 rounded-xl bg-saffron-gradient px-4 py-2 font-mono text-xs font-bold uppercase tracking-wider text-pearl shadow-saffron-glow transition hover:scale-105"
+                        >
+                            Log In Now
+                        </button>
                     </div>
                 </div>
             )}

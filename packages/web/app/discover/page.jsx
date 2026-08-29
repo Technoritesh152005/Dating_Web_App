@@ -25,6 +25,7 @@ function DiscoverPageContent() {
   const [fetching, setFetching] = useState(false);
   const [celebrating, setCelebrating] = useState(null);
   const [swiping, setSwiping] = useState(false);
+  const [buttonAction, setButtonAction] = useState(null);
   const [confirmBlock, setConfirmBlock] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
   const [viewingDetail, setViewingDetail] = useState(false);
@@ -67,6 +68,7 @@ function DiscoverPageContent() {
 
     setSwiping(true);
     setStack((prev) => prev.slice(1));
+    setButtonAction(null);
     try {
       const result = await api.post('/swipe', { toUserId: current.userId, action });
       if (result.isMatched && result.match) {
@@ -116,6 +118,33 @@ function DiscoverPageContent() {
       {/* Main Swipeable Profile Area */}
       <main className="flex flex-1 flex-col items-center justify-center px-4 py-8 relative overflow-hidden bg-[radial-gradient(circle_at_50%_30%,rgba(230,57,80,0.14),transparent_70%),radial-gradient(circle_at_80%_80%,rgba(240,162,2,0.08),transparent_70%)]">
         <div className="relative h-[680px] w-full max-w-[500px]">
+          {/* Location Radar Scan Animation when fetching feed */}
+          {fetching && stack.length === 0 && (
+            <div className="flex h-full flex-col items-center justify-center rounded-3xl border border-plum-border/60 bg-plum-surface/80 p-8 text-center backdrop-blur-xl shadow-2xl">
+              <div className="relative flex h-32 w-32 items-center justify-center mb-6">
+                {/* Radar Rings */}
+                <div className="absolute inset-0 rounded-full border border-gold/40 animate-ping opacity-75" />
+                <div className="absolute inset-2 rounded-full border border-saffron/30 animate-pulse" />
+                <div className="absolute inset-6 rounded-full border border-plum-border/80" />
+                
+                {/* Radar Scanner Sweeper */}
+                <div className="absolute inset-0 rounded-full border-t-2 border-saffron animate-spin" style={{ animationDuration: '2s' }} />
+
+                {/* Center Location Pin Icon */}
+                <div className="relative z-10 flex h-12 w-12 items-center justify-center rounded-full bg-saffron-gradient text-pearl shadow-saffron-glow">
+                  <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                </div>
+              </div>
+              <h3 className="font-display text-2xl font-bold text-pearl">Calibrating Radar</h3>
+              <p className="mt-2 text-xs font-mono text-gold font-semibold uppercase tracking-wider">
+                Curating feed based on your location preferences...
+              </p>
+            </div>
+          )}
+
           {feedError && (
             <div className="flex h-full flex-col items-center justify-center rounded-3xl border border-dashed border-sindoor/40 bg-plum-surface/60 p-8 text-center">
               <p className="text-sm text-sindoor-light font-mono">{feedError}</p>
@@ -148,6 +177,7 @@ function DiscoverPageContent() {
               onSwipe={handleSwipe}
               onTap={() => setViewingDetail(true)}
               disabled={swiping}
+              triggerAction={buttonAction}
               topRightSlot={
                 <ActionMenu
                   trigger={
@@ -184,8 +214,8 @@ function DiscoverPageContent() {
 
             {/* Pass Button (Cross X) */}
             <button
-              onClick={() => handleSwipe('PASS')}
-              disabled={swiping}
+              onClick={() => setButtonAction('PASS')}
+              disabled={swiping || !!buttonAction}
               aria-label="Pass"
               className="flex h-16 w-16 items-center justify-center rounded-full border border-sindoor/30 bg-plum-surface text-sindoor-light shadow-lg transition-all duration-200 hover:scale-110 hover:border-sindoor hover:bg-sindoor/10 active:scale-95 disabled:opacity-50"
             >
@@ -196,9 +226,9 @@ function DiscoverPageContent() {
             <button
               onClick={() => {
                 triggerLoveBurst('FIRE_LIKE');
-                handleSwipe('FIRE_LIKE');
+                setButtonAction('FIRE_LIKE');
               }}
-              disabled={swiping}
+              disabled={swiping || !!buttonAction}
               aria-label="Super like"
               className="flex h-14 w-14 items-center justify-center rounded-full border border-gold/40 bg-gold/10 text-gold shadow-gold-glow transition-all duration-200 hover:scale-110 hover:bg-gold/20 active:scale-95 disabled:opacity-50"
             >
@@ -207,8 +237,8 @@ function DiscoverPageContent() {
 
             {/* Like Button (Vibrant Saffron Heart) */}
             <button
-              onClick={() => handleSwipe('LIKE')}
-              disabled={swiping}
+              onClick={() => setButtonAction('LIKE')}
+              disabled={swiping || !!buttonAction}
               aria-label="Like"
               className="flex h-20 w-20 items-center justify-center rounded-full bg-saffron-gradient text-pearl shadow-saffron-glow transition-all duration-250 hover:scale-110 active:scale-95 disabled:opacity-50"
             >

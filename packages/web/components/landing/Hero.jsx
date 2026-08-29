@@ -121,18 +121,18 @@ export function Hero() {
             </div>
 
             {/* Social Proof */}
-            <div className="mt-12 flex flex-wrap items-center justify-center gap-6 text-xs text-pearl-muted lg:justify-start font-mono">
-              <div className="flex items-center gap-2">
-                <CheckIcon className="h-4 w-4 text-mehendi" />
-                <span>AWS Rekognition Verification</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <CheckIcon className="h-4 w-4 text-gold" />
-                <span>Vector Embedding Compatibility</span>
-              </div>
-              <div className="flex items-center gap-2">
+            <div className="mt-12 flex flex-wrap items-center justify-center gap-6 text-xs text-pearl-dim lg:justify-start font-sans font-medium">
+              <div className="flex items-center gap-2 rounded-full border border-plum-border/60 bg-plum-surface/50 px-3.5 py-1.5 backdrop-blur-md">
                 <ShieldIcon className="h-4 w-4 text-saffron" />
-                <span>Tokenized Date Safety</span>
+                <span>Selfie Verified Profiles</span>
+              </div>
+              <div className="flex items-center gap-2 rounded-full border border-plum-border/60 bg-plum-surface/50 px-3.5 py-1.5 backdrop-blur-md">
+                <SparklesIcon className="h-4 w-4 text-gold" />
+                <span>AI Icebreaker Suggestions</span>
+              </div>
+              <div className="flex items-center gap-2 rounded-full border border-plum-border/60 bg-plum-surface/50 px-3.5 py-1.5 backdrop-blur-md">
+                <ShieldIcon className="h-4 w-4 text-saffron" />
+                <span>Live Location Date Safety</span>
               </div>
             </div>
           </div>

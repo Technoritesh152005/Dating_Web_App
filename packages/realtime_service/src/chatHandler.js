@@ -32,8 +32,8 @@ async function verifyMatchMembership(db, matchId, userId) {
 export function registerChatHandlers(io, socket, { db, redis, logger , scamAnalysisQueue}) {
 
     // first mark the user online
-    // this routes start only when middleware comes in place so that anyone should not emit message
     markOnline(redis, socket.userId, socket.id)
+    socket.join(`user:${socket.userId}`)
 
     // when match is created , suppors alice opens chat we need to create a matchRoom now so that msg gets broadcast to this room only and not to others
     socket.on('join-match', async ({ matchId }, callback) => {
