@@ -108,5 +108,4 @@ export function SwipeableCard({ profile, onSwipe, onTap, disabled, topRightSlot,
       </div>
     </div>
   );
-  <h4> hello</h4>
 }
