@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { HeartIcon, SuperLikeIcon, PassIcon, ShieldIcon, CheckIcon } from '@/components/user_interface/Icons';
+import { HeartIcon, SuperLikeIcon, PassIcon, ShieldIcon, CheckIcon, SparklesIcon } from '@/components/user_interface/Icons';
 
 const HERO_PROFILES = [
   {
