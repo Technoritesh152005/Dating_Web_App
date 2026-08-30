@@ -64,11 +64,11 @@ function DiscoverPageContent() {
 
   const handleSwipe = async (action) => {
     const current = stack[0];
-    if (!current || swiping) return;
+    if (!current) return;
 
-    setSwiping(true);
-    setStack((prev) => prev.slice(1));
     setButtonAction(null);
+    setStack((prev) => prev.filter((p) => p.id !== current.id));
+
     try {
       const result = await api.post('/swipe', { toUserId: current.userId, action });
       if (result.isMatched && result.match) {
@@ -79,8 +79,6 @@ function DiscoverPageContent() {
       }
     } catch (error) {
       console.error('Swipe Failed', error);
-    } finally {
-      setSwiping(false);
     }
   };
 
@@ -164,10 +162,9 @@ function DiscoverPageContent() {
           )}
 
           {nextCard && (
-            <ProfileCard
-              profile={nextCard}
-              className="scale-[0.96] translate-y-3 opacity-60 pointer-events-none"
-            />
+            <div className="absolute inset-0 pointer-events-none scale-[0.95] translate-y-3 opacity-60 transition-all duration-300">
+              <ProfileCard profile={nextCard} />
+            </div>
           )}
 
           {topCard && (
@@ -215,7 +212,7 @@ function DiscoverPageContent() {
             {/* Pass Button (Cross X) */}
             <button
               onClick={() => setButtonAction('PASS')}
-              disabled={swiping || !!buttonAction}
+              disabled={!topCard || !!buttonAction}
               aria-label="Pass"
               className="flex h-16 w-16 items-center justify-center rounded-full border border-sindoor/30 bg-plum-surface text-sindoor-light shadow-lg transition-all duration-200 hover:scale-110 hover:border-sindoor hover:bg-sindoor/10 active:scale-95 disabled:opacity-50"
             >
@@ -228,7 +225,7 @@ function DiscoverPageContent() {
                 triggerLoveBurst('FIRE_LIKE');
                 setButtonAction('FIRE_LIKE');
               }}
-              disabled={swiping || !!buttonAction}
+              disabled={!topCard || !!buttonAction}
               aria-label="Super like"
               className="flex h-14 w-14 items-center justify-center rounded-full border border-gold/40 bg-gold/10 text-gold shadow-gold-glow transition-all duration-200 hover:scale-110 hover:bg-gold/20 active:scale-95 disabled:opacity-50"
             >
@@ -238,7 +235,7 @@ function DiscoverPageContent() {
             {/* Like Button (Vibrant Saffron Heart) */}
             <button
               onClick={() => setButtonAction('LIKE')}
-              disabled={swiping || !!buttonAction}
+              disabled={!topCard || !!buttonAction}
               aria-label="Like"
               className="flex h-20 w-20 items-center justify-center rounded-full bg-saffron-gradient text-pearl shadow-saffron-glow transition-all duration-250 hover:scale-110 active:scale-95 disabled:opacity-50"
             >
