@@ -168,4 +168,81 @@ export function registerSwipesRoutes(app) {
         })
         return reply.send({ ok: true, match: updated });
     })
+
+    app.get('/swipe/likes', {
+        preHandler:[app.authenticate, app.requireVerification]
+    }, async(request , reply)=>{
+
+        const page = Math.max(1,Number(request.query.page ?? 1))
+        const PAGE_SIZE = 20
+        const skip = (page -1) * PAGE_SIZE
+
+        //joh abhi abhi swipe huwa aur like kiya uska profile leke ao
+        //it includes fromuser and profile and also photos
+        const whoLikedPhotos = await app.db.swipe.findMany({
+            where:{
+                toUserId:request.userId,
+                action:'LIKE'
+            },
+            include:{
+                //jisne like kiya use dundhne chale hum
+                fromUser:{
+                    include:{
+                        profile:{
+                            include:{
+                                photos:{
+                                    where:{
+                                        
+                                        isPrimary:true,
+                                        
+                                    },
+                                    take:1
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            orderBy:{createdAt:'desc'},
+            skip,
+            take:PAGE_SIZE
+        })
+
+        //generate presigned urls for photo
+        for(const like of whoLikedPhotos){
+            if(like.fromUser?.profile?.photos?.[0]){
+                //get their presinged url
+                like.fromUser.profile.photos[0].url = await generatePresignedReadUrl(
+                    like.fromUser.profile.photos.key,
+                )
+            }
+        }
+
+        const totalCount = await app.db.swipe.count({
+            where:{
+                toUserId:request.userId,
+                action:'LIKE'
+            }
+        })
+
+        return reply.send({
+            likes:whoLikedPhotos.map(like=>({
+                id:like.id,
+                userId:like.fromUserId,
+                displayName:like.fromUser?.profile?.displayName,
+                photoUrl:like.fromUser?.profile?.photos?.[0].url,
+                likedAt:like.createdAt
+            })),
+            totalCount,
+            page,
+            hasMore:skip+PAGE_SIZE < totalCount
+        })
+
+        // it return something like [
+    // {
+
+    // }  ,{}.{} 
+    // ]
+    // total
+    })
 }

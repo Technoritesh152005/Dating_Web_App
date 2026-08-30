@@ -44,6 +44,10 @@ model User {
   locationShares   LocationShare[]
   refreshToken     RefreshTokens[]
 
+  // Add after sentMessages line:
+sentProfileMessages     ProfileMessage[]  @relation("ProfileMessagesSent")
+receivedProfileMessages ProfileMessage[]  @relation("ProfileMessagesReceived")
+
   @@index([deletedAt])
 
   @@map("users")
@@ -375,4 +379,21 @@ model ScamRiskFlag{
   updatedAt DateTime @updatedAt
 
   @@map("scam_risk_flags")
+}
+
+model ProfileMessage{
+
+  id String @id @default(uuid())
+  fromUserId String
+  fromUser User @relation("ProfileMessageSent", fields:[fromUserId], references: [id], onDelete: Cascade)
+  toUserId  String
+  toUser    User     @relation("ProfileMessagesReceived", fields: [toUserId], references: [id], onDelete: Cascade)
+
+  content String
+  readAt DateTime?
+  createdAt DateTime @default(now())
+
+    @@index([toUserId, createdAt])
+  @@index([fromUserId, createdAt])
+  @@map("profile_messages")
 }
