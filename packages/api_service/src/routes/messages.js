@@ -1,5 +1,6 @@
-import { createQueue } from '@dating-app/shared/src/queue.js';
-import { QUEUE_NAMES } from '@dating-app/shared/src/queueNames.js';
+import { createQueue } from "@dating-app/shared/src/queue.js";
+import { QUEUE_NAMES } from "@dating-app/shared/src/queueNames.js";
+import {generatePresignedReadUrl} from '@dating-app/shared'
 
 const PAGE_SIZE = 50;
 const UUID_REGEX =
@@ -137,15 +138,24 @@ export function registerGetMessageRoutes(app) {
         },
       });
 
-      if (!match || (match.userAId !== request.userId && match.userBId !== request.userId)) {
+      if (
+        !match ||
+        (match.userAId !== request.userId && match.userBId !== request.userId)
+      ) {
         return reply.code(404).send({ error: "Match not found" });
       }
 
-      const consent = match.userAId === request.userId
-        ? match.scamAnalysisConsentA
-        : match.scamAnalysisConsentB;
+      const consent =
+        match.userAId === request.userId
+          ? match.scamAnalysisConsentA
+          : match.scamAnalysisConsentB;
 
-      return reply.send({ consent, bothConsented: match.scamAnalysisConsentA === true && match.scamAnalysisConsentB === true });
+      return reply.send({
+        consent,
+        bothConsented:
+          match.scamAnalysisConsentA === true &&
+          match.scamAnalysisConsentB === true,
+      });
     },
   );
 
@@ -156,7 +166,9 @@ export function registerGetMessageRoutes(app) {
       const { matchId } = request.params;
       const { consent } = request.body ?? {};
       if (!isValidUuid(matchId) || typeof consent !== "boolean") {
-        return reply.code(400).send({ error: "Valid match ID and consent are required" });
+        return reply
+          .code(400)
+          .send({ error: "Valid match ID and consent are required" });
       }
 
       const match = await app.db.match.findUnique({
@@ -164,13 +176,23 @@ export function registerGetMessageRoutes(app) {
         select: { userAId: true, userBId: true },
       });
 
-      if (!match || (match.userAId !== request.userId && match.userBId !== request.userId)) {
+      if (
+        !match ||
+        (match.userAId !== request.userId && match.userBId !== request.userId)
+      ) {
         return reply.code(404).send({ error: "Match not found" });
       }
 
-      const data = match.userAId === request.userId
-        ? { scamAnalysisConsentA: consent, scamAnalysisConsentAtA: new Date() }
-        : { scamAnalysisConsentB: consent, scamAnalysisConsentAtB: new Date() };
+      const data =
+        match.userAId === request.userId
+          ? {
+              scamAnalysisConsentA: consent,
+              scamAnalysisConsentAtA: new Date(),
+            }
+          : {
+              scamAnalysisConsentB: consent,
+              scamAnalysisConsentAtB: new Date(),
+            };
 
       const updatedMatch = await app.db.match.update({
         where: { id: matchId },
@@ -181,13 +203,26 @@ export function registerGetMessageRoutes(app) {
         },
       });
 
-      if (updatedMatch.scamAnalysisConsentA === true && updatedMatch.scamAnalysisConsentB === true) {
-        const scamQueue = createQueue(QUEUE_NAMES.SCAM_ANALYSIS, app.redis.duplicate());
-        scamQueue.add(
-          'analyze-conversation',
-          { matchId },
-          { jobId: `scam-${matchId}-${Math.floor(Date.now() / 60_000)}` },
-        ).catch((error) => request.log.error({ error, matchId }, 'Failed to queue scam analysis after consent'));
+      if (
+        updatedMatch.scamAnalysisConsentA === true &&
+        updatedMatch.scamAnalysisConsentB === true
+      ) {
+        const scamQueue = createQueue(
+          QUEUE_NAMES.SCAM_ANALYSIS,
+          app.redis.duplicate(),
+        );
+        scamQueue
+          .add(
+            "analyze-conversation",
+            { matchId },
+            { jobId: `scam-${matchId}-${Math.floor(Date.now() / 60_000)}` },
+          )
+          .catch((error) =>
+            request.log.error(
+              { error, matchId },
+              "Failed to queue scam analysis after consent",
+            ),
+          );
       }
       return reply.send({ ok: true, consent });
     },
@@ -227,5 +262,159 @@ export function registerGetMessageRoutes(app) {
       return reply.send({ ok: true });
     },
   );
+
+  app.post(
+    "/profile-messages",
+    {
+      preHandler: [app.authenticate, app.requireVerification],
+    },
+    async (request, reply) => {
+
+      const {toUserId, content} = request.body?? {}
+
+      if(!toUserId || !content){
+        return reply.code(400).send({
+          error:'toUserId and content cannot be empty. Bhejna padta hai bhai validation ka naam hai'
+        })
+      }
+
+      if(toUserId === request.userId){
+        return reply.code(400).send({error:'You cannot send message to your own self'})
+      }
+
+      const targetProfile = await app.db.profile.findUnique({
+        where:{
+          userId:toUserId,
+        }
+      })
+
+      if(!targetProfile){
+        return reply.code(400).send({error:'User not found'})
+      }
+
+      //agar block hai toh nahi kar sakta meri jaab
+      const blocked = await app.db.block.findUnique({
+        where:{
+          blockerId_blockedId:{
+            blockerId:toUserId,
+            blockedId:request.userId
+          }
+        }
+      })
+
+      if(blocked){
+        return reply.code(403).send({error:'You cannot message this person'})
+      }
+
+      //create a msg entry and also gets sender infromation
+      const message = await app.db.profileMessage.create({
+        data:{
+          fromUserId:request.userId,
+          toUserId,
+          content : content
+        }
+        
+      })
+
+      return reply.code(201).send({
+        id:message.id,
+        content:message.content,
+        createdAt:message.createdAt
+      })
+    },
+  );
+
+  app.get('/profile-messages', {preHandler:[app.authenticate,app.requireVerification]} , async(request , reply)=>{
+
+    const page = Math.max(1, Number(request.query.page || 1));
+    const PAGE_SIZE = 20;
+    const skip = (page - 1) * PAGE_SIZE;
+
+    //get all message and also who sended unka profile
+    const allMessage = await app.db.profileMessage.findMany({
+      where:{
+        toUserId:request.userId
+      },
+      include:{
+        fromUser:{
+          include:{
+            profile:{
+              include:{
+                photos:{
+                  where:{
+                    isPrimary:true
+                  },
+                  take:1
+                }
+              }
+            }
+          }
+        }
+      },
+      orderBy:{createdAt:'desc'},
+      skip,
+      take:PAGE_SIZE
+    })
+
+    //now from the profile who send u message u need to get their profile so create a presinged read url and show the image
+    for(const msg of allMessage){
+      if(msg.fromUser?.profile?.photos?.[0]){
+        msg.fromUser.profile.photos[0].url = await generatePresignedReadUrl(
+          msg.fromUser.profile.photos[0].key
+        )
+      }
+    }
+
+    const total = await app.db.profileMessage.count({where:{toUserId:request.userId}})
+    const unreadCount = await app.db.profileMessage.count({
+      where:{
+        toUserId:request.userId,
+        readAt:null
+      }
+    })
+
+    return reply.send({
+      messages:allMessage.map(msg=>({
+        id:msg.id,
+        userId:msg.fromUserId,
+        displayName:msg.fromUser?.profile?.displayName,
+        photoUrl:msg.fromUser?.profile?.url,
+        lastMessage:msg.content,
+        readAt:msg.readAt,
+        createdAt:msg.createdAt
+      })),
+      total,
+      unreadCount,
+      page,
+      hasMore:skip + PAGE_SIZE< total
+    })
+
+  })
+
+  app.get('/profile-messages/:messageId/read', {preHanlder: [app.authenticate, app.requireVerification]} , async(request , reply)=>{
+
+    const {msgId} = request.params
+
+    const message = await app.db.profileMessage.findUnique({
+      where:{
+        id:msgId
+      }
+    })
+
+    if(!message || message.toUserId !== request.userId){
+      return reply.code(404).send({error:'Message not found or You are not allowed to see this message'})
+    }
+
+    await app.db.profileMessage.update({
+      where:{
+        id:msgId,
+      },
+      data:{
+        readAt: new Date()
+      }
+    })
+
+    return reply.send({ok:true})
+  })
 }
 // these gets the message in desc time of timestamp

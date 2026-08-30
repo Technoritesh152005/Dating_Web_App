@@ -401,6 +401,11 @@ export function Explore() {
             {!loading && !error && profiles.length > 0 && viewMode === 'deck' && topDeckCard && (
               <div className="flex flex-col items-center justify-center py-4">
                 <div className="relative h-[680px] w-full max-w-[500px]">
+                  {profiles[1] && (
+                    <div className="absolute inset-0 pointer-events-none scale-[0.95] translate-y-3 opacity-60 transition-all duration-300">
+                      <ProfileCard profile={profiles[1]} />
+                    </div>
+                  )}
                   <SwipeableCard
                     key={topDeckCard.id}
                     profile={topDeckCard}
