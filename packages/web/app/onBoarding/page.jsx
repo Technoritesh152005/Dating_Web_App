@@ -152,17 +152,31 @@ export default function OnboardingPage() {
         gender: form.gender,
         bio: form.bio,
         interests: form.interests,
-        lookingFor: form.lookingFor,
         profession: form.profession,
         username: form.username
-      });
-
-      await api.put("/preferences", {
-        lookingFor: form.lookingFor
       });
       setStep(2);
     } catch (err) {
       setError(err.message || "Failed to save profile information.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const submitLookingFor = async () => {
+    if (form.lookingFor.length === 0) {
+      setError("Please select at least one connection intent.");
+      return;
+    }
+    setError(null);
+    setSaving(true);
+    try {
+      await api.put("/preferences", {
+        lookingFor: form.lookingFor
+      });
+      setStep(3);
+    } catch (err) {
+      setError(err.message || "Failed to save preferences.");
     } finally {
       setSaving(false);
     }
@@ -545,8 +559,10 @@ export default function OnboardingPage() {
               <StepLookingFor
                 value={form.lookingFor}
                 onChange={(value) => updateForm({ lookingFor: value })}
-                onNext={() => setStep(3)}
+                onNext={submitLookingFor}
                 onBack={() => setStep(1)}
+                saving={saving}
+                error={error}
               />
             )}
             {step === 3 && (
@@ -722,13 +738,19 @@ function StepAbout({ form, updateForm, onNext, onBack, saving, error }) {
   );
 }
 
-function StepLookingFor({ value, onChange, onNext, onBack }) {
+function StepLookingFor({ value, onChange, onNext, onBack, saving, error }) {
   return (
     <div className="flex flex-col gap-6">
       <div className="text-center">
         <h2 className="font-display text-3xl font-bold text-pearl">Connection Intent</h2>
         <p className="mt-2 text-sm text-pearl-dim">Select the relationship types and goals you are open to exploring.</p>
       </div>
+
+      {error && (
+        <div className="rounded-xl border border-sindoor/40 bg-sindoor/10 p-3 text-center">
+          <p className="font-mono text-xs text-sindoor-light">{error}</p>
+        </div>
+      )}
 
       <div className="max-h-72 overflow-y-auto pr-1">
         <ChoicePills
@@ -740,15 +762,15 @@ function StepLookingFor({ value, onChange, onNext, onBack }) {
       </div>
 
       <div className="mt-4 flex items-center justify-between gap-4 pt-4 border-t border-plum-border/40">
-        <button onClick={onBack} className="font-mono text-xs uppercase tracking-wider text-pearl-dim hover:text-pearl">
+        <button onClick={onBack} disabled={saving} className="font-mono text-xs uppercase tracking-wider text-pearl-dim hover:text-pearl disabled:opacity-50">
           Back
         </button>
         <button
           onClick={onNext}
-          disabled={value.length === 0}
+          disabled={value.length === 0 || saving}
           className="rounded-xl bg-saffron-gradient px-8 py-3.5 font-mono text-xs uppercase tracking-wider text-pearl font-semibold shadow-saffron-glow transition-all hover:scale-[1.02] disabled:opacity-50"
         >
-          Continue
+          {saving ? "Saving..." : "Continue"}
         </button>
       </div>
     </div>
