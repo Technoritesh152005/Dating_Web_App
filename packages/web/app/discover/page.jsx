@@ -15,6 +15,7 @@ import { VerifiedLayout } from '@/components/VerifiedLayout';
 import { SwipeableCard } from '@/components/SwipeableCard';
 import { SidebarNav } from '@/components/SidebarNav';
 import { HeartIcon, SuperLikeIcon, PassIcon } from '@/components/user_interface/Icons';
+import { ProfileMessageModal } from '@/components/ProfileMessageModal';
 
 const LOW_STACK_THRESHOLD = 3;
 
@@ -30,6 +31,17 @@ function DiscoverPageContent() {
   const [reportOpen, setReportOpen] = useState(false);
   const [viewingDetail, setViewingDetail] = useState(false);
   const [feedError, setFeedError] = useState(null);
+  const [selectedLikeUser, setSelectedLikeUser] = useState(null);
+  const [heartAnimating, setHeartAnimating] = useState(false);
+
+  const handleHeartClick = () => {
+    if (!topCard || !!buttonAction) return;
+    setHeartAnimating(true);
+    setButtonAction('LIKE');
+    setTimeout(() => {
+      setHeartAnimating(false);
+    }, 750);
+  };
 
   const fetchFeed = useCallback(async () => {
     setFetching(true);
@@ -232,15 +244,34 @@ function DiscoverPageContent() {
               <SuperLikeIcon fill="currentColor" className="h-6 w-6" />
             </button>
 
-            {/* Like Button (Vibrant Saffron Heart) */}
-            <button
-              onClick={() => setButtonAction('LIKE')}
-              disabled={!topCard || !!buttonAction}
-              aria-label="Like"
-              className="flex h-20 w-20 items-center justify-center rounded-full bg-saffron-gradient text-pearl shadow-saffron-glow transition-all duration-250 hover:scale-110 active:scale-95 disabled:opacity-50"
-            >
-              <HeartIcon fill="currentColor" className="h-9 w-9" />
-            </button>
+            {/* Like Button (Vibrant Saffron Heart with 360 Orbital Cycle Animation) */}
+            <div className="relative">
+              {heartAnimating && (
+                <>
+                  {/* Floating hearts executing 360-degree orbital loop */}
+                  {[0, 90, 180, 270].map((angle, idx) => (
+                    <div
+                      key={idx}
+                      className="absolute inset-0 pointer-events-none flex items-center justify-center animate-heart-orbit z-30"
+                      style={{ animationDelay: `${idx * 0.12}s` }}
+                    >
+                      <HeartIcon fill="#FF3366" className="h-6 w-6 text-saffron drop-shadow-[0_0_12px_rgba(255,51,102,0.9)]" />
+                    </div>
+                  ))}
+                  <div className="absolute -inset-3 rounded-full border-2 border-saffron/80 animate-ping pointer-events-none" />
+                </>
+              )}
+              <button
+                onClick={handleHeartClick}
+                disabled={!topCard || !!buttonAction}
+                aria-label="Like"
+                className={`flex h-20 w-20 items-center justify-center rounded-full bg-saffron-gradient text-pearl shadow-saffron-glow transition-all duration-250 hover:scale-110 active:scale-95 disabled:opacity-50 ${
+                  heartAnimating ? 'animate-heart-pulse-orbit' : ''
+                }`}
+              >
+                <HeartIcon fill="currentColor" className={`h-9 w-9 transition-transform ${heartAnimating ? 'scale-125' : ''}`} />
+              </button>
+            </div>
           </div>
         )}
       </main>
@@ -275,6 +306,19 @@ function DiscoverPageContent() {
           onPass={() => {
             setViewingDetail(false);
             handleSwipe('PASS');
+          }}
+        />
+      )}
+
+      {selectedLikeUser && topCard && (
+        <ProfileMessageModal
+          recipientUserId={selectedLikeUser}
+          recipientName={topCard.displayName}
+          onClose={() => setSelectedLikeUser(null)}
+          onSent={() => {
+            setSelectedLikeUser(null);
+            setFeedError('Message sent!');
+            setTimeout(() => setFeedError(null), 3000);
           }}
         />
       )}

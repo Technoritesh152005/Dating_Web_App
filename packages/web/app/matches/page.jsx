@@ -43,44 +43,58 @@ function MatchesPageContent() {
         <main className="flex min-h-screen flex-col items-center bg-ink px-6 pb-10 pt-6">
             <NavBar />
 
-            <div className="mt-8 w-full max-w-sm">
+            <div className="mt-8 w-full max-w-7xl">
                 {matches.length === 0 ? (
                     <div className="mt-16 text-center">
                         <p className="font-display text-xl text-cream">No matches yet</p>
                         <p className="mt-2 text-[14px] text-cream-dim">Keep swiping — they're out there.</p>
                     </div>
                 ) : (
-                    <ul className="flex flex-col gap-2">
+                    <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                         {matches.map((m) => {
                             const photo = m.otherUser?.photos?.[0];
                             return (
-                                <li key={m.matchId}>
-                                    <Link
-                                        href={`/chat/${m.matchId}`}
-                                        className="flex items-center gap-4 rounded-2xl border border-cream/8 bg-dusk p-3 transition-colors hover:border-marigold/40"
-                                    >
-                                        <div className="h-14 w-14 flex-shrink-0 overflow-hidden rounded-full bg-dusk-light">
-                                            {photo ? (
-                                                // eslint-disable-next-line @next/next/no-img-element
-                                                <img src={photo.url} alt={m.otherUser.displayName} className="h-full w-full object-cover" />
-                                            ) : (
-                                                <div className="flex h-full w-full items-center justify-center font-display text-lg text-cream-dim">
-                                                    {m.otherUser?.displayName?.[0] ?? '?'}
-                                                </div>
-                                            )}
-                                        </div>
-                                        <div className="min-w-0 flex-1">
-                                            <p className="font-display text-[16px] text-cream">{m.otherUser?.displayName ?? 'Someone'}</p>
-                                            <p className="truncate text-[13px] text-cream-dim">
-                                                {m.icebreakerSuggestion ? m.icebreakerSuggestion : 'Say hello'}
+                                <Link
+                                    key={m.matchId}
+                                    href={`/chat/${m.matchId}`}
+                                    className="group relative rounded-2xl border border-plum-border/60 bg-plum-night/50 overflow-hidden transition hover:border-saffron/40 hover:shadow-lg hover:shadow-saffron/20"
+                                >
+                                    {/* Photo Section */}
+                                    <div className="relative aspect-square w-full overflow-hidden bg-plum-dark">
+                                        {photo ? (
+                                            // eslint-disable-next-line @next/next/no-img-element
+                                            <img
+                                                src={photo.url}
+                                                alt={m.otherUser?.displayName}
+                                                className="h-full w-full object-cover transition group-hover:scale-105"
+                                            />
+                                        ) : (
+                                            <div className="flex h-full w-full items-center justify-center font-display text-4xl text-pearl-dim">
+                                                {m.otherUser?.displayName?.[0] ?? '?'}
+                                            </div>
+                                        )}
+                                        {/* Gradient Overlay */}
+                                        <div className="absolute inset-0 bg-gradient-to-t from-plum-night via-transparent to-transparent" />
+                                    </div>
+
+                                    {/* Info Section */}
+                                    <div className="p-3 space-y-2">
+                                        <div>
+                                            <p className="font-sans font-bold text-sm text-cream truncate">
+                                                {m.otherUser?.displayName ?? 'Someone'}
+                                            </p>
+                                            <p className="font-mono text-[11px] text-cream-dim">
+                                                {timeAgo(m.matchedAt)}
                                             </p>
                                         </div>
-                                        <span className="flex-shrink-0 font-mono text-[11px] text-cream-dim">{timeAgo(m.matchedAt)}</span>
-                                    </Link>
-                                </li>
+                                        <p className="font-mono text-[12px] text-cream-dim line-clamp-2 h-8">
+                                            {m.icebreakerSuggestion ? m.icebreakerSuggestion : '💬 Say hello'}
+                                        </p>
+                                    </div>
+                                </Link>
                             );
                         })}
-                    </ul>
+                    </div>
                 )}
             </div>
         </main>
