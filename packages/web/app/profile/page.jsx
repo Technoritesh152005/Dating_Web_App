@@ -53,6 +53,7 @@ export default function ProfileSettingPage() {
     const [error, setError] = useState(null)
     const [confirmLogout, setConfirmLogout] = useState(false)
     const [confirmDelete, setConfirmDelete] = useState(false)
+    const [confirmPrimaryPhotoId, setConfirmPrimaryPhotoId] = useState(null)
     const [deleting, setDeleting] = useState(false)
     const [activePhoto, setActivePhoto] = useState(0)
     const [activeSection, setActiveSection] = useState('profile')
@@ -279,221 +280,256 @@ export default function ProfileSettingPage() {
 
                     {/* SECTION 1: PROFILE STUDIO */}
                     {activeSection === 'profile' && profile && form && (
-                        <div className="grid gap-8 lg:grid-cols-[minmax(0,1.1fr)_minmax(380px,0.9fr)]">
-                            {/* Left Side: 70% Screen Height Hero Primary Photo Card */}
-                            <section className="relative h-[70vh] min-h-[580px] w-full overflow-hidden rounded-[32px] border border-plum-border bg-plum-surface shadow-2xl">
-                                {displayedPhoto ? (
-                                    // eslint-disable-next-line @next/next/no-img-element
-                                    <img
-                                        src={displayedPhoto.url}
-                                        alt={profile.displayName}
-                                        className="h-full w-full object-cover transition duration-500"
-                                    />
-                                ) : (
-                                    <div className="flex h-full items-center justify-center bg-plum-night font-display text-8xl text-pearl-dim">
-                                        {profile.displayName?.[0]}
-                                    </div>
-                                )}
-
-                                {/* Top Photo Story Bar */}
-                                {profile.photos?.length > 1 && (
-                                    <div className="absolute inset-x-5 top-5 z-20 flex gap-1.5">
-                                        {profile.photos.map((photo, index) => (
-                                            <button
-                                                key={photo.id ?? photo.key}
-                                                type="button"
-                                                onClick={() => setActivePhoto(index)}
-                                                className={`h-1 flex-1 rounded-full transition-all ${
-                                                    index === activePhoto ? 'bg-pearl shadow-[0_0_8px_rgba(255,255,255,0.8)]' : 'bg-pearl/30'
-                                                }`}
-                                            />
-                                        ))}
-                                    </div>
-                                )}
-
-                                <div className="absolute inset-0 bg-gradient-to-t from-plum-night via-plum-night/60 to-transparent pointer-events-none" />
-
-                                {/* Bottom Info Overlay */}
-                                <div className="absolute inset-x-0 bottom-0 p-8 sm:p-10 space-y-3 z-10">
-                                    <div className="flex items-center gap-2">
-                                        <h1 className="font-sans text-5xl font-extrabold text-pearl tracking-tight">
-                                            {profile.displayName}
-                                        </h1>
-                                        {profile.verificationStatus === 'VERIFIED' && (
-                                            <VerifiedIcon className="h-7 w-7 text-saffron" />
-                                        )}
-                                    </div>
-
-                                    {/* Username Read-Only Badge */}
-                                    <div className="flex items-center gap-2">
-                                        <span className="inline-flex items-center gap-0.5 font-mono text-xs font-bold tracking-wide text-saffron bg-plum-night/90 border border-saffron/40 px-3.5 py-1 rounded-full shadow-[0_0_12px_rgba(240,162,2,0.25)]">
-                                            <span className="text-gold/60 font-semibold">@</span>
-                                            <span>{profile.username}</span>
-                                        </span>
-                                        {profile.verificationStatus === 'REVERIFICATION_REQUIRED' && (
-                                            <span className="font-mono text-[10px] font-bold text-sindoor-light bg-sindoor/20 border border-sindoor/40 px-2.5 py-1 rounded-full">
-                                                Re-verification Required
-                                            </span>
-                                        )}
-                                    </div>
-
-                                    <p className="text-sm leading-relaxed text-pearl-dim max-w-md font-sans">
-                                        {form.bio || 'No bio written yet. Add a short bio to introduce yourself!'}
-                                    </p>
-
-                                    {profile.voiceBioUrl && (
-                                        <div className="mt-2 flex items-center gap-3 rounded-2xl border border-gold/30 bg-plum-night/90 p-3 backdrop-blur-md max-w-sm">
-                                            <span className="font-mono text-xs font-bold text-gold uppercase shrink-0">Voice Intro</span>
-                                            <audio controls src={profile.voiceBioUrl} className="h-7 flex-1" />
+                        <div className="space-y-8">
+                            {/* Top Grid: Hero Photo Card (Left) and Form Cards (Right) */}
+                            <div className="grid gap-8 lg:grid-cols-[minmax(0,1.1fr)_minmax(380px,0.9fr)] items-start">
+                                {/* Left Side: Hero Primary Photo Card */}
+                                <section className="relative h-[620px] w-full overflow-hidden rounded-[32px] border border-plum-border bg-plum-surface shadow-2xl sticky top-6">
+                                    {displayedPhoto ? (
+                                        // eslint-disable-next-line @next/next/no-img-element
+                                        <img
+                                            src={displayedPhoto.url}
+                                            alt={profile.displayName}
+                                            className="h-full w-full object-cover transition duration-500"
+                                        />
+                                    ) : (
+                                        <div className="flex h-full items-center justify-center bg-plum-night font-display text-8xl text-pearl-dim">
+                                            {profile.displayName?.[0]}
                                         </div>
                                     )}
-                                </div>
-                            </section>
 
-                            {/* Right Side: Profile Studio Form Controls */}
-                            <section className="space-y-6">
-                                {/* Organized Profile Metadata Card */}
-                                <div className="rounded-3xl border border-plum-border bg-plum-surface p-6 space-y-3 shadow-xl">
-                                    <div className="flex items-center justify-between">
-                                        <div className="flex items-center gap-2 text-saffron">
-                                            <SparklesIcon className="h-4 w-4" />
-                                            <span className="font-mono text-xs font-bold uppercase tracking-wider">Account Identity</span>
-                                        </div>
-                                        <span className="font-mono text-[10px] text-pearl-dim">Joined {joinedDate}</span>
-                                    </div>
-                                    <div className="grid grid-cols-2 gap-3 pt-2 text-xs font-mono">
-                                        <div className="rounded-2xl border border-plum-border/60 bg-plum-night/60 p-3">
-                                            <p className="text-pearl-dim uppercase text-[10px]">Verification</p>
-                                            <p className="font-bold text-pearl mt-0.5">{profile.verificationStatus}</p>
-                                        </div>
-                                        <div className="rounded-2xl border border-plum-border/60 bg-plum-night/60 p-3">
-                                            <p className="text-pearl-dim uppercase text-[10px]">Photos Count</p>
-                                            <p className="font-bold text-pearl mt-0.5">{profile.photos?.length ?? 0} / 6 Uploaded</p>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Photo Gallery Upload & Management */}
-                                <div className="rounded-3xl border border-plum-border bg-plum-surface p-6 shadow-xl space-y-4">
-                                    <div className="flex items-center justify-between">
-                                        <div>
-                                            <p className="font-mono text-xs font-bold uppercase tracking-wider text-pearl">Photo Gallery</p>
-                                            <p className="text-xs text-pearl-dim">Upload up to 6 photos. Changing primary photo sends you for re-verification.</p>
-                                        </div>
-                                        {(profile.photos?.length ?? 0) < 6 && (
-                                            <label className="cursor-pointer rounded-xl bg-saffron-gradient px-4 py-2 font-mono text-xs font-bold text-pearl shadow-saffron-glow transition hover:scale-105">
-                                                + Upload Photo
-                                                <input
-                                                    type="file"
-                                                    accept="image/*"
-                                                    multiple
-                                                    className="hidden"
-                                                    onChange={(e) => addPhotos(e.target.files)}
-                                                />
-                                            </label>
-                                        )}
-                                    </div>
-
-                                    <div className="grid grid-cols-3 gap-3">
-                                        {profile.photos?.map((photo, index) => (
-                                            <div
-                                                key={photo.id ?? photo.key}
-                                                className={`group relative aspect-square overflow-hidden rounded-2xl border border-plum-border bg-plum-night ${
-                                                    photo.isPrimary ? 'ring-2 ring-saffron ring-offset-2 ring-offset-plum-surface' : ''
-                                                }`}
-                                            >
+                                    {/* Top Photo Story Bar */}
+                                    {profile.photos?.length > 1 && (
+                                        <div className="absolute inset-x-5 top-5 z-20 flex gap-1.5">
+                                            {profile.photos.map((photo, index) => (
                                                 <button
+                                                    key={photo.id ?? photo.key}
                                                     type="button"
                                                     onClick={() => setActivePhoto(index)}
-                                                    className="h-full w-full"
-                                                >
-                                                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                                                    <img
-                                                        src={photo.url}
-                                                        alt={`${profile.displayName} photo ${index + 1}`}
-                                                        className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
-                                                    />
-                                                </button>
-                                                {photo.id && (
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => deletePhoto(photo.id)}
-                                                        aria-label="Delete photo"
-                                                        className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-plum-night/80 text-xs font-bold text-sindoor-light opacity-0 transition group-hover:opacity-100"
-                                                    >
-                                                        ✕
-                                                    </button>
-                                                )}
-                                                {photo.id && !photo.isPrimary && (
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => setPrimary(photo.id)}
-                                                        className="absolute inset-x-1 bottom-1 rounded-xl bg-plum-night/90 py-1 font-mono text-[10px] font-bold uppercase text-saffron opacity-0 transition group-hover:opacity-100"
-                                                    >
-                                                        Make Primary
-                                                    </button>
-                                                )}
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-
-                                {/* About You & Bio */}
-                                <div className="rounded-3xl border border-plum-border bg-plum-surface p-6 shadow-xl space-y-4">
-                                    <p className="font-mono text-xs font-bold uppercase tracking-wider text-pearl">About You</p>
-                                    <div className="space-y-2">
-                                        <label className="font-mono text-xs text-pearl-dim">Bio</label>
-                                        <textarea
-                                            rows={4}
-                                            value={form.bio}
-                                            onChange={(e) => setForm((f) => ({ ...f, bio: e.target.value }))}
-                                            placeholder="Write something memorable about yourself..."
-                                            className="w-full resize-none rounded-2xl border border-plum-border bg-plum-night/60 px-4 py-3 text-sm text-pearl outline-none transition placeholder:text-pearl-dim focus:border-saffron"
-                                        />
-                                    </div>
-                                </div>
-
-                                {/* Voice Bio Recorder */}
-                                <div className="rounded-3xl border border-plum-border bg-plum-surface p-6 shadow-xl space-y-3">
-                                    <VoiceBioRecorder value={voiceBioFile ?? profile.voiceBioUrl} onChange={setVoiceBioFile} />
-                                    {(profile.voiceBioUrl || voiceBioFile) && (
-                                        <button
-                                            type="button"
-                                            onClick={removeVoiceBio}
-                                            className="font-mono text-xs text-sindoor-light hover:underline"
-                                        >
-                                            Remove Voice Introduction
-                                        </button>
+                                                    className={`h-1 flex-1 rounded-full transition-all ${
+                                                        index === activePhoto ? 'bg-pearl shadow-[0_0_8px_rgba(255,255,255,0.8)]' : 'bg-pearl/30'
+                                                    }`}
+                                                />
+                                            ))}
+                                        </div>
                                     )}
-                                </div>
 
-                                {/* Interests & Profession */}
-                                <div className="rounded-3xl border border-plum-border bg-plum-surface p-6 shadow-xl space-y-5">
+                                    <div className="absolute inset-0 bg-gradient-to-t from-plum-night via-plum-night/60 to-transparent pointer-events-none" />
+
+                                    {/* Bottom Info Overlay */}
+                                    <div className="absolute inset-x-0 bottom-0 p-8 sm:p-10 space-y-3 z-10">
+                                        <div className="flex items-center gap-2">
+                                            <h1 className="font-sans text-4xl sm:text-5xl font-extrabold text-pearl tracking-tight">
+                                                {profile.displayName}
+                                            </h1>
+                                            {profile.verificationStatus === 'VERIFIED' && (
+                                                <VerifiedIcon className="h-7 w-7 text-saffron" />
+                                            )}
+                                        </div>
+
+                                        {/* Username Read-Only Badge */}
+                                        <div className="flex items-center gap-2">
+                                            <span className="inline-flex items-center gap-0.5 font-mono text-xs font-bold tracking-wide text-saffron bg-plum-night/90 border border-saffron/40 px-3.5 py-1 rounded-full shadow-[0_0_12px_rgba(240,162,2,0.25)]">
+                                                <span className="text-gold/60 font-semibold">@</span>
+                                                <span>{profile.username}</span>
+                                            </span>
+                                            {profile.verificationStatus === 'REVERIFICATION_REQUIRED' && (
+                                                <span className="font-mono text-[10px] font-bold text-sindoor-light bg-sindoor/20 border border-sindoor/40 px-2.5 py-1 rounded-full">
+                                                    Re-verification Required
+                                                </span>
+                                            )}
+                                        </div>
+
+                                        <p className="text-sm leading-relaxed text-pearl-dim max-w-md font-sans">
+                                            {form.bio || 'No bio written yet. Add a short bio to introduce yourself!'}
+                                        </p>
+
+                                        {profile.voiceBioUrl && (
+                                            <div className="mt-2 flex items-center gap-3 rounded-2xl border border-gold/30 bg-plum-night/90 p-3 backdrop-blur-md max-w-sm">
+                                                <span className="font-mono text-xs font-bold text-gold uppercase shrink-0">Voice Intro</span>
+                                                <audio controls src={profile.voiceBioUrl} className="h-7 flex-1" />
+                                            </div>
+                                        )}
+                                    </div>
+                                </section>
+
+                                {/* Right Side: Identity, Photo Gallery, Bio & Voice Intro */}
+                                <section className="space-y-6">
+                                    {/* Account Identity Card */}
+                                    <div className="rounded-3xl border border-plum-border bg-plum-surface p-6 space-y-3 shadow-xl">
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-2 text-saffron">
+                                                <SparklesIcon className="h-4 w-4" />
+                                                <span className="font-mono text-xs font-bold uppercase tracking-wider">Account Identity</span>
+                                            </div>
+                                            <span className="font-mono text-[10px] text-pearl-dim">Joined {joinedDate}</span>
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-3 pt-2 text-xs font-mono">
+                                            <div className="rounded-2xl border border-plum-border/60 bg-plum-night/60 p-3">
+                                                <p className="text-pearl-dim uppercase text-[10px]">Verification</p>
+                                                <p className="font-bold text-pearl mt-0.5">{profile.verificationStatus}</p>
+                                            </div>
+                                            <div className="rounded-2xl border border-plum-border/60 bg-plum-night/60 p-3">
+                                                <p className="text-pearl-dim uppercase text-[10px]">Photos Count</p>
+                                                <p className="font-bold text-pearl mt-0.5">{profile.photos?.length ?? 0} / 6 Uploaded</p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Photo Gallery Upload & Management */}
+                                    <div className="rounded-3xl border border-plum-border bg-plum-surface p-6 shadow-xl space-y-4">
+                                        <div className="flex items-center justify-between">
+                                            <div>
+                                                <p className="font-mono text-xs font-bold uppercase tracking-wider text-pearl">Photo Gallery</p>
+                                                <p className="text-xs text-pearl-dim">Upload up to 6 photos. Changing primary photo sends you for re-verification.</p>
+                                            </div>
+                                            {(profile.photos?.length ?? 0) < 6 && (
+                                                <label className="cursor-pointer rounded-xl bg-saffron-gradient px-4 py-2 font-mono text-xs font-bold text-pearl shadow-saffron-glow transition hover:scale-105">
+                                                    + Upload Photo
+                                                    <input
+                                                        type="file"
+                                                        accept="image/*"
+                                                        multiple
+                                                        className="hidden"
+                                                        onChange={(e) => addPhotos(e.target.files)}
+                                                    />
+                                                </label>
+                                            )}
+                                        </div>
+
+                                        <div className="grid grid-cols-3 gap-3">
+                                            {profile.photos?.map((photo, index) => (
+                                                <div
+                                                    key={photo.id ?? photo.key}
+                                                    className={`group relative aspect-square overflow-hidden rounded-2xl border border-plum-border bg-plum-night ${
+                                                        photo.isPrimary ? 'ring-2 ring-saffron ring-offset-2 ring-offset-plum-surface' : ''
+                                                    }`}
+                                                >
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setActivePhoto(index)}
+                                                        className="h-full w-full"
+                                                    >
+                                                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                                                        <img
+                                                            src={photo.url}
+                                                            alt={`${profile.displayName} photo ${index + 1}`}
+                                                            className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+                                                        />
+                                                    </button>
+                                                    {photo.id && (
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => deletePhoto(photo.id)}
+                                                            aria-label="Delete photo"
+                                                            className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-plum-night/80 text-xs font-bold text-sindoor-light opacity-0 transition group-hover:opacity-100"
+                                                        >
+                                                            ✕
+                                                        </button>
+                                                    )}
+                                                    {photo.id && !photo.isPrimary && (
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => setConfirmPrimaryPhotoId(photo.id)}
+                                                            className="absolute inset-x-1 bottom-1 rounded-xl bg-plum-night/90 py-1 font-mono text-[10px] font-bold uppercase text-saffron opacity-0 transition group-hover:opacity-100 shadow-md"
+                                                        >
+                                                            Make Primary
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    {/* About You & Bio */}
+                                    <div className="rounded-3xl border border-plum-border bg-plum-surface p-6 shadow-xl space-y-4">
+                                        <p className="font-mono text-xs font-bold uppercase tracking-wider text-pearl">About You</p>
+                                        <div className="space-y-2">
+                                            <label className="font-mono text-xs text-pearl-dim">Bio</label>
+                                            <textarea
+                                                rows={3}
+                                                value={form.bio}
+                                                onChange={(e) => setForm((f) => ({ ...f, bio: e.target.value }))}
+                                                placeholder="Write something memorable about yourself..."
+                                                className="w-full resize-none rounded-2xl border border-plum-border bg-plum-night/60 px-4 py-3 text-sm text-pearl outline-none transition placeholder:text-pearl-dim focus:border-saffron"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    {/* Voice Bio Recorder */}
+                                    <div className="rounded-3xl border border-plum-border bg-plum-surface p-6 shadow-xl space-y-3">
+                                        <VoiceBioRecorder value={voiceBioFile ?? profile.voiceBioUrl} onChange={setVoiceBioFile} />
+                                        {(profile.voiceBioUrl || voiceBioFile) && (
+                                            <button
+                                                type="button"
+                                                onClick={removeVoiceBio}
+                                                className="font-mono text-xs text-sindoor-light hover:underline"
+                                            >
+                                                Remove Voice Introduction
+                                            </button>
+                                        )}
+                                    </div>
+                                </section>
+                            </div>
+
+                            {/* Bottom Horizontal Section: Interests & Signals + Profession / Vocation occupying equal space horizontally under image */}
+                            <div className="rounded-3xl border border-plum-border/80 bg-plum-surface p-6 sm:p-8 shadow-2xl space-y-6">
+                                <div className="flex items-center justify-between border-b border-plum-border/50 pb-4">
                                     <div>
-                                        <p className="font-mono text-xs font-bold uppercase tracking-wider text-pearl mb-3">Interests & Signals</p>
-                                        <ChoicePills
-                                            options={INTEREST_OPTIONS}
-                                            value={form.interests}
-                                            onChange={(v) => setForm((f) => ({ ...f, interests: v }))}
-                                            multiple
-                                        />
+                                        <h3 className="font-display text-2xl font-bold text-pearl">Interests & Vocation</h3>
+                                        <p className="text-xs text-pearl-dim mt-0.5">Select signals and interests to help match with like-minded profiles.</p>
                                     </div>
-                                    <div className="pt-4 border-t border-plum-border/50">
-                                        <p className="font-mono text-xs font-bold uppercase tracking-wider text-pearl mb-3">Profession / Vocation</p>
-                                        <ChoicePills
-                                            options={PROFESSION_OPTIONS}
-                                            value={form.profession}
-                                            onChange={(v) => setForm((f) => ({ ...f, profession: v }))}
-                                        />
-                                    </div>
+                                    <span className="font-mono text-xs font-bold uppercase tracking-wider text-saffron bg-saffron/10 border border-saffron/30 px-3 py-1 rounded-full">
+                                        {form.interests.length} Selected
+                                    </span>
                                 </div>
 
-                                {error && <p className="text-sm text-sindoor-light font-mono">{error}</p>}
+                                <div className="grid gap-8 md:grid-cols-2">
+                                    {/* Left Side: Interests & Signals */}
+                                    <div className="space-y-4">
+                                        <p className="font-mono text-xs font-bold uppercase tracking-wider text-saffron flex items-center gap-2">
+                                            <SparklesIcon className="h-4 w-4" />
+                                            <span>Interests & Signals</span>
+                                        </p>
+                                        <div className="max-h-72 overflow-y-auto pr-2">
+                                            <ChoicePills
+                                                options={INTEREST_OPTIONS}
+                                                value={form.interests}
+                                                onChange={(v) => setForm((f) => ({ ...f, interests: v }))}
+                                                multiple
+                                            />
+                                        </div>
+                                    </div>
 
-                                <Button variant="primary" onClick={saveProfile} disabled={saving} className="w-full">
-                                    {saving ? 'Saving Profile…' : saved ? 'Profile Saved!' : 'Save Profile Changes'}
+                                    {/* Right Side: Profession / Vocation */}
+                                    <div className="space-y-4 md:border-l md:border-plum-border/50 md:pl-8">
+                                        <p className="font-mono text-xs font-bold uppercase tracking-wider text-gold flex items-center gap-2">
+                                            <span className="text-sm">✦</span>
+                                            <span>Profession / Vocation</span>
+                                        </p>
+                                        <div>
+                                            <ChoicePills
+                                                options={PROFESSION_OPTIONS}
+                                                value={form.profession}
+                                                onChange={(v) => setForm((f) => ({ ...f, profession: v }))}
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Save Profile Changes Action Button Bar */}
+                            <div className="flex flex-col items-center gap-3 pt-2">
+                                {error && <p className="text-sm text-sindoor-light font-mono text-center">{error}</p>}
+                                <Button
+                                    variant="primary"
+                                    onClick={saveProfile}
+                                    disabled={saving}
+                                    className="w-full max-w-xl py-4 text-base font-bold shadow-saffron-glow transition-all hover:scale-[1.02] active:scale-[0.98] rounded-2xl"
+                                >
+                                    {saving ? 'Saving Profile…' : saved ? '✓ Profile Saved Successfully!' : 'Save Profile Changes'}
                                 </Button>
-                            </section>
+                            </div>
                         </div>
                     )}
 
@@ -569,6 +605,19 @@ export default function ProfileSettingPage() {
             </main>
 
             {/* Modals */}
+            <ConfirmModal
+                open={!!confirmPrimaryPhotoId}
+                title="Change Primary Photo?"
+                description="Changing your primary photo will require your profile to undergo re-verification. Are you sure you want to proceed?"
+                confirmLabel="Confirm & Re-verify"
+                danger={false}
+                onConfirm={() => {
+                    const idToSet = confirmPrimaryPhotoId;
+                    setConfirmPrimaryPhotoId(null);
+                    if (idToSet) setPrimary(idToSet);
+                }}
+                onCancel={() => setConfirmPrimaryPhotoId(null)}
+            />
             <ConfirmModal
                 open={confirmLogout}
                 title="Log out of your account?"

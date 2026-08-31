@@ -213,7 +213,7 @@ export function registerSwipesRoutes(app) {
             if(like.fromUser?.profile?.photos?.[0]){
                 //get their presinged url
                 like.fromUser.profile.photos[0].url = await generatePresignedReadUrl(
-                    like.fromUser.profile.photos.key,
+                    like.fromUser.profile.photos[0].key,
                 )
             }
         }
@@ -230,7 +230,10 @@ export function registerSwipesRoutes(app) {
                 id:like.id,
                 userId:like.fromUserId,
                 displayName:like.fromUser?.profile?.displayName,
+                bio:like.fromUser?.profile?.bio || '',
                 photoUrl:like.fromUser?.profile?.photos?.[0].url,
+                profession:like.fromUser?.profile?.profession,
+                verificationStatus:like.fromUser?.profile?.verificationStatus,
                 likedAt:like.createdAt
             })),
             totalCount,
