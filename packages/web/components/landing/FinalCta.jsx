@@ -5,37 +5,36 @@ import { ScrollReveal } from '@/components/ScrollReveal';
 
 export function FinalCta() {
   return (
-    <section className="relative px-6 py-28 sm:px-10 overflow-hidden">
-      {/* Background Radial Sunset Glow */}
-      <div className="absolute inset-0 -z-10 flex items-center justify-center">
-        <div className="h-[40rem] w-[40rem] rounded-full bg-saffron/20 blur-[150px] animate-pulse-glow" />
-      </div>
-
-      <div className="mx-auto max-w-5xl">
+    <section className="border-t border-sand bg-oat/55 px-6 py-24 sm:px-10 sm:py-28">
+      <div className="mx-auto max-w-4xl">
         <ScrollReveal>
-          <div className="relative overflow-hidden rounded-[2.5rem] border border-saffron/40 bg-gradient-to-b from-plum-surface/90 to-plum-night/95 p-10 text-center shadow-2xl backdrop-blur-2xl sm:p-16">
-            <span className="inline-flex items-center gap-2 rounded-full border border-gold/40 bg-gold/10 px-4 py-1.5 font-mono text-xs font-bold text-gold">
-              Verified Profiles & Authentic Connections
-            </span>
-
-            <h2 className="mt-6 font-display text-3xl font-bold text-pearl sm:text-5xl lg:text-6xl leading-tight">
-              Ready to meet someone worth the <br className="hidden sm:inline" />
-              <span className="bg-saffron-gradient bg-clip-text text-transparent italic font-normal">
-                late night chai break?
-              </span>
-            </h2>
-
-            <p className="mx-auto mt-4 max-w-lg text-base text-pearl-dim sm:text-lg">
-              Join verified singles finding real vibe chemistry every day.
+          <div className="rounded-[24px] border border-sand bg-paper px-8 py-14 text-center sm:px-14 sm:py-16">
+            <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-taupe">
+              Live on web · Google Play coming soon
             </p>
 
-            <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
+            <h2 className="mx-auto mt-5 max-w-2xl font-display text-3xl font-normal leading-[1.12] tracking-[-0.02em] text-espresso sm:text-5xl">
+              Ready to meet someone worth{' '}
+              <span className="italic text-rosewood">showing up for?</span>
+            </h2>
+
+            <p className="mx-auto mt-4 max-w-md text-sm leading-relaxed text-taupe sm:text-base">
+              Create your verified profile in a couple of minutes and start meeting people at your own pace.
+            </p>
+
+            <div className="mt-9 flex flex-wrap items-center justify-center gap-4">
               <Link
                 href="/signup"
-                className="group relative flex w-full items-center justify-center gap-3 overflow-hidden rounded-2xl bg-saffron-gradient px-9 py-4 font-display text-base font-bold text-pearl shadow-saffron-glow transition-all duration-300 hover:scale-105 active:scale-95 sm:w-auto"
+                className="inline-flex items-center gap-2.5 rounded-full bg-espresso px-8 py-3.5 text-sm font-medium text-linen transition-colors duration-200 hover:bg-rosewood"
               >
-                <span>Create Your Free Profile</span>
-                <span className="text-xl transition-transform group-hover:translate-x-1">→</span>
+                <span>Create free profile</span>
+                <span aria-hidden="true">→</span>
+              </Link>
+              <Link
+                href="/login"
+                className="inline-flex items-center rounded-full border border-sand bg-linen px-7 py-3.5 text-sm font-medium text-espresso transition-colors duration-200 hover:border-espresso/40"
+              >
+                Log in
               </Link>
             </div>
           </div>

@@ -1,238 +1,189 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { HeartIcon, SuperLikeIcon, PassIcon, ShieldIcon, CheckIcon, SparklesIcon } from '@/components/user_interface/Icons';
 
-const HERO_PROFILES = [
+// Images served from packages/web/public/first/
+// Add or replace images inside public/first/ and update this list anytime.
+const HERO_IMAGES = [
   {
-    id: 1,
-    name: 'Aanya',
-    age: 24,
-    city: 'South Delhi',
-    profession: 'Architect',
-    image: '/profile-1.jpg',
-    tags: ['Filter Coffee', 'Indie Music', 'Late Night Drives'],
-    bio: 'Looking for someone who appreciates authentic conversations and good music.',
-    matchVibe: '98% Vibe Match',
+    src: '/first/images (1).jpg',
+    alt: 'Couple laughing together while cooking in the kitchen',
+    caption: 'Unscripted Sunday mornings',
   },
   {
-    id: 2,
-    name: 'Rohan',
-    age: 26,
-    city: 'Bengaluru',
-    profession: 'Tech Founder',
-    image: '/profile-2.jpg',
-    tags: ['Food Connoisseur', 'Stand-up Comedy', 'Trekking'],
-    bio: 'Can debate North vs South food for hours. Coffee on me?',
-    matchVibe: '95% Vibe Match',
+    src: '/first/images (3).jpg',
+    alt: 'Couple smiling outdoors in warm daylight',
+    caption: 'Easy laughs, zero small talk',
   },
   {
-    id: 3,
-    name: 'Priya',
-    age: 25,
-    city: 'Mumbai',
-    profession: 'UX Designer',
-    image: '/profile-3.jpg',
-    tags: ['Kathak Dancer', 'Sunset Walks', 'Chai Conversations'],
-    bio: 'Design enthusiast by day, live performance fan by night.',
-    matchVibe: '99% Vibe Match',
-  },
-  {
-    id: 4,
-    name: 'Kabir',
-    age: 27,
-    city: 'Gurgaon',
-    profession: 'Product Lead',
-    image: '/profile-4.jpg',
-    tags: ['Himachal Trips', 'Pet Lover', 'Vinyl Collector'],
-    bio: 'Always down for live gigs and finding hidden culinary spots.',
-    matchVibe: '94% Vibe Match',
+    src: '/first/today.jpg',
+    alt: 'Couple enjoying sunset by the sea',
+    caption: 'Moments worth showing up for',
   },
 ];
 
+const SLIDE_INTERVAL_MS = 3000;
+
+function GooglePlayLogo({ className = 'h-6 w-6' }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" aria-hidden="true">
+      <path
+        fill="#4285F4"
+        d="M3.61 1.814L13.793 12 3.61 22.186a1.76 1.76 0 0 1-.61-1.34V3.154c0-.52.226-.994.61-1.34z"
+      />
+      <path
+        fill="#34A853"
+        d="M17.114 8.678L13.793 12l3.321 3.322 3.748-2.13c.72-.41.72-1.974 0-2.384l-3.748-2.13z"
+      />
+      <path
+        fill="#FBBC05"
+        d="M17.114 15.322L13.793 12 3.61 22.186c.385.344.93.45 1.462.148l12.042-6.812v-.2z"
+      />
+      <path
+        fill="#EA4335"
+        d="M3.61 1.814L13.793 12l3.321-3.322L5.072 1.666c-.532-.302-1.077-.196-1.462.148z"
+      />
+    </svg>
+  );
+}
+
 export function Hero() {
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [swipeState, setSwipeState] = useState(null);
-  const [showMatchToast, setShowMatchToast] = useState(false);
+  const [activeIndex, setActiveIndex] = useState(0);
 
-  const activeProfile = HERO_PROFILES[currentIndex];
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setActiveIndex((prev) => (prev + 1) % HERO_IMAGES.length);
+    }, SLIDE_INTERVAL_MS);
 
-  const handleAction = (type) => {
-    setSwipeState(type);
-    if (type === 'like' || type === 'super') {
-      setShowMatchToast(true);
-      setTimeout(() => setShowMatchToast(false), 3000);
-    }
-    setTimeout(() => {
-      setSwipeState(null);
-      setCurrentIndex((prev) => (prev + 1) % HERO_PROFILES.length);
-    }, 400);
-  };
+    return () => clearInterval(timer);
+  }, []);
+
+  const currentSlide = HERO_IMAGES[activeIndex];
 
   return (
-    <section className="relative min-h-[92vh] overflow-hidden px-6 pt-32 pb-20 sm:px-10 lg:pt-36">
-      {/* Background Glows */}
-      <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
-        <div className="absolute -left-32 top-20 h-[32rem] w-[32rem] rounded-full bg-saffron/20 blur-[130px] animate-pulse-glow" />
-        <div
-          className="absolute -right-32 top-40 h-[36rem] w-[36rem] rounded-full bg-plum/40 blur-[140px] animate-float-slow"
-          style={{ animationDelay: '2s' }}
-        />
-        <div
-          className="absolute left-1/3 bottom-10 h-80 w-80 rounded-full bg-gold/15 blur-[120px] animate-pulse-glow"
-          style={{ animationDelay: '4s' }}
-        />
-      </div>
+    <section className="relative flex min-h-screen items-center bg-linen px-6 pt-24 pb-14 sm:px-10 lg:pt-24 lg:pb-12">
+      <div className="mx-auto w-full max-w-6xl">
+        <div className="grid items-center gap-12 lg:grid-cols-12 lg:gap-14">
+          {/* Left Column: Core Headline, Actions & Play Store Coming Soon */}
+          <div className="lg:col-span-6">
+            <p className="font-sans text-xs font-medium uppercase tracking-[0.22em] text-taupe">
+              Thoughtful dating, built for real life
+            </p>
 
-      <div className="mx-auto max-w-7xl">
-        <div className="grid items-center gap-12 lg:grid-cols-12 lg:gap-8">
-          {/* Left Column */}
-          <div className="text-center lg:col-span-7 lg:text-left">
-            <h1 className="font-display text-4xl leading-[1.08] font-bold text-pearl sm:text-6xl lg:text-6xl">
-              Connect on Compatibility.{' '}
-              <span className="bg-saffron-gradient bg-clip-text text-transparent font-semibold">
-                Date with Complete Confidence.
+            <h1 className="mt-5 font-display text-5xl font-normal leading-[1.05] tracking-[-0.025em] text-espresso sm:text-6xl lg:text-[4.25rem]">
+              One swipe,{' '}
+              <span className="block italic text-rosewood">
+                a thousand possibilities.
               </span>
             </h1>
 
-            <p className="mt-6 max-w-xl text-lg leading-relaxed text-pearl-dim sm:text-xl">
-              AI-powered identity verification, automated icebreakers, and real-time live location security engineered for authentic relationships.
+            <p className="mt-6 max-w-md text-base leading-relaxed text-taupe sm:text-lg">
+              Meet people who are verified by selfie, start conversations that feel natural, and head out with private date safety built right in.
             </p>
 
-            <div className="mt-10 flex flex-col items-center gap-4 sm:flex-row lg:justify-start">
+            {/* Primary Actions */}
+            <div className="mt-9 flex flex-wrap items-center gap-4">
               <Link
                 href="/signup"
-                className="group relative flex w-full items-center justify-center gap-3 overflow-hidden rounded-2xl bg-saffron-gradient px-8 py-4 text-base font-semibold text-pearl shadow-saffron-glow transition-all duration-300 hover:scale-[1.02] active:scale-98 sm:w-auto"
+                className="inline-flex items-center gap-2.5 rounded-full bg-espresso px-7 py-3.5 text-sm font-medium text-linen transition-colors duration-200 hover:bg-rosewood"
               >
-                <span>Create Free Account</span>
-                <svg className="h-5 w-5 transition-transform duration-300 group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                </svg>
+                <span>Create your profile</span>
+                <span aria-hidden="true" className="text-base leading-none">
+                  →
+                </span>
               </Link>
 
               <Link
                 href="/login"
-                className="flex w-full items-center justify-center rounded-2xl border border-plum-border bg-plum-surface/40 px-7 py-4 font-mono text-xs uppercase tracking-wider text-pearl-dim backdrop-blur-md transition-all duration-300 hover:border-saffron/50 hover:text-pearl sm:w-auto"
+                className="inline-flex items-center rounded-full border border-sand bg-paper px-6 py-3.5 text-sm font-medium text-espresso transition-colors duration-200 hover:border-espresso/40"
               >
-                Log in
+                Sign in
               </Link>
             </div>
 
-            {/* Social Proof */}
-            <div className="mt-12 flex flex-wrap items-center justify-center gap-6 text-xs text-pearl-dim lg:justify-start font-sans font-medium">
-              <div className="flex items-center gap-2 rounded-full border border-plum-border/60 bg-plum-surface/50 px-3.5 py-1.5 backdrop-blur-md">
-                <ShieldIcon className="h-4 w-4 text-saffron" />
-                <span>Selfie Verified Profiles</span>
-              </div>
-              <div className="flex items-center gap-2 rounded-full border border-plum-border/60 bg-plum-surface/50 px-3.5 py-1.5 backdrop-blur-md">
-                <SparklesIcon className="h-4 w-4 text-gold" />
-                <span>AI Icebreaker Suggestions</span>
-              </div>
-              <div className="flex items-center gap-2 rounded-full border border-plum-border/60 bg-plum-surface/50 px-3.5 py-1.5 backdrop-blur-md">
-                <ShieldIcon className="h-4 w-4 text-saffron" />
-                <span>Live Location Date Safety</span>
+            {/* Coming soon on Google Play Store */}
+            <div className="mt-10 border-t border-sand pt-7">
+              <div className="inline-flex items-center gap-3.5 rounded-2xl border border-sand bg-paper px-4 py-2.5 shadow-[0_1px_2px_rgba(24,20,18,0.04)]">
+                <GooglePlayLogo className="h-6 w-6 shrink-0" />
+                <div className="leading-tight">
+                  <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-taupe">
+                    Coming soon on
+                  </p>
+                  <p className="text-sm font-semibold tracking-tight text-espresso">
+                    Google Play
+                  </p>
+                </div>
+                <span className="ml-2 rounded-full bg-oat px-2.5 py-0.5 font-mono text-[10px] font-medium uppercase tracking-wider text-taupe">
+                  Android
+                </span>
               </div>
             </div>
           </div>
 
-          {/* Right Column - Card Stack */}
-          <div className="relative flex justify-center lg:col-span-5">
-            {/* Match Toast */}
-            {showMatchToast && (
-              <div className="absolute -top-12 z-30 flex items-center gap-3 rounded-2xl border border-gold/40 bg-plum-surface/95 px-5 py-3 shadow-gold-glow backdrop-blur-xl animate-heart-pop">
-                <HeartIcon className="h-6 w-6 text-saffron" fill="currentColor" />
-                <div>
-                  <p className="font-display text-sm font-bold text-gold">Mutual Vibe Match</p>
-                  <p className="text-xs text-pearl-dim">AI Icebreaker generated for conversation start.</p>
-                </div>
+          {/* Right Column: Smooth 3-Second Rotating Photo Showcase */}
+          <div className="lg:col-span-6">
+            <div className="mx-auto w-full max-w-[440px] lg:ml-auto lg:mr-0">
+              <div className="relative aspect-[4/5] w-full overflow-hidden rounded-[24px] border border-sand bg-oat">
+                {HERO_IMAGES.map((item, idx) => {
+                  const isActive = idx === activeIndex;
+                  return (
+                    <div
+                      key={item.src}
+                      aria-hidden={!isActive}
+                      className={`absolute inset-0 transition-all duration-1000 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+                        isActive
+                          ? 'z-10 opacity-100 scale-100'
+                          : 'z-0 opacity-0 scale-[1.05] pointer-events-none'
+                      }`}
+                    >
+                      <Image
+                        src={item.src}
+                        alt={item.alt}
+                        fill
+                        sizes="(max-width: 1024px) 100vw, 440px"
+                        priority={idx === 0}
+                        className="object-cover"
+                      />
+                    </div>
+                  );
+                })}
               </div>
-            )}
 
-            <div className="relative w-full max-w-xs sm:max-w-sm">
-              <div className="absolute inset-0 translate-x-3 translate-y-3 rounded-[2rem] bg-plum-dark/60 border border-plum-border/50 backdrop-blur-md" />
+              {/* Minimalist Caption & 3-second Progress Controls */}
+              <div className="mt-4 flex items-center justify-between gap-4 px-1">
+                <p className="text-xs text-taupe transition-opacity duration-500">
+                  <span className="font-mono text-espresso">
+                    0{activeIndex + 1}
+                  </span>
+                  <span className="mx-2 text-sand">/</span>
+                  <span>{currentSlide.caption}</span>
+                </p>
 
-              <div
-                className={`relative overflow-hidden rounded-[2rem] border border-plum-border bg-plum-surface shadow-2xl transition-all duration-300 ${
-                  swipeState === 'like'
-                    ? 'translate-x-12 rotate-6 opacity-0'
-                    : swipeState === 'pass'
-                    ? '-translate-x-12 -rotate-6 opacity-0'
-                    : swipeState === 'super'
-                    ? '-translate-y-12 scale-105 opacity-0'
-                    : 'translate-x-0 rotate-0 opacity-100'
-                }`}
-              >
-                <div className="relative h-96 w-full overflow-hidden">
-                  <Image
-                    src={activeProfile.image}
-                    alt={activeProfile.name}
-                    fill
-                    className="object-cover transition-transform duration-500 hover:scale-105"
-                    priority
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-plum-night via-transparent to-transparent" />
-
-                  <div className="absolute top-4 left-4 flex items-center gap-1.5 rounded-full border border-mehendi/40 bg-plum-night/80 px-3 py-1 text-[11px] font-semibold text-mehendi-light backdrop-blur-md">
-                    <span className="h-2 w-2 rounded-full bg-mehendi" />
-                    Verified Selfie
-                  </div>
-
-                  <div className="absolute top-4 right-4 rounded-full border border-gold/40 bg-plum-night/80 px-3 py-1 font-mono text-[11px] font-bold text-gold backdrop-blur-md">
-                    {activeProfile.matchVibe}
-                  </div>
-
-                  <div className="absolute bottom-4 left-4 right-4">
-                    <h3 className="font-display text-2xl font-bold text-pearl">
-                      {activeProfile.name}, <span className="font-normal text-pearl-dim">{activeProfile.age}</span>
-                    </h3>
-                    <p className="text-xs font-mono text-gold mt-0.5">
-                      {activeProfile.profession} • {activeProfile.city}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="p-5">
-                  <p className="text-xs leading-relaxed italic text-pearl-dim">
-                    "{activeProfile.bio}"
-                  </p>
-
-                  <div className="mt-3 flex flex-wrap gap-1.5">
-                    {activeProfile.tags.map((tag) => (
-                      <span
-                        key={tag}
-                        className="rounded-full bg-plum-dark/80 px-2.5 py-1 font-mono text-[11px] text-pearl-dim border border-plum-border/60"
+                <div className="flex items-center gap-1.5" role="tablist" aria-label="Hero showcase slides">
+                  {HERO_IMAGES.map((item, idx) => {
+                    const isActive = idx === activeIndex;
+                    return (
+                      <button
+                        key={item.src}
+                        type="button"
+                        onClick={() => setActiveIndex(idx)}
+                        aria-label={`View photo ${idx + 1}`}
+                        aria-selected={isActive}
+                        className="group py-2"
                       >
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-
-                  {/* Actions */}
-                  <div className="mt-5 flex items-center justify-around gap-3 pt-2 border-t border-plum-border/40">
-                    <button
-                      onClick={() => handleAction('pass')}
-                      className="flex h-12 w-12 items-center justify-center rounded-full border border-plum-border bg-plum-night/80 text-pearl-dim transition-all hover:border-saffron/60 hover:text-saffron hover:scale-110 active:scale-95"
-                      title="Pass"
-                    >
-                      <PassIcon className="h-5 w-5" />
-                    </button>
-                    <button
-                      onClick={() => handleAction('super')}
-                      className="flex h-12 w-12 items-center justify-center rounded-full border border-gold/50 bg-gold/10 text-gold shadow-gold-glow transition-all hover:bg-gold/20 hover:scale-110 active:scale-95"
-                      title="Super Like"
-                    >
-                      <SuperLikeIcon className="h-5 w-5" fill="currentColor" />
-                    </button>
-                    <button
-                      onClick={() => handleAction('like')}
-                      className="flex h-14 w-14 items-center justify-center rounded-full bg-saffron-gradient text-pearl shadow-saffron-glow transition-all hover:scale-110 active:scale-95"
-                      title="Like / Swipe Right"
-                    >
-                      <HeartIcon className="h-6 w-6" fill="currentColor" />
-                    </button>
-                  </div>
+                        <span className="relative block h-[2px] w-7 overflow-hidden rounded-full bg-sand">
+                          {isActive && (
+                            <span
+                              key={`bar-${activeIndex}`}
+                              className="absolute inset-0 origin-left bg-espresso animate-progress-fill"
+                            />
+                          )}
+                        </span>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             </div>

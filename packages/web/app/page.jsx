@@ -1,19 +1,19 @@
 import { LandingNav } from '@/components/landing/LandingNav';
 import { Hero } from '@/components/landing/Hero';
-import { HowItWorks } from '@/components/landing/HowItWorks';
 import { Features } from '@/components/landing/Features';
-import { Testimonials } from '@/components/landing/Testimonials';
+import { UseCases } from '@/components/landing/UseCases';
+import { HowItWorks } from '@/components/landing/HowItWorks';
 import { FinalCta } from '@/components/landing/FinalCta';
 import { Footer } from '@/components/landing/Footer';
 
 export default function LandingPage() {
   return (
-    <main className="min-h-screen bg-plum-night text-pearl selection:bg-saffron selection:text-pearl overflow-x-hidden">
+    <main className="min-h-screen bg-linen text-espresso selection:bg-rosewood selection:text-linen overflow-x-hidden">
       <LandingNav />
       <Hero />
       <Features />
+      <UseCases />
       <HowItWorks />
-      <Testimonials />
       <FinalCta />
       <Footer />
     </main>

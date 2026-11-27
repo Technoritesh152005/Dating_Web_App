@@ -4,7 +4,19 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Sunset Saffron & Royal Plum Palette (Palette 1)
+        // Warm Editorial Minimalism Palette (Homepage & Design System)
+        linen: '#FAF7F2',
+        oat: '#F2ECE3',
+        paper: '#FFFFFF',
+        espresso: '#181412',
+        taupe: '#665E57',
+        sand: '#E5DDD2',
+        rosewood: {
+          DEFAULT: '#9E2A3B',
+          dark: '#7D1E2C',
+          soft: '#F6E8EA',
+        },
+        // Sunset Saffron & Royal Plum Palette (Inner App Compatibility)
         plum: {
           DEFAULT: '#6B1D52', // Royal Plum / Wine
           light: '#8B2C6D',
@@ -84,6 +96,18 @@ export default {
           '50%': { transform: 'scale(1.2)', opacity: '1' },
           '100%': { transform: 'scale(1)', opacity: '1' },
         },
+        heroReveal: {
+          '0%': { opacity: '0', transform: 'scale(1.04)' },
+          '100%': { opacity: '1', transform: 'scale(1)' },
+        },
+        cardReveal: {
+          '0%': { opacity: '0', transform: 'translateY(8px) scale(0.985)' },
+          '100%': { opacity: '1', transform: 'translateY(0) scale(1)' },
+        },
+        progressFill: {
+          '0%': { transform: 'scaleX(0)' },
+          '100%': { transform: 'scaleX(1)' },
+        },
       },
       animation: {
         'float-slow': 'floatSlow 7s ease-in-out infinite',
@@ -91,6 +115,9 @@ export default {
         'shimmer': 'shimmer 2.5s infinite',
         'infinite-ticker': 'infiniteTicker 25s linear infinite',
         'heart-pop': 'heartPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards',
+        'hero-reveal': 'heroReveal 0.85s cubic-bezier(0.22, 1, 0.36, 1) forwards',
+        'card-reveal': 'cardReveal 0.28s cubic-bezier(0.22, 1, 0.36, 1) forwards',
+        'progress-fill': 'progressFill 3s linear forwards',
       },
       borderRadius: {
         card: '1.75rem',
