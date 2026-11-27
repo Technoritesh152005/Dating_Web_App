@@ -2,77 +2,77 @@
 
 import { ScrollReveal } from '@/components/ScrollReveal';
 
-const STEPS = [
+const JOURNEY_STEPS = [
   {
     number: '01',
-    badge: 'Verification',
-    title: 'Selfie Identity Check',
+    label: 'Verify',
+    title: 'Confirm it’s really you',
     description:
-      'A 3-second live selfie check verifies your photos before your profile goes live. Zero fake profiles, zero sketchy surprises.',
+      'Take a quick live selfie when you join. It is matched against your profile photos so everyone starts from real trust.',
   },
   {
     number: '02',
-    badge: 'Vector Match',
-    title: 'Discover Real Vibe Compatibility',
+    label: 'Choose',
+    title: 'Set your pace',
     description:
-      'Our system matches you based on your bio embeddings, music tastes, lifestyle preferences, and conversation intent.',
+      'Pick what you are genuinely looking for—long-term, serious, casual, or coffee—and hear voice intros before you swipe.',
   },
   {
     number: '03',
-    badge: 'Date & Connect',
-    title: 'Spark the Chat & Date Safe',
+    label: 'Connect',
+    title: 'Skip the awkward opener',
     description:
-      'Eliminate dry initial messages using automated icebreakers, and share 1-Click live location security with your trusted contact.',
+      'Once you match, jump straight into real-time chat with thoughtful prompts tailored to the interests you share.',
+  },
+  {
+    number: '04',
+    label: 'Meet',
+    title: 'Go out with peace of mind',
+    description:
+      'Tap once to share an expiring live location link with a trusted friend or sibling before heading to your first date.',
   },
 ];
 
 export function HowItWorks() {
   return (
-    <section id="how-it-works" className="relative px-6 py-28 sm:px-10">
-      <div className="mx-auto max-w-4xl">
+    <section id="journey" className="border-t border-sand bg-linen px-6 py-24 sm:px-10 sm:py-32">
+      <div className="mx-auto max-w-6xl">
         <ScrollReveal>
-          <div className="text-center">
-            <span className="font-mono text-xs font-semibold uppercase tracking-[0.25em] text-gold">
-              Simple 3-Step Journey
-            </span>
-            <h2 className="mt-3 font-display text-3xl font-bold text-pearl sm:text-5xl">
-              Three steps. <span className="text-saffron italic font-normal">Zero awkwardness.</span>
-            </h2>
-            <p className="mt-4 text-base text-pearl-dim">
-              From selfie verification to your first authentic conversation in 3 easy steps.
+          <div className="max-w-2xl">
+            <p className="font-sans text-xs font-medium uppercase tracking-[0.22em] text-taupe">
+              Your journey
             </p>
+            <h2 className="mt-4 font-display text-3xl font-normal leading-[1.12] tracking-[-0.02em] text-espresso sm:text-5xl">
+              Four calm steps from{' '}
+              <span className="italic text-rosewood">first hello</span> to first date.
+            </h2>
           </div>
         </ScrollReveal>
 
-        <div className="relative mt-20">
-          <div className="absolute left-6 top-6 bottom-6 w-0.5 bg-gradient-to-b from-saffron via-gold to-plum-border sm:left-10" />
-
-          <div className="flex flex-col gap-12">
-            {STEPS.map((step, i) => (
-              <ScrollReveal key={step.number} delay={i * 120}>
-                <div className="relative flex items-start gap-6 pl-14 sm:gap-10 sm:pl-24 group">
-                  <div className="absolute left-0 top-0 flex h-12 w-12 items-center justify-center rounded-2xl border border-saffron/40 bg-plum-surface shadow-saffron-glow font-mono text-sm font-bold text-gold transition-transform duration-300 group-hover:scale-110 sm:h-14 sm:w-14">
-                    {step.number}
+        <div className="mt-16 grid gap-10 border-t border-sand pt-12 sm:grid-cols-2 lg:grid-cols-4 lg:gap-8">
+          {JOURNEY_STEPS.map((step, idx) => (
+            <ScrollReveal key={step.number} delay={idx * 70}>
+              <div className="flex h-full flex-col justify-between">
+                <div>
+                  <div className="flex items-center justify-between border-b border-sand pb-4">
+                    <span className="font-mono text-xs font-medium text-rosewood">
+                      {step.number}
+                    </span>
+                    <span className="font-mono text-[11px] uppercase tracking-[0.16em] text-taupe">
+                      {step.label}
+                    </span>
                   </div>
 
-                  <div className="flex-1 rounded-2xl border border-plum-border/60 bg-plum-surface/70 p-6 shadow-xl backdrop-blur-xl transition-all duration-300 group-hover:border-saffron/40">
-                    <div className="flex items-center justify-between">
-                      <span className="font-mono text-xs font-bold uppercase tracking-wider text-saffron">
-                        {step.badge}
-                      </span>
-                    </div>
-
-                    <h3 className="mt-2 font-display text-xl font-bold text-pearl sm:text-2xl">
-                      {step.title}
-                    </h3>
-                    <p className="mt-2 text-sm leading-relaxed text-pearl-dim sm:text-base">
-                      {step.description}
-                    </p>
-                  </div>
+                  <h3 className="mt-6 font-display text-2xl font-normal tracking-[-0.015em] text-espresso">
+                    {step.title}
+                  </h3>
+                  <p className="mt-3 text-sm leading-relaxed text-taupe">
+                    {step.description}
+                  </p>
                 </div>
-              </ScrollReveal>
-            ))}
-          </div>
+              </div>
+            </ScrollReveal>
+          ))}
         </div>
       </div>
     </section>

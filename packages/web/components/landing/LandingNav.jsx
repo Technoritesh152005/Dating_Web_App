@@ -8,9 +8,10 @@ export function LandingNav() {
 
   useEffect(() => {
     const handleScroll = () => {
-      setScrolled(window.scrollY > 20);
+      setScrolled(window.scrollY > 16);
     };
-    window.addEventListener('scroll', handleScroll);
+    handleScroll();
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
@@ -18,59 +19,54 @@ export function LandingNav() {
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         scrolled
-          ? 'bg-plum-night/85 backdrop-blur-xl border-b border-plum-border/40 py-4 shadow-plum-glow'
-          : 'bg-transparent py-6'
+          ? 'bg-linen/90 backdrop-blur-md border-b border-sand py-3.5'
+          : 'bg-linen/0 py-5'
       }`}
     >
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-6 sm:px-10">
-        {/* Brand Logo */}
-        <Link href="/" className="group flex items-center gap-2.5">
-          <div className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-saffron-gradient p-0.5 shadow-saffron-glow transition-transform duration-300 group-hover:scale-105">
-            <div className="flex h-full w-full items-center justify-center rounded-[10px] bg-plum-night">
-              <span className="font-display text-xl font-bold text-saffron">M</span>
-            </div>
-          </div>
-          <span className="font-display text-2xl font-semibold tracking-tight text-pearl">
-            Melodis<span className="text-saffron font-bold">.</span>
+      <div className="mx-auto flex max-w-6xl items-center justify-between px-6 sm:px-10">
+        {/* Brand Wordmark */}
+        <Link href="/" className="group flex items-baseline gap-0.5">
+          <span className="font-display text-2xl font-medium tracking-[-0.03em] text-espresso">
+            Melodis
           </span>
+          <span className="font-display text-2xl font-medium text-rosewood">.</span>
         </Link>
 
-        {/* Center Nav Links */}
-        <nav className="hidden items-center gap-8 md:flex">
+        {/* Quiet Navigation Links */}
+        <nav aria-label="Primary" className="hidden items-center gap-8 md:flex">
           <a
             href="#features"
-            className="text-sm font-medium text-pearl-dim transition-colors hover:text-saffron"
+            className="text-sm font-normal text-taupe transition-colors hover:text-espresso"
           >
             Features
           </a>
           <a
-            href="#safety"
-            className="text-sm font-medium text-pearl-dim transition-colors hover:text-saffron"
+            href="#explore"
+            className="text-sm font-normal text-taupe transition-colors hover:text-espresso"
           >
-            Date Safety
+            Explore
           </a>
           <a
-            href="#how-it-works"
-            className="text-sm font-medium text-pearl-dim transition-colors hover:text-saffron"
+            href="#journey"
+            className="text-sm font-normal text-taupe transition-colors hover:text-espresso"
           >
-            How It Works
+            Journey
           </a>
         </nav>
 
-        {/* Right CTA Actions */}
-        <div className="flex items-center gap-4">
+        {/* Actions */}
+        <div className="flex items-center gap-5">
           <Link
             href="/login"
-            className="hidden font-mono text-xs uppercase tracking-wider text-pearl-dim transition-colors hover:text-pearl sm:inline-block"
+            className="hidden text-sm font-medium text-taupe transition-colors hover:text-espresso sm:inline-block"
           >
             Log in
           </Link>
           <Link
             href="/signup"
-            className="relative group overflow-hidden rounded-full bg-saffron-gradient px-5 py-2.5 text-xs font-semibold uppercase tracking-wider text-pearl shadow-saffron-glow transition-all duration-300 hover:shadow-saffron-glow/80 hover:scale-105 active:scale-95"
+            className="rounded-full bg-espresso px-5 py-2.5 text-xs font-medium tracking-wide text-linen transition-colors duration-200 hover:bg-rosewood"
           >
-            <span className="relative z-10">Get Started</span>
-            <div className="absolute inset-0 bg-white/20 translate-y-full transition-transform duration-300 group-hover:translate-y-0" />
+            Get started
           </Link>
         </div>
       </div>

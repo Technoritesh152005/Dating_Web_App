@@ -2,238 +2,175 @@
 
 import { useState } from 'react';
 import { ScrollReveal } from '@/components/ScrollReveal';
-import { ShieldIcon, SparklesIcon, LocationIcon } from '@/components/user_interface/Icons';
+import { ShieldIcon, LocationIcon, UserCheckIcon, SparklesIcon } from '@/components/user_interface/Icons';
 
-const SIMULATOR_INTERESTS = [
-  'Filter Coffee',
-  'Late Night Drives',
-  'Kathak & Dance',
-  'Goa Roadtrips',
-  'Street Food',
-  'Stand-up Comedy',
-];
-
-const ICEBREAKER_OUTPUTS = {
-  'Filter Coffee+Late Night Drives': 'So... late night drives paired with South Indian filter coffee: culinary genius or sheer chaotic vibe?',
-  'Kathak & Dance+Goa Roadtrips': 'Imagine listening to great tunes while planning a roadtrip. Are we booking the car yet?',
-  'Street Food+Stand-up Comedy': 'I will judge you strictly by your favorite food spot and your worst joke. Deal?',
-};
+const CHECKIN_DURATIONS = ['30 min', '1 hour', '2 hours'];
 
 export function Features() {
-  const [selectedTags, setSelectedTags] = useState(['Filter Coffee', 'Late Night Drives']);
-  const [generatedIcebreaker, setGeneratedIcebreaker] = useState(
-    'So... late night drives paired with South Indian filter coffee: culinary genius or sheer chaotic vibe?'
-  );
-
-  const [locationShared, setLocationShared] = useState(true);
-
-  const toggleInterestTag = (tag) => {
-    let nextTags = [...selectedTags];
-    if (nextTags.includes(tag)) {
-      if (nextTags.length > 1) nextTags = nextTags.filter((t) => t !== tag);
-    } else {
-      if (nextTags.length >= 2) nextTags.shift();
-      nextTags.push(tag);
-    }
-    setSelectedTags(nextTags);
-
-    const key = `${nextTags[0]}+${nextTags[1]}`;
-    const keyAlt = `${nextTags[1]}+${nextTags[0]}`;
-    if (ICEBREAKER_OUTPUTS[key]) {
-      setGeneratedIcebreaker(ICEBREAKER_OUTPUTS[key]);
-    } else if (ICEBREAKER_OUTPUTS[keyAlt]) {
-      setGeneratedIcebreaker(ICEBREAKER_OUTPUTS[keyAlt]);
-    } else {
-      setGeneratedIcebreaker(
-        `AI Icebreaker: "I noticed you love ${nextTags[0]} and ${nextTags[1]}. Are we planning our first date around both or picking a winner?"`
-      );
-    }
-  };
+  const [selectedDuration, setSelectedDuration] = useState('1 hour');
 
   return (
-    <section id="features" className="relative px-6 py-28 sm:px-10">
-      <div className="mx-auto max-w-7xl">
-        <div className="text-center max-w-3xl mx-auto">
-          <ScrollReveal>
-            <span className="font-mono text-xs font-semibold uppercase tracking-[0.25em] text-saffron">
-              Dating Safety & Core Capabilities
-            </span>
-            <h2 className="mt-4 font-display text-3xl font-bold leading-tight text-pearl sm:text-5xl">
-              Designed for safety, intelligence, and <span className="text-gold font-normal">real-time chemistry</span>.
-            </h2>
-            <p className="mt-4 text-base text-pearl-dim sm:text-lg">
-              Smart selfie verification, instant conversation starters, live location date safety, and real-time safe chat.
+    <section id="features" className="border-t border-sand bg-linen px-6 py-24 sm:px-10 sm:py-32">
+      <div className="mx-auto max-w-6xl">
+        <ScrollReveal>
+          <div className="max-w-2xl">
+            <p className="font-sans text-xs font-medium uppercase tracking-[0.22em] text-taupe">
+              Why Melodis feels different
             </p>
-          </ScrollReveal>
-        </div>
+            <h2 className="mt-4 font-display text-3xl font-normal leading-[1.12] tracking-[-0.02em] text-espresso sm:text-5xl">
+              Built for real conversations,{' '}
+              <span className="italic text-rosewood">safe first dates</span>, and genuine people.
+            </h2>
+            <p className="mt-4 text-base leading-relaxed text-taupe sm:text-lg">
+              Every part of the experience is designed to remove guesswork—from confirming who you are talking to, to getting home safely after you meet.
+            </p>
+          </div>
+        </ScrollReveal>
 
-        <div className="mt-20 grid gap-8 lg:grid-cols-2">
-          {/* FEATURE 1 */}
-          <ScrollReveal delay={100}>
-            <div className="group relative overflow-hidden rounded-[2.2rem] border border-plum-border bg-plum-surface/80 p-8 shadow-2xl backdrop-blur-xl transition-all duration-300 hover:border-saffron/40">
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-saffron/20 text-saffron font-bold">
-                  <ShieldIcon className="h-5 w-5" />
-                </div>
-                <div>
-                  <span className="font-mono text-xs font-bold uppercase tracking-wider text-saffron">Identity Verification</span>
-                  <h3 className="font-display text-2xl font-bold text-pearl">AI Selfie Verification</h3>
-                </div>
-              </div>
-              <p className="mt-3 text-sm text-pearl-dim leading-relaxed">
-                Automated selfie verification matches profile photos against live captures, ensuring authentic user identities across the platform.
-              </p>
-
-              <div className="mt-6 rounded-2xl border border-plum-border/60 bg-plum-night/90 p-5">
+        <div className="mt-14 grid gap-6 md:grid-cols-2">
+          {/* Card 1: Face-Recognition Verification */}
+          <ScrollReveal delay={60}>
+            <article className="flex h-full flex-col justify-between rounded-[20px] border border-sand bg-paper p-8 transition-colors duration-200 hover:border-espresso/30">
+              <div>
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2.5">
-                    <span className="flex h-3 w-3 rounded-full bg-saffron animate-pulse" />
-                    <span className="font-mono text-xs font-semibold text-pearl">Status: VERIFIED_IDENTITY</span>
-                  </div>
-                  <span className="font-mono text-[11px] text-saffron font-bold border border-saffron/40 bg-saffron/10 px-2.5 py-0.5 rounded-full">
-                    Authentic Match
+                  <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-oat text-espresso">
+                    <UserCheckIcon className="h-5 w-5" />
+                  </span>
+                  <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-taupe">
+                    Verified Profiles
                   </span>
                 </div>
-                <div className="mt-3 text-xs font-mono text-pearl-dim bg-plum-surface/80 p-3 rounded-xl border border-plum-border/40">
-                  Selfie Match Verified • Trusted Profile Badge Active
-                </div>
+
+                <h3 className="mt-6 font-display text-2xl font-normal tracking-[-0.015em] text-espresso">
+                  Real people, confirmed by selfie
+                </h3>
+                <p className="mt-3 text-sm leading-relaxed text-taupe sm:text-[15px]">
+                  Before a profile goes live, a quick live selfie is compared against their profile photos. You always know the person you matched with is genuinely the person you will meet.
+                </p>
               </div>
-            </div>
+
+              <div className="mt-8 flex items-center justify-between rounded-xl border border-sand bg-linen px-4 py-3">
+                <div className="flex items-center gap-2.5">
+                  <span className="h-2 w-2 rounded-full bg-rosewood" />
+                  <span className="text-xs font-medium text-espresso">
+                    Photo &amp; live selfie matched
+                  </span>
+                </div>
+                <span className="font-mono text-[11px] text-taupe">Verified badge</span>
+              </div>
+            </article>
           </ScrollReveal>
 
-          {/* FEATURE 2 */}
-          <ScrollReveal delay={200}>
-            <div className="group relative overflow-hidden rounded-[2.2rem] border border-plum-border bg-plum-surface/80 p-8 shadow-2xl backdrop-blur-xl transition-all duration-300 hover:border-saffron/40">
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-saffron/20 text-saffron font-bold">
-                  <SparklesIcon className="h-5 w-5" />
+          {/* Card 2: Chatting, Voice Intros & Natural Openers */}
+          <ScrollReveal delay={120}>
+            <article className="flex h-full flex-col justify-between rounded-[20px] border border-sand bg-paper p-8 transition-colors duration-200 hover:border-espresso/30">
+              <div>
+                <div className="flex items-center justify-between">
+                  <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-oat text-espresso">
+                    <SparklesIcon className="h-5 w-5" />
+                  </span>
+                  <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-taupe">
+                    Messaging &amp; Voice
+                  </span>
                 </div>
-                <div>
-                  <span className="font-mono text-xs font-bold uppercase tracking-wider text-saffron">AI Match Intelligence</span>
-                  <h3 className="font-display text-2xl font-bold text-pearl">Automated Icebreaker Generator</h3>
+
+                <h3 className="mt-6 font-display text-2xl font-normal tracking-[-0.015em] text-espresso">
+                  Conversations that actually go somewhere
+                </h3>
+                <p className="mt-3 text-sm leading-relaxed text-taupe sm:text-[15px]">
+                  Hear someone’s voice intro before you match, then chat in real time with typing cues, photo sharing, and thoughtful openers inspired by what you both enjoy—plus quiet scam protection in the background.
+                </p>
+              </div>
+
+              <div className="mt-8 space-y-2 rounded-xl border border-sand bg-linen p-4">
+                <div className="w-fit max-w-[88%] rounded-2xl rounded-bl-sm bg-paper px-3.5 py-2 text-xs text-espresso border border-sand">
+                  You both love late-night filter coffee—favorite spot in town?
+                </div>
+                <div className="ml-auto w-fit max-w-[85%] rounded-2xl rounded-br-sm bg-espresso px-3.5 py-2 text-xs text-linen">
+                  The corner roastery on 12th. Friday at 6?
                 </div>
               </div>
-              <p className="mt-3 text-sm text-pearl-dim leading-relaxed">
-                Upon mutual match, shared bio interests are analyzed to generate customized, fun conversation openers to spark conversation.
-              </p>
+            </article>
+          </ScrollReveal>
 
-              <div className="mt-6 rounded-2xl border border-plum-border/60 bg-plum-night/90 p-5">
-                <p className="font-mono text-[11px] uppercase tracking-wider text-pearl-muted mb-2.5">
-                  Select 2 Profile Keywords:
+          {/* Card 3: Live Location Date Safety */}
+          <ScrollReveal delay={180}>
+            <article className="flex h-full flex-col justify-between rounded-[20px] border border-sand bg-paper p-8 transition-colors duration-200 hover:border-espresso/30">
+              <div>
+                <div className="flex items-center justify-between">
+                  <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-oat text-espresso">
+                    <LocationIcon className="h-5 w-5" />
+                  </span>
+                  <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-taupe">
+                    Date Safety
+                  </span>
+                </div>
+
+                <h3 className="mt-6 font-display text-2xl font-normal tracking-[-0.015em] text-espresso">
+                  Share your live date location in one tap
+                </h3>
+                <p className="mt-3 text-sm leading-relaxed text-taupe sm:text-[15px]">
+                  Heading out for a first meet? Send a private, temporary link to a trusted friend or family member—they can check you’re safe with no app needed, and the link clears itself once your date ends.
                 </p>
-                <div className="flex flex-wrap gap-2">
-                  {SIMULATOR_INTERESTS.map((tag) => {
-                    const isSelected = selectedTags.includes(tag);
+              </div>
+
+              <div className="mt-8 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-sand bg-linen px-4 py-3">
+                <span className="text-xs font-medium text-espresso">Auto-expires in</span>
+                <div className="flex items-center gap-1.5">
+                  {CHECKIN_DURATIONS.map((duration) => {
+                    const active = selectedDuration === duration;
                     return (
                       <button
-                        key={tag}
-                        onClick={() => toggleInterestTag(tag)}
-                        className={`rounded-full px-3 py-1.5 font-mono text-xs transition-all ${
-                          isSelected
-                            ? 'bg-saffron text-pearl shadow-saffron-glow font-bold scale-105'
-                            : 'bg-plum-surface border border-plum-border text-pearl-dim hover:text-pearl'
+                        key={duration}
+                        type="button"
+                        onClick={() => setSelectedDuration(duration)}
+                        className={`rounded-full px-3 py-1 font-mono text-[11px] transition-colors ${
+                          active
+                            ? 'bg-espresso text-linen'
+                            : 'bg-paper text-taupe border border-sand hover:text-espresso'
                         }`}
                       >
-                        {tag}
+                        {duration}
                       </button>
                     );
                   })}
                 </div>
-
-                <div className="mt-4 pt-3 border-t border-plum-border/40">
-                  <p className="font-mono text-[11px] uppercase tracking-wider text-gold font-bold mb-1.5 flex items-center gap-1.5">
-                    <span>AI Icebreaker Output:</span>
-                  </p>
-                  <p className="font-sans text-sm text-pearl bg-plum-surface/80 p-3 rounded-xl border border-gold/30">
-                    "{generatedIcebreaker}"
-                  </p>
-                </div>
               </div>
-            </div>
+            </article>
           </ScrollReveal>
 
-          {/* FEATURE 3 */}
-          <ScrollReveal delay={300}>
-            <div id="safety" className="group relative overflow-hidden rounded-[2.2rem] border border-plum-border bg-plum-surface/80 p-8 shadow-2xl backdrop-blur-xl transition-all duration-300 hover:border-gold/40">
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gold/20 text-gold font-bold">
-                  <LocationIcon className="h-5 w-5" />
-                </div>
-                <div>
-                  <span className="font-mono text-xs font-bold uppercase tracking-wider text-gold">Safety & Security</span>
-                  <h3 className="font-display text-2xl font-bold text-pearl">Live Location Date Safety Link</h3>
-                </div>
-              </div>
-              <p className="mt-3 text-sm text-pearl-dim leading-relaxed">
-                Generate a temporary private link for emergency contacts during dates. Location tracking automatically purges when the date finishes.
-              </p>
-
-              <div className="mt-6 rounded-2xl border border-plum-border/60 bg-plum-night/90 p-5">
+          {/* Card 4: Compatibility-First Discovery */}
+          <ScrollReveal delay={240}>
+            <article className="flex h-full flex-col justify-between rounded-[20px] border border-sand bg-paper p-8 transition-colors duration-200 hover:border-espresso/30">
+              <div>
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <span className="relative flex h-3 w-3">
-                      <span className={`absolute inline-flex h-full w-full rounded-full ${locationShared ? 'bg-gold animate-ping' : 'bg-pearl-muted'}`} />
-                      <span className={`relative inline-flex h-3 w-3 rounded-full ${locationShared ? 'bg-gold' : 'bg-pearl-muted'}`} />
-                    </span>
-                    <span className="font-mono text-xs font-semibold text-pearl">
-                      {locationShared ? 'Safety Session Active' : 'Session Terminated'}
-                    </span>
-                  </div>
-                  <button
-                    onClick={() => setLocationShared(!locationShared)}
-                    className="rounded-full bg-plum-surface px-3 py-1 font-mono text-[11px] text-gold border border-gold/40 hover:bg-gold/10 transition-colors"
+                  <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-oat text-espresso">
+                    <ShieldIcon className="h-5 w-5" />
+                  </span>
+                  <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-taupe">
+                    Smart Matching
+                  </span>
+                </div>
+
+                <h3 className="mt-6 font-display text-2xl font-normal tracking-[-0.015em] text-espresso">
+                  Matched on lifestyle, not just looks
+                </h3>
+                <p className="mt-3 text-sm leading-relaxed text-taupe sm:text-[15px]">
+                  Instead of showing everyone in random order, Melodis looks at your bio, habits, and what you’re seeking—surfacing people who actually fit your rhythm and intentions.
+                </p>
+              </div>
+
+              <div className="mt-8 flex flex-wrap gap-2">
+                {['Shared interests', 'Aligned intentions', 'Respectful community'].map((pill) => (
+                  <span
+                    key={pill}
+                    className="rounded-full border border-sand bg-linen px-3.5 py-1.5 text-xs text-taupe"
                   >
-                    {locationShared ? 'End Session' : 'Start Session'}
-                  </button>
-                </div>
-
-                <div className="mt-4 rounded-xl bg-plum-surface/90 p-3.5 border border-plum-border/50">
-                  <div className="flex items-center justify-between text-xs text-pearl-dim font-mono">
-                    <span>Emergency Contact: Active</span>
-                    <span className="text-gold font-bold">Auto-Purge: 2h 30m</span>
-                  </div>
-                  <div className="mt-2 text-xs text-pearl-muted truncate font-mono">
-                    https://melodis.in/location?token=9f82a1c0d4...
-                  </div>
-                </div>
+                    {pill}
+                  </span>
+                ))}
               </div>
-            </div>
-          </ScrollReveal>
-
-          {/* FEATURE 4 */}
-          <ScrollReveal delay={400}>
-            <div className="group relative overflow-hidden rounded-[2.2rem] border border-plum-border bg-plum-surface/80 p-8 shadow-2xl backdrop-blur-xl transition-all duration-300 hover:border-saffron/40">
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-saffron/20 text-saffron font-bold">
-                  <SparklesIcon className="h-5 w-5" />
-                </div>
-                <div>
-                  <span className="font-mono text-xs font-bold uppercase tracking-wider text-saffron">Realtime Chat</span>
-                  <h3 className="font-display text-2xl font-bold text-pearl">Real-Time Messaging & Voice Bios</h3>
-                </div>
-              </div>
-              <p className="mt-3 text-sm text-pearl-dim leading-relaxed">
-                Enjoy instant messaging, typing indicators, read receipts, and voice introductions for authentic conversation before meeting up.
-              </p>
-
-              <div className="mt-6 rounded-2xl border border-plum-border/60 bg-plum-night/90 p-5">
-                <div className="flex items-center justify-between pb-2 border-b border-plum-border/40">
-                  <div className="flex items-center gap-2">
-                    <span className="h-2 w-2 rounded-full bg-saffron" />
-                    <span className="font-mono text-xs font-bold text-pearl">Chat Status: Online</span>
-                  </div>
-                  <span className="font-mono text-[10px] text-pearl-muted">Instant Sync</span>
-                </div>
-                <div className="mt-3 flex flex-col gap-2 font-sans text-xs">
-                  <div className="self-start bg-plum-surface p-2.5 rounded-xl text-pearl-dim max-w-[80%] border border-plum-border/50">
-                    Hey! Loved your bio about filter coffee and road trips!
-                  </div>
-                  <div className="self-end bg-saffron-gradient p-2.5 rounded-xl text-pearl font-semibold max-w-[80%] shadow-saffron-glow">
-                    Haha thanks! Best coffee spot in town on me?
-                  </div>
-                </div>
-              </div>
-            </div>
+            </article>
           </ScrollReveal>
         </div>
       </div>
