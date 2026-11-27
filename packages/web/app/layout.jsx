@@ -1,34 +1,36 @@
-import { Fraunces, Sora, IBM_Plex_Mono } from 'next/font/google';
+import localFont from 'next/font/local';
 import './globals.css';
-import {Providers} from './providers.jsx'
+import { Providers } from './providers.jsx';
 
-// Fraunces: warm, high-contrast serif with ink-trap character - carries
-// the display/headline personality. Variable font, so we can lean into
-// its optical-size axis for the large hero treatment vs smaller headings.
-const fraunces = Fraunces({
-  subsets: ['latin'],
-  variable: '--font-fraunces',
-  weight: ['400', '500', '600'],
-  style: ['normal', 'italic'],
+// DM Serif Display — elegant serif for all headings/display text.
+// Self-hosted so CI builds never depend on external Google Fonts calls.
+const dmSerif = localFont({
+  src: [
+    { path: '../public/fonts/DMSerifDisplay.woff2', weight: '400', style: 'normal' },
+    { path: '../public/fonts/DMSerifDisplayItalic.woff2', weight: '400', style: 'italic' },
+  ],
+  variable: '--font-display',
   display: 'swap',
 });
 
-// Sora: geometric but warm sans - UI and body text. Deliberately not
-// Inter/system-ui, which would read as the default choice for any project.
-const sora = Sora({
-  subsets: ['latin'],
-  variable: '--font-sora',
-  weight: ['400', '500', '600', '700'],
+// Inter — clean, legible sans-serif for body, UI, forms.
+const inter = localFont({
+  src: [
+    { path: '../public/fonts/Inter-400.woff2', weight: '400', style: 'normal' },
+    { path: '../public/fonts/Inter-500.woff2', weight: '500', style: 'normal' },
+    { path: '../public/fonts/Inter-600.woff2', weight: '600', style: 'normal' },
+  ],
+  variable: '--font-sans',
   display: 'swap',
 });
 
-// IBM Plex Mono: utility face for labels, distances, timestamps - gives
-// small metadata (e.g. "2 km away", "3:41 PM") a distinct, data-like feel
-// separate from conversational UI text.
-const plexMono = IBM_Plex_Mono({
-  subsets: ['latin'],
-  variable: '--font-plex-mono',
-  weight: ['400', '500'],
+// IBM Plex Mono — utility face for labels, distances, timestamps.
+const plexMono = localFont({
+  src: [
+    { path: '../public/fonts/IBMPlexMono-400.woff2', weight: '400', style: 'normal' },
+    { path: '../public/fonts/IBMPlexMono-500.woff2', weight: '500', style: 'normal' },
+  ],
+  variable: '--font-mono',
   display: 'swap',
 });
 
@@ -39,12 +41,11 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    // these all fonts are available in our application and u can use it as needed
-    <html lang="en" className={`${fraunces.variable} ${sora.variable} ${plexMono.variable}`}>
+    <html lang="en" className={`${dmSerif.variable} ${inter.variable} ${plexMono.variable}`}>
       <body>
-      <Providers>
-        {children}
-      </Providers>
+        <Providers>
+          {children}
+        </Providers>
       </body>
     </html>
   );

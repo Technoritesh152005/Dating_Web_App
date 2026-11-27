@@ -63,9 +63,9 @@ export default {
         'cream-dim': '#E2CDD5',
       },
       fontFamily: {
-        display: ['var(--font-fraunces)', 'serif'],
-        sans: ['var(--font-sora)', 'sans-serif'],
-        mono: ['var(--font-plex-mono)', 'monospace'],
+        display: ['var(--font-display)', 'Georgia', 'serif'],
+        sans: ['var(--font-sans)', 'system-ui', 'sans-serif'],
+        mono: ['var(--font-mono)', 'monospace'],
       },
       backgroundImage: {
         'sunset-glow': 'radial-gradient(circle at top center, rgba(255, 51, 102, 0.25) 0%, rgba(107, 29, 82, 0.35) 45%, rgba(20, 8, 16, 0.95) 100%)',
