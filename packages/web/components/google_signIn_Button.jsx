@@ -36,14 +36,22 @@ export function GoogleSignInButton() {
         })
 
         window.google.accounts.id.renderButton(buttonRef.current, {
-            theme: 'filled_black',
+            theme: 'outline',
             size: 'large',
             shape: 'pill',
-            width: 320,
+            width: 300,
             text: 'continue_with',
         })
     }, [handleCredential, clientId])
 
+    // Handle case where GSI script was already cached by the browser — onLoad won't fire again.
+    useEffect(() => {
+        if (window.google?.accounts?.id) {
+            initializeGoogleButton()
+        }
+    }, [initializeGoogleButton])
+
+    // Cleanup on unmount
     useEffect(() => {
         return () => {
             if (window.google?.accounts?.id) {
@@ -59,7 +67,7 @@ export function GoogleSignInButton() {
                 strategy="afterInteractive"
                 onLoad={initializeGoogleButton}
             />
-            {error && <p role="alert" className="mt-3 text-xs text-sindoor-light text-center">{error}</p>}
+            {error && <p role="alert" className="mt-3 text-xs text-rosewood text-center">{error}</p>}
             <div className="flex justify-center items-center w-full" ref={buttonRef} />
         </div>
     )

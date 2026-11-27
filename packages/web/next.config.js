@@ -12,6 +12,12 @@ const nextConfig = {
       { protocol: 'https', hostname: '**' },
     ],
   },
+  // Disable worker threads for page-data collection to avoid Windows ENOENT
+  // race conditions during parallel builds (Next.js 14 known issue on Windows).
+  experimental: {
+    workerThreads: false,
+    cpus: 1,
+  },
 };
 
 export default nextConfig;
