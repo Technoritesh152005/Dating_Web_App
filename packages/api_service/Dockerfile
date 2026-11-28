@@ -23,6 +23,7 @@ WORKDIR /app
   
 #Take the node_modules from the deps stage and copy them into the builder stage.  
 COPY --from=deps /app/node_modules ./node_modules  
+COPY --from=deps /app/packages/api_service/node_modules ./packages/api_service/node_modules
   
 COPY package.json package-lock.json* ./  
   
@@ -44,6 +45,7 @@ ENV NODE_ENV=production
 RUN addgroup -S nodejs && adduser -S nodejs -G nodejs  
   
 COPY --from=builder --chown=nodejs:nodejs /app/node_modules ./node_modules  
+COPY --from=builder --chown=nodejs:nodejs /app/packages/api_service/node_modules ./packages/api_service/node_modules
   
 COPY --from=builder --chown=nodejs:nodejs /app/packages/shared_service ./packages/shared_service  
   
