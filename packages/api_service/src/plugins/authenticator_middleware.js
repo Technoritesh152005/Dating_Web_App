@@ -5,7 +5,7 @@ import { createVerificationGuard } from '../plugins/verificationGuard.js'
 export function registerAuthDecorator(app, config) {
 
     app.decorate('authenticate', async (request, reply) => {
-        const token = request.cookies?.accessToken
+        const token = request.cookies?.accessToken || (request.headers.authorization?.startsWith('Bearer ') && request.headers.authorization.split(' ')[1])
 
         if (!token) {
             return reply.code(401).send({ error: 'Please log in to continue.' })

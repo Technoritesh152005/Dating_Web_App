@@ -14,7 +14,9 @@ import { registerVerificationRoutes } from "./routes/verification_selfie.js"
 import { registerPreferencesRoutes } from './routes/prefernces.js';
 import { registerDiscoveryRoutes } from './routes/discoveryUser.js';
 import { registerSwipesRoutes } from './routes/swipe.js'
-import { registerSafetyRoutes } from './routes/safety.js'
+import { registerSafetyRoutes } from './routes/safety.js';
+import { registerNotificationRoutes } from './routes/notifications.js';
+import { registerPaymentsRoutes } from './routes/payments.js';
 import { registerGetMessageRoutes } from './routes/messages.js'
 import { registerMetricsHook, registerMetricsRoutes } from './routes/metrics.js'
 
@@ -155,7 +157,9 @@ app.addHook('preHandler', (request, reply, done) => {
   registerPreferencesRoutes(app)
   registerDiscoveryRoutes(app)
   registerSwipesRoutes(app);
-  registerSafetyRoutes(app)
+  registerSafetyRoutes(app);
+  registerNotificationRoutes(app);
+  registerPaymentsRoutes(app)
   registerGetMessageRoutes(app)
   registerMetricsRoutes(app)
 
