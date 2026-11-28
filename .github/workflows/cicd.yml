@@ -165,18 +165,44 @@ jobs:
             echo "Pulling latest main branch..."
             git pull --rebase origin main
 
-            echo "Building and starting production containers..."
+            echo "Building production images..."
             docker compose \
               -f docker-compose.prod.yml \
               --env-file .env.production \
-              up -d --build
+              build
 
-            echo "Running Prisma migrations..."
+            echo "Starting database services..."
             docker compose \
               -f docker-compose.prod.yml \
-              exec -T api \
+              --env-file .env.production \
+              up -d --wait postgres redis
+
+            echo "Stopping application containers before migration..."
+            docker compose \
+              -f docker-compose.prod.yml \
+              --env-file .env.production \
+              stop api realtime worker web
+
+            echo "Running Prisma migrations..."
+            if ! docker compose \
+              -f docker-compose.prod.yml \
+              --env-file .env.production \
+              run --rm --no-deps -T api \
               npx prisma migrate deploy \
-              --schema=packages/shared_service/prisma/schema.prisma
+              --schema=packages/shared_service/prisma/schema.prisma; then
+              echo "Migration failed; restarting the existing application containers." >&2
+              docker compose \
+                -f docker-compose.prod.yml \
+                --env-file .env.production \
+                start api realtime worker web
+              exit 1
+            fi
+
+            echo "Starting production containers..."
+            docker compose \
+              -f docker-compose.prod.yml \
+              --env-file .env.production \
+              up -d
 
             echo "Deployment completed."
 
