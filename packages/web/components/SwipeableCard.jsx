@@ -39,7 +39,7 @@ export function SwipeableCard({
       handledSwipeRef.current = true;
       setExitingAction(action);
 
-      const animationDuration = action === 'FIRE_LIKE' ? 360 : 320;
+      const animationDuration = 420;
       setTimeout(() => {
         if (!isUnmountedRef.current) {
           onSwipe?.(action);
@@ -142,14 +142,14 @@ export function SwipeableCard({
   let transformStyle = `translate3d(${offset.x}px, ${offset.y}px, 0) rotate(${rotation}deg)`;
   let transitionStyle = isDragging
     ? 'none'
-    : 'transform 380ms cubic-bezier(0.175, 0.885, 0.32, 1.25), opacity 320ms ease-out, filter 320ms ease-out';
+    : 'transform 360ms cubic-bezier(0.22, 1, 0.36, 1), opacity 320ms ease-out, filter 320ms ease-out';
   let opacityStyle = 1;
   let filterStyle = 'none';
 
   if (exitingAction) {
     const exitY = offset.y || 0;
     transitionStyle =
-      'transform 380ms cubic-bezier(0.2, 0.8, 0.2, 1), opacity 340ms ease-out, filter 340ms ease-out';
+      'transform 420ms cubic-bezier(0.22, 1, 0.36, 1), opacity 380ms ease-out, filter 380ms ease-out';
     opacityStyle = 0;
     filterStyle = 'blur(8px)';
 
@@ -186,7 +186,7 @@ export function SwipeableCard({
 
       {/* Dynamic Swipe Action Badges */}
       <div
-        className="pointer-events-none absolute left-8 top-10 rotate-[-15deg] rounded-2xl border-2 border-mehendi bg-mehendi/25 px-5 py-2 font-mono text-2xl font-extrabold uppercase text-mehendi-light shadow-[0_0_25px_rgba(46,204,113,0.5)] backdrop-blur-md transition-transform"
+        className="pointer-events-none absolute left-8 top-10 rotate-[-15deg] rounded-2xl border-2 border-emerald-300 bg-emerald-950/30 px-5 py-2 font-mono text-2xl font-extrabold uppercase text-emerald-100 shadow-[0_0_25px_rgba(46,204,113,0.35)] backdrop-blur-md transition-transform duration-200"
         style={{
           opacity: likeOpacity,
           transform: `scale(${0.8 + likeOpacity * 0.3}) rotate(-15deg)`,
@@ -196,7 +196,7 @@ export function SwipeableCard({
       </div>
 
       <div
-        className="pointer-events-none absolute right-8 top-10 rotate-[15deg] rounded-2xl border-2 border-sindoor bg-sindoor/25 px-5 py-2 font-mono text-2xl font-extrabold uppercase text-sindoor-light shadow-[0_0_25px_rgba(230,57,80,0.5)] backdrop-blur-md transition-transform"
+        className="pointer-events-none absolute right-8 top-10 rotate-[15deg] rounded-2xl border-2 border-rose-300 bg-rose-950/30 px-5 py-2 font-mono text-2xl font-extrabold uppercase text-rose-100 shadow-[0_0_25px_rgba(230,57,80,0.35)] backdrop-blur-md transition-transform duration-200"
         style={{
           opacity: passOpacity,
           transform: `scale(${0.8 + passOpacity * 0.3}) rotate(15deg)`,
@@ -206,7 +206,7 @@ export function SwipeableCard({
       </div>
 
       <div
-        className="pointer-events-none absolute left-1/2 top-10 -translate-x-1/2 rounded-2xl border-2 border-gold bg-gold/25 px-5 py-2 font-mono text-2xl font-extrabold uppercase text-gold shadow-[0_0_25px_rgba(240,162,2,0.6)] backdrop-blur-md transition-transform"
+        className="pointer-events-none absolute left-1/2 top-10 -translate-x-1/2 rounded-2xl border-2 border-amber-300 bg-amber-950/30 px-5 py-2 font-mono text-2xl font-extrabold uppercase text-amber-100 shadow-[0_0_25px_rgba(240,162,2,0.4)] backdrop-blur-md transition-transform duration-200"
         style={{
           opacity: superLikeOpacity,
           transform: `translate(-50%, 0) scale(${0.8 + superLikeOpacity * 0.3})`,

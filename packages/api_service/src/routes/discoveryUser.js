@@ -95,15 +95,35 @@ export function registerDiscoveryRoutes(app) {
           request.userId,
           ownProfile,
         );
-        const result = await buildCandidateFeedWithRelaxation(app.db, {
-          userId: request.userId,
-          ownProfile,
-          prefs: resolvedPrefs,
-          page: 1,
-          pageSize: PAGE_SIZE,
-        });
-        candIds = result.candidates.map((c) => c.id);
-        relaxed = result.relaxed;
+        candIds = [];
+        const selectedIds = new Set();
+        let page = 1;
+
+        while (candIds.length < PAGE_SIZE) {
+          const result = await buildCandidateFeedWithRelaxation(app.db, {
+            userId: request.userId,
+            ownProfile,
+            prefs: resolvedPrefs,
+            page,
+            pageSize: PAGE_SIZE * 5,
+          });
+          relaxed = relaxed || result.relaxed;
+          if (result.candidates.length === 0) break;
+
+          const unseenIds = await filterOutSeen(
+            request.userId,
+            result.candidates.map((candidate) => candidate.id),
+            app.redis,
+          );
+          for (const id of unseenIds) {
+            if (!selectedIds.has(id)) {
+              selectedIds.add(id);
+              candIds.push(id);
+              if (candIds.length === PAGE_SIZE) break;
+            }
+          }
+          page += 1;
+        }
       }
 
       if (candIds.length === 0) {
