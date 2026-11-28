@@ -1,4 +1,3 @@
-import { FastifyPluginAsync } from 'fastify';
 import { google } from 'googleapis';
 import { z } from 'zod';
 
@@ -8,7 +7,7 @@ import { z } from 'zod';
  * Requires authenticated user. Verifies the token with Google Play Billing and
  * updates the user's subscriptionTier field.
  */
-export const registerPaymentsRoutes: FastifyPluginAsync = async (app) => {
+export const registerPaymentsRoutes = async (app) => {
   const schema = z.object({
     purchaseToken: z.string().min(1),
     productId: z.string().min(1),
