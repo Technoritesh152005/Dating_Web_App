@@ -1,27 +1,52 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { cloneElement, isValidElement, useId, useState, useRef, useEffect } from 'react';
 
 export function ActionMenu({ trigger, children }) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
+  const menuId = useId();
 
   useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
+    const handlePointerDown = (event) => {
+      if (ref.current && !ref.current.contains(event.target)) setOpen(false);
     };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') setOpen(false);
+    };
+
+    document.addEventListener('pointerdown', handlePointerDown);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('pointerdown', handlePointerDown);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
   }, []);
 
+  const triggerElement = isValidElement(trigger)
+    ? cloneElement(trigger, {
+        type: trigger.type === 'button' ? 'button' : undefined,
+        'aria-haspopup': 'menu',
+        'aria-expanded': open,
+        'aria-controls': menuId,
+        onClick: (event) => {
+          trigger.props.onClick?.(event);
+          if (!event.defaultPrevented) setOpen((current) => !current);
+        },
+      })
+    : trigger;
+
   return (
-    <div ref={ref} className="relative">
-      <div onClick={() => setOpen((o) => !o)}>{trigger}</div>
+    <div ref={ref} className={`relative ${open ? 'z-50' : ''}`}>
+      {triggerElement}
       {open && (
-        <div className="absolute right-0 top-full z-20 mt-2 w-52 overflow-hidden rounded-2xl border border-cream/10 bg-dusk shadow-[0_20px_50px_-12px_rgba(0,0,0,0.6)]">
-          {/* Close the menu whenever an item inside is clicked, without
-              every caller needing to remember to do it themselves. */}
-          <div onClick={() => setOpen(false)}>{children}</div>
+        <div
+          id={menuId}
+          role="menu"
+          onClick={() => setOpen(false)}
+          className="absolute right-0 top-full z-50 mt-2 w-56 overflow-hidden rounded-2xl border border-[#eadfd8] bg-white p-1.5 shadow-[0_18px_44px_-18px_rgba(41,35,33,0.35)]"
+        >
+          {children}
         </div>
       )}
     </div>
@@ -31,9 +56,11 @@ export function ActionMenu({ trigger, children }) {
 export function ActionMenuItem({ onClick, danger, children }) {
   return (
     <button
+      type="button"
+      role="menuitem"
       onClick={onClick}
-      className={`block w-full px-4 py-3 text-left text-[14px] transition-colors hover:bg-cream/5 ${
-        danger ? 'text-sindoor-light' : 'text-cream'
+      className={`block w-full rounded-xl px-3.5 py-3 text-left text-sm font-medium transition-colors hover:bg-[#fff0f1] ${
+        danger ? 'text-[#b73946] hover:bg-[#fff0f1]' : 'text-[#514944] hover:text-[#e95161]'
       }`}
     >
       {children}

@@ -4,9 +4,7 @@ import { useEffect, useState, useCallback } from 'react'
 import { api } from '@/lib/api'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/authContext'
-import { SidebarNav } from '@/components/SidebarNav'
 import { presignAndUpload } from '@/lib/uploadS3'
-import { Input } from '@/components/user_interface/Input'
 import { Button } from '@/components/user_interface/Button'
 import { ChoicePills } from '@/components/user_interface/ChoicePills'
 import { ConfirmModal } from '@/components/ConfirmModal'
@@ -238,18 +236,18 @@ export default function ProfileSettingPage() {
 
     if (loading || fetchingProfile) {
         return (
-            <main className="flex min-h-screen items-center justify-center bg-plum-night">
-                <p className="font-mono text-xs uppercase tracking-widest text-pearl-dim">Loading profile...</p>
+            <main className="flex min-h-screen items-center justify-center bg-[#faf7f2]">
+                <p className="font-mono text-xs uppercase tracking-[0.18em] text-[#918781]">Loading profile…</p>
             </main>
         )
     }
 
     if (error && !profile) {
         return (
-            <main className="flex min-h-screen flex-col items-center justify-center bg-plum-night px-6 text-center text-pearl">
-                <div className="max-w-md rounded-3xl border border-saffron/40 bg-plum-surface p-8 shadow-2xl">
-                    <h2 className="font-display text-2xl font-bold text-saffron">Connection Error</h2>
-                    <p className="mt-3 text-sm text-pearl-dim leading-relaxed">{error}</p>
+            <main className="flex min-h-screen flex-col items-center justify-center bg-[#faf7f2] px-6 text-center text-[#292321]">
+                <div className="max-w-md rounded-3xl border border-[#eadfd8] bg-white p-8 shadow-[0_24px_70px_-45px_rgba(74,49,39,0.3)]">
+                    <h2 className="font-display text-2xl font-bold text-[#e95161]">Connection Error</h2>
+                    <p className="mt-3 text-sm leading-relaxed text-[#71655f]">{error}</p>
                     <div className="mt-6 flex justify-center gap-3">
                         <Button variant="primary" onClick={fetchProfileData}>
                             Retry Connection
@@ -265,26 +263,21 @@ export default function ProfileSettingPage() {
 
     // Format timestamps
     const joinedDate = profile?.createdAt ? new Date(profile.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : 'Recently'
-    const updatedTimeAgo = profile?.updatedAt ? new Date(profile.updatedAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : null
-
     return (
-        <div className="flex min-h-screen bg-plum-night text-pearl">
-            {/* 25% Left Sidebar Navigation */}
-            <SidebarNav />
+        <div className="flex min-h-screen flex-col bg-[radial-gradient(ellipse_at_24%_18%,rgba(237,89,100,0.10),transparent_38%),radial-gradient(ellipse_at_78%_75%,rgba(244,196,48,0.13),transparent_34%),linear-gradient(135deg,#fcfaf7_0%,#f7f1ec_100%)] text-[#292321] md:flex-row">
+            <ProfileSettingsNav activeSection={activeSection} onChange={setActiveSection} />
 
             {/* Main Profile Workspace */}
-            <main className="flex-1 overflow-y-auto px-6 py-8 sm:px-10">
-                <div className="mx-auto max-w-6xl space-y-8">
-                    {/* Top Navigation Tabs */}
-                    <ProfileSettingsNav activeSection={activeSection} onChange={setActiveSection} />
+            <main className="min-w-0 flex-1 overflow-y-auto px-4 py-5 sm:px-7 sm:py-7 lg:px-10">
+                <div className="mx-auto max-w-7xl space-y-6 sm:space-y-8">
 
                     {/* SECTION 1: PROFILE STUDIO */}
                     {activeSection === 'profile' && profile && form && (
                         <div className="space-y-8">
                             {/* Top Grid: Hero Photo Card (Left) and Form Cards (Right) */}
-                            <div className="grid gap-8 lg:grid-cols-[minmax(0,1.1fr)_minmax(380px,0.9fr)] items-start">
+                            <div className="grid items-start gap-5 sm:gap-7 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:gap-8">
                                 {/* Left Side: Hero Primary Photo Card */}
-                                <section className="relative h-[620px] w-full overflow-hidden rounded-[32px] border border-plum-border bg-plum-surface shadow-2xl sticky top-6">
+                                <section className="relative h-[min(70vh,620px)] min-h-[420px] w-full overflow-hidden rounded-[28px] border border-white/80 bg-white shadow-[0_24px_70px_-35px_rgba(74,49,39,0.35)] sm:rounded-[32px] sm:min-h-[500px] lg:sticky lg:top-6">
                                     {displayedPhoto ? (
                                         // eslint-disable-next-line @next/next/no-img-element
                                         <img
@@ -293,7 +286,7 @@ export default function ProfileSettingPage() {
                                             className="h-full w-full object-cover transition duration-500"
                                         />
                                     ) : (
-                                        <div className="flex h-full items-center justify-center bg-plum-night font-display text-8xl text-pearl-dim">
+                                        <div className="flex h-full items-center justify-center bg-[radial-gradient(circle_at_50%_35%,#fff5ee_0%,#f0d8d2_45%,#e6c6c6_100%)] font-display text-8xl text-[#d57b7b]">
                                             {profile.displayName?.[0]}
                                         </div>
                                     )}
@@ -314,40 +307,40 @@ export default function ProfileSettingPage() {
                                         </div>
                                     )}
 
-                                    <div className="absolute inset-0 bg-gradient-to-t from-plum-night via-plum-night/60 to-transparent pointer-events-none" />
+                                    <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-transparent" />
 
                                     {/* Bottom Info Overlay */}
-                                    <div className="absolute inset-x-0 bottom-0 p-8 sm:p-10 space-y-3 z-10">
-                                        <div className="flex items-center gap-2">
-                                            <h1 className="font-sans text-4xl sm:text-5xl font-extrabold text-pearl tracking-tight">
+                                    <div className="absolute inset-x-0 bottom-0 z-10 space-y-3 p-5 sm:p-8">
+                                        <div className="flex min-w-0 items-center gap-2">
+                                            <h1 className="truncate font-display text-3xl text-white sm:text-5xl">
                                                 {profile.displayName}
                                             </h1>
                                             {profile.verificationStatus === 'VERIFIED' && (
-                                                <VerifiedIcon className="h-7 w-7 text-saffron" />
+                                                <VerifiedIcon className="h-6 w-6 shrink-0 text-white" />
                                             )}
                                         </div>
 
                                         {/* Username Read-Only Badge */}
-                                        <div className="flex items-center gap-2">
-                                            <span className="inline-flex items-center gap-0.5 font-mono text-xs font-bold tracking-wide text-saffron bg-plum-night/90 border border-saffron/40 px-3.5 py-1 rounded-full shadow-[0_0_12px_rgba(240,162,2,0.25)]">
-                                                <span className="text-gold/60 font-semibold">@</span>
+                                        <div className="flex flex-wrap items-center gap-2">
+                                            <span className="inline-flex items-center gap-0.5 rounded-full border border-white/40 bg-black/35 px-3.5 py-1 font-mono text-xs font-bold tracking-wide text-white backdrop-blur-md">
+                                                <span className="font-semibold text-white/70">@</span>
                                                 <span>{profile.username}</span>
                                             </span>
                                             {profile.verificationStatus === 'REVERIFICATION_REQUIRED' && (
-                                                <span className="font-mono text-[10px] font-bold text-sindoor-light bg-sindoor/20 border border-sindoor/40 px-2.5 py-1 rounded-full">
+                                                <span className="rounded-full border border-white/40 bg-black/35 px-2.5 py-1 font-mono text-[10px] font-bold text-white backdrop-blur-md">
                                                     Re-verification Required
                                                 </span>
                                             )}
                                         </div>
 
-                                        <p className="text-sm leading-relaxed text-pearl-dim max-w-md font-sans">
+                                        <p className="max-w-md font-sans text-sm leading-relaxed text-white/90">
                                             {form.bio || 'No bio written yet. Add a short bio to introduce yourself!'}
                                         </p>
 
                                         {profile.voiceBioUrl && (
-                                            <div className="mt-2 flex items-center gap-3 rounded-2xl border border-gold/30 bg-plum-night/90 p-3 backdrop-blur-md max-w-sm">
-                                                <span className="font-mono text-xs font-bold text-gold uppercase shrink-0">Voice Intro</span>
-                                                <audio controls src={profile.voiceBioUrl} className="h-7 flex-1" />
+                                            <div className="mt-2 flex max-w-sm flex-col gap-2 rounded-2xl border border-white/25 bg-black/35 p-3 backdrop-blur-md sm:flex-row sm:items-center sm:gap-3">
+                                                <span className="shrink-0 font-mono text-xs font-bold uppercase text-white/80">Voice Intro</span>
+                                                <audio controls src={profile.voiceBioUrl} className="h-8 w-full min-w-0 flex-1 sm:w-auto" />
                                             </div>
                                         )}
                                     </div>
@@ -356,35 +349,35 @@ export default function ProfileSettingPage() {
                                 {/* Right Side: Identity, Photo Gallery, Bio & Voice Intro */}
                                 <section className="space-y-6">
                                     {/* Account Identity Card */}
-                                    <div className="rounded-3xl border border-plum-border bg-plum-surface p-6 space-y-3 shadow-xl">
+                                    <div className="space-y-3 rounded-3xl border border-white/80 bg-white/85 p-5 shadow-[0_18px_50px_-35px_rgba(74,49,39,0.32)] sm:p-6">
                                         <div className="flex items-center justify-between">
-                                            <div className="flex items-center gap-2 text-saffron">
+                                            <div className="flex items-center gap-2 text-[#e95161]">
                                                 <SparklesIcon className="h-4 w-4" />
                                                 <span className="font-mono text-xs font-bold uppercase tracking-wider">Account Identity</span>
                                             </div>
-                                            <span className="font-mono text-[10px] text-pearl-dim">Joined {joinedDate}</span>
+                                            <span className="font-mono text-[10px] text-[#918781]">Joined {joinedDate}</span>
                                         </div>
-                                        <div className="grid grid-cols-2 gap-3 pt-2 text-xs font-mono">
-                                            <div className="rounded-2xl border border-plum-border/60 bg-plum-night/60 p-3">
-                                                <p className="text-pearl-dim uppercase text-[10px]">Verification</p>
-                                                <p className="font-bold text-pearl mt-0.5">{profile.verificationStatus}</p>
+                                        <div className="grid grid-cols-1 gap-3 pt-2 font-mono text-xs sm:grid-cols-2">
+                                            <div className="rounded-2xl border border-[#eee5df] bg-[#faf7f2] p-3">
+                                                <p className="text-[10px] uppercase text-[#918781]">Verification</p>
+                                                <p className="mt-0.5 font-bold text-[#332d29]">{profile.verificationStatus}</p>
                                             </div>
-                                            <div className="rounded-2xl border border-plum-border/60 bg-plum-night/60 p-3">
-                                                <p className="text-pearl-dim uppercase text-[10px]">Photos Count</p>
-                                                <p className="font-bold text-pearl mt-0.5">{profile.photos?.length ?? 0} / 6 Uploaded</p>
+                                            <div className="rounded-2xl border border-[#eee5df] bg-[#faf7f2] p-3">
+                                                <p className="text-[10px] uppercase text-[#918781]">Photos Count</p>
+                                                <p className="mt-0.5 font-bold text-[#332d29]">{profile.photos?.length ?? 0} / 6 Uploaded</p>
                                             </div>
                                         </div>
                                     </div>
 
                                     {/* Photo Gallery Upload & Management */}
-                                    <div className="rounded-3xl border border-plum-border bg-plum-surface p-6 shadow-xl space-y-4">
-                                        <div className="flex items-center justify-between">
-                                            <div>
-                                                <p className="font-mono text-xs font-bold uppercase tracking-wider text-pearl">Photo Gallery</p>
-                                                <p className="text-xs text-pearl-dim">Upload up to 6 photos. Changing primary photo sends you for re-verification.</p>
+                                    <div className="space-y-4 rounded-3xl border border-white/80 bg-white/85 p-5 shadow-[0_18px_50px_-35px_rgba(74,49,39,0.32)] sm:p-6">
+                                        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                                            <div className="min-w-0">
+                                                <p className="font-mono text-xs font-bold uppercase tracking-wider text-[#332d29]">Photo Gallery</p>
+                                                <p className="mt-1 text-xs leading-relaxed text-[#827871]">Upload up to 6 photos. Changing your primary photo requires re-verification.</p>
                                             </div>
                                             {(profile.photos?.length ?? 0) < 6 && (
-                                                <label className="cursor-pointer rounded-xl bg-saffron-gradient px-4 py-2 font-mono text-xs font-bold text-pearl shadow-saffron-glow transition hover:scale-105">
+                                                <label className="inline-flex min-h-10 shrink-0 cursor-pointer items-center justify-center rounded-xl bg-[#e95161] px-4 py-2 font-mono text-xs font-bold text-white shadow-sm transition hover:bg-[#d94355]">
                                                     + Upload Photo
                                                     <input
                                                         type="file"
@@ -401,8 +394,8 @@ export default function ProfileSettingPage() {
                                             {profile.photos?.map((photo, index) => (
                                                 <div
                                                     key={photo.id ?? photo.key}
-                                                    className={`group relative aspect-square overflow-hidden rounded-2xl border border-plum-border bg-plum-night ${
-                                                        photo.isPrimary ? 'ring-2 ring-saffron ring-offset-2 ring-offset-plum-surface' : ''
+                                                    className={`group relative aspect-square overflow-hidden rounded-2xl border border-[#eadfd8] bg-[#f8f4f0] ${
+                                                        photo.isPrimary ? 'ring-2 ring-[#e95161] ring-offset-2 ring-offset-white' : ''
                                                     }`}
                                                 >
                                                     <button
@@ -422,7 +415,7 @@ export default function ProfileSettingPage() {
                                                             type="button"
                                                             onClick={() => deletePhoto(photo.id)}
                                                             aria-label="Delete photo"
-                                                            className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-plum-night/80 text-xs font-bold text-sindoor-light opacity-0 transition group-hover:opacity-100"
+                                                            className="absolute right-2 top-2 flex h-11 w-11 items-center justify-center rounded-full bg-white/90 text-xs font-bold text-[#b73946] opacity-100 shadow-sm transition sm:opacity-0 sm:group-hover:opacity-100"
                                                         >
                                                             ✕
                                                         </button>
@@ -431,7 +424,7 @@ export default function ProfileSettingPage() {
                                                         <button
                                                             type="button"
                                                             onClick={() => setConfirmPrimaryPhotoId(photo.id)}
-                                                            className="absolute inset-x-1 bottom-1 rounded-xl bg-plum-night/90 py-1 font-mono text-[10px] font-bold uppercase text-saffron opacity-0 transition group-hover:opacity-100 shadow-md"
+                                                            className="absolute inset-x-1 bottom-1 min-h-10 rounded-xl bg-white/90 py-1.5 font-mono text-[10px] font-bold uppercase text-[#c34450] opacity-100 shadow-sm transition sm:opacity-0 sm:group-hover:opacity-100"
                                                         >
                                                             Make Primary
                                                         </button>
@@ -442,28 +435,28 @@ export default function ProfileSettingPage() {
                                     </div>
 
                                     {/* About You & Bio */}
-                                    <div className="rounded-3xl border border-plum-border bg-plum-surface p-6 shadow-xl space-y-4">
-                                        <p className="font-mono text-xs font-bold uppercase tracking-wider text-pearl">About You</p>
+                                    <div className="space-y-4 rounded-3xl border border-white/80 bg-white/85 p-5 shadow-[0_18px_50px_-35px_rgba(74,49,39,0.32)] sm:p-6">
+                                        <p className="font-mono text-xs font-bold uppercase tracking-wider text-[#332d29]">About You</p>
                                         <div className="space-y-2">
-                                            <label className="font-mono text-xs text-pearl-dim">Bio</label>
+                                            <label className="font-mono text-xs text-[#827871]">Bio</label>
                                             <textarea
                                                 rows={3}
                                                 value={form.bio}
                                                 onChange={(e) => setForm((f) => ({ ...f, bio: e.target.value }))}
                                                 placeholder="Write something memorable about yourself..."
-                                                className="w-full resize-none rounded-2xl border border-plum-border bg-plum-night/60 px-4 py-3 text-sm text-pearl outline-none transition placeholder:text-pearl-dim focus:border-saffron"
+                                                className="w-full resize-y rounded-2xl border border-[#eadfd8] bg-[#faf7f2] px-4 py-3 text-sm text-[#292321] outline-none transition placeholder:text-[#a39a94] focus:border-[#edc0c3]"
                                             />
                                         </div>
                                     </div>
 
                                     {/* Voice Bio Recorder */}
-                                    <div className="rounded-3xl border border-plum-border bg-plum-surface p-6 shadow-xl space-y-3">
+                                    <div className="space-y-3 rounded-3xl border border-white/80 bg-white/85 p-5 shadow-[0_18px_50px_-35px_rgba(74,49,39,0.32)] sm:p-6">
                                         <VoiceBioRecorder value={voiceBioFile ?? profile.voiceBioUrl} onChange={setVoiceBioFile} />
                                         {(profile.voiceBioUrl || voiceBioFile) && (
                                             <button
                                                 type="button"
                                                 onClick={removeVoiceBio}
-                                                className="font-mono text-xs text-sindoor-light hover:underline"
+                                                className="font-mono text-xs text-[#b73946] hover:underline"
                                             >
                                                 Remove Voice Introduction
                                             </button>
@@ -473,13 +466,13 @@ export default function ProfileSettingPage() {
                             </div>
 
                             {/* Bottom Horizontal Section: Interests & Signals + Profession / Vocation occupying equal space horizontally under image */}
-                            <div className="rounded-3xl border border-plum-border/80 bg-plum-surface p-6 sm:p-8 shadow-2xl space-y-6">
-                                <div className="flex items-center justify-between border-b border-plum-border/50 pb-4">
+                            <div className="space-y-6 rounded-3xl border border-white/80 bg-white/85 p-5 shadow-[0_18px_50px_-35px_rgba(74,49,39,0.32)] sm:p-8">
+                                <div className="flex flex-col gap-3 border-b border-[#eee5df] pb-4 sm:flex-row sm:items-center sm:justify-between">
                                     <div>
-                                        <h3 className="font-display text-2xl font-bold text-pearl">Interests & Vocation</h3>
-                                        <p className="text-xs text-pearl-dim mt-0.5">Select signals and interests to help match with like-minded profiles.</p>
+                                        <h3 className="font-display text-2xl font-bold text-[#292321]">Interests & Vocation</h3>
+                                        <p className="mt-0.5 text-xs text-[#827871]">Select signals and interests to help match with like-minded profiles.</p>
                                     </div>
-                                    <span className="font-mono text-xs font-bold uppercase tracking-wider text-saffron bg-saffron/10 border border-saffron/30 px-3 py-1 rounded-full">
+                                    <span className="w-fit rounded-full border border-[#f2c9cc] bg-[#fff0f1] px-3 py-1 font-mono text-xs font-bold uppercase tracking-wider text-[#c34450]">
                                         {form.interests.length} Selected
                                     </span>
                                 </div>
@@ -487,7 +480,7 @@ export default function ProfileSettingPage() {
                                 <div className="grid gap-8 md:grid-cols-2">
                                     {/* Left Side: Interests & Signals */}
                                     <div className="space-y-4">
-                                        <p className="font-mono text-xs font-bold uppercase tracking-wider text-saffron flex items-center gap-2">
+                                        <p className="flex items-center gap-2 font-mono text-xs font-bold uppercase tracking-wider text-[#e95161]">
                                             <SparklesIcon className="h-4 w-4" />
                                             <span>Interests & Signals</span>
                                         </p>
@@ -502,8 +495,8 @@ export default function ProfileSettingPage() {
                                     </div>
 
                                     {/* Right Side: Profession / Vocation */}
-                                    <div className="space-y-4 md:border-l md:border-plum-border/50 md:pl-8">
-                                        <p className="font-mono text-xs font-bold uppercase tracking-wider text-gold flex items-center gap-2">
+                                    <div className="space-y-4 md:border-l md:border-[#eee5df] md:pl-8">
+                                        <p className="flex items-center gap-2 font-mono text-xs font-bold uppercase tracking-wider text-[#a87c28]">
                                             <span className="text-sm">✦</span>
                                             <span>Profession / Vocation</span>
                                         </p>
@@ -520,12 +513,12 @@ export default function ProfileSettingPage() {
 
                             {/* Save Profile Changes Action Button Bar */}
                             <div className="flex flex-col items-center gap-3 pt-2">
-                                {error && <p className="text-sm text-sindoor-light font-mono text-center">{error}</p>}
+                                {error && <p className="text-center font-mono text-sm text-[#b73946]">{error}</p>}
                                 <Button
                                     variant="primary"
                                     onClick={saveProfile}
                                     disabled={saving}
-                                    className="w-full max-w-xl py-4 text-base font-bold shadow-saffron-glow transition-all hover:scale-[1.02] active:scale-[0.98] rounded-2xl"
+                                    className="w-full max-w-xl rounded-2xl bg-[#e95161] py-4 text-base font-bold text-white shadow-lg shadow-rose-200/60 transition-all hover:bg-[#d94355] active:scale-[0.98]"
                                 >
                                     {saving ? 'Saving Profile…' : saved ? '✓ Profile Saved Successfully!' : 'Save Profile Changes'}
                                 </Button>
@@ -537,57 +530,57 @@ export default function ProfileSettingPage() {
                     {activeSection === 'account' && (
                         <div className="mx-auto max-w-2xl space-y-6">
                             <div>
-                                <h1 className="font-display text-4xl font-bold text-pearl">Account Settings</h1>
-                                <p className="mt-1 text-sm text-pearl-dim">Manage your email, username, and active sessions.</p>
+                                <h1 className="font-display text-3xl font-bold text-[#292321] sm:text-4xl">Account Settings</h1>
+                                <p className="mt-1 text-sm text-[#827871]">Manage your email, username, and active sessions.</p>
                             </div>
 
                             {/* Email */}
-                            <div className="rounded-3xl border border-plum-border bg-plum-surface p-6 shadow-xl space-y-2">
-                                <p className="font-mono text-xs font-bold uppercase tracking-wider text-pearl-dim">Registered Email</p>
-                                <p className="font-mono text-base text-pearl font-bold">{user?.email}</p>
+                            <div className="space-y-2 rounded-3xl border border-white/80 bg-white/85 p-5 shadow-[0_18px_50px_-35px_rgba(74,49,39,0.32)] sm:p-6">
+                                <p className="font-mono text-xs font-bold uppercase tracking-wider text-[#827871]">Registered Email</p>
+                                <p className="break-all font-mono text-sm font-bold text-[#292321] sm:text-base">{user?.email}</p>
                             </div>
 
                             {/* Username Editing */}
-                            <div className="rounded-3xl border border-plum-border bg-plum-surface p-6 shadow-xl space-y-4">
+                            <div className="space-y-4 rounded-3xl border border-white/80 bg-white/85 p-5 shadow-[0_18px_50px_-35px_rgba(74,49,39,0.32)] sm:p-6">
                                 <div>
-                                    <p className="font-mono text-xs font-bold uppercase tracking-wider text-pearl">Username</p>
-                                    <p className="text-xs text-pearl-dim">Your unique username on the app.</p>
+                                    <p className="font-mono text-xs font-bold uppercase tracking-wider text-[#332d29]">Username</p>
+                                    <p className="text-xs text-[#827871]">Your unique username on the app.</p>
                                 </div>
-                                <div className="flex gap-3">
+                                <div className="flex flex-col gap-3 sm:flex-row">
                                     <input
                                         value={accountUsername}
                                         onChange={(e) => setAccountUsername(e.target.value.toLowerCase())}
                                         maxLength={20}
-                                        className="flex-1 rounded-xl border border-plum-border bg-plum-night/60 px-4 py-3 font-mono text-sm text-pearl outline-none focus:border-saffron"
+                                        className="min-w-0 flex-1 rounded-xl border border-[#eadfd8] bg-[#faf7f2] px-4 py-3 font-mono text-sm text-[#292321] outline-none focus:border-[#edc0c3]"
                                     />
-                                    <Button variant="primary" onClick={saveUsername} disabled={savingUsername}>
+                                    <Button variant="primary" onClick={saveUsername} disabled={savingUsername} className="w-full shrink-0 sm:w-auto">
                                         {savingUsername ? 'Saving…' : usernameSaved ? 'Saved!' : 'Update Username'}
                                     </Button>
                                 </div>
                                 {usernameError && (
-                                    <p className="text-xs text-sindoor-light font-mono">{usernameError}</p>
+                                    <p className="font-mono text-xs text-[#b73946]">{usernameError}</p>
                                 )}
                             </div>
 
                             {/* Session Logout */}
-                            <div className="rounded-3xl border border-plum-border bg-plum-surface p-6 shadow-xl space-y-3">
-                                <p className="font-mono text-xs font-bold uppercase tracking-wider text-pearl-dim">Active Session</p>
-                                <p className="text-xs text-pearl-dim">Log out of your current session on this device.</p>
-                                <Button variant="secondary" onClick={() => setConfirmLogout(true)}>
+                            <div className="space-y-3 rounded-3xl border border-white/80 bg-white/85 p-5 shadow-[0_18px_50px_-35px_rgba(74,49,39,0.32)] sm:p-6">
+                                <p className="font-mono text-xs font-bold uppercase tracking-wider text-[#827871]">Active Session</p>
+                                <p className="text-xs text-[#827871]">Log out of your current session on this device.</p>
+                                <Button variant="secondary" onClick={() => setConfirmLogout(true)} className="w-full sm:w-auto">
                                     Log Out
                                 </Button>
                             </div>
 
                             {/* Danger Zone */}
-                            <div className="rounded-3xl border border-sindoor/40 bg-sindoor/10 p-6 shadow-xl space-y-3">
-                                <p className="font-mono text-xs font-bold uppercase tracking-wider text-sindoor-light">Danger Zone</p>
-                                <p className="text-xs text-pearl-dim leading-relaxed">
+                            <div className="space-y-3 rounded-3xl border border-[#f0c5c8] bg-[#fff2f2] p-5 shadow-sm sm:p-6">
+                                <p className="font-mono text-xs font-bold uppercase tracking-wider text-[#b73946]">Danger Zone</p>
+                                <p className="text-xs leading-relaxed text-[#71655f]">
                                     Deleting your account hides your profile immediately and permanently purges your data after 60 seconds.
                                 </p>
                                 <Button
                                     variant="ghost"
                                     onClick={() => setConfirmDelete(true)}
-                                    className="text-sindoor-light border border-sindoor/30 hover:bg-sindoor/20"
+                                    className="w-full border border-[#e4a6ab] !text-[#b73946] hover:bg-[#ffe5e7] sm:w-auto"
                                 >
                                     Delete Account
                                 </Button>

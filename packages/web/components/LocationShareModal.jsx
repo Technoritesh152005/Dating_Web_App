@@ -96,57 +96,57 @@ export function LocationShareModal({ open, onClose }) {
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/70 px-6 backdrop-blur-sm">
-            <Card className="w-full max-w-sm p-6">
+            <Card className="w-full max-w-sm !border-[#eadfd8] !bg-white p-6 shadow-[0_24px_70px_-35px_rgba(41,35,33,0.35)]">
                 {!share ? (
                     <>
-                        <h3 className="font-display text-xl text-cream">Share your live location</h3>
-                        <p className="mt-1 text-[14px] text-cream-dim">
+                        <h3 className="font-display text-xl text-[#292321]">Share your live location</h3>
+                        <p className="mt-1 text-sm text-[#71655f]">
                             A trusted contact can watch your location until the timer ends — no account needed on their end.
                         </p>
 
                         <div className="mt-5">
-                            <p className="mb-2 font-mono text-[11px] uppercase tracking-[0.12em] text-cream-dim">For how long</p>
+                            <p className="mb-2 font-mono text-[11px] uppercase tracking-[0.12em] text-[#827871]">For how long</p>
                             <ChoicePills options={DURATION_OPTIONS} value={duration} onChange={setDuration} />
                         </div>
 
                         <div className="mt-4">
-                            <label className="mb-2 block font-mono text-[11px] uppercase tracking-[0.12em] text-cream-dim">
+                            <label className="mb-2 block font-mono text-[11px] uppercase tracking-[0.12em] text-[#827871]">
                                 Contact name (optional)
                             </label>
                             <input
                                 value={contactName}
                                 onChange={(e) => setContactName(e.target.value)}
                                 placeholder="e.g. Mom, Priya"
-                                className="w-full rounded-2xl border border-cream/10 bg-dusk-light px-5 py-3 text-[15px] text-cream outline-none focus:border-marigold/60"
+                                className="w-full rounded-2xl border border-[#eadfd8] bg-[#faf7f2] px-5 py-3 text-[15px] text-[#292321] outline-none focus:border-[#edc0c3]"
                             />
                         </div>
 
-                        {error && <p className="mt-3 text-[13px] text-sindoor-light">{error}</p>}
+                        {error && <p className="mt-3 text-[13px] text-[#b73946]">{error}</p>}
 
                         <div className="mt-6 flex gap-3">
-                            <Button variant="secondary" onClick={onClose} className="flex-1">Cancel</Button>
-                            <Button variant="primary" onClick={startSharing} disabled={starting} className="flex-1">
+                            <Button variant="secondary" onClick={onClose} className="!flex-1 !border-[#eadfd8] !bg-[#f8f4f0] !text-[#655d58] hover:!bg-[#f1eae4]">Cancel</Button>
+                            <Button variant="primary" onClick={startSharing} disabled={starting} className="!flex-1 !bg-[#e95161] !text-white hover:!bg-[#d94355]">
                                 {starting ? 'Starting…' : 'Start sharing'}
                             </Button>
                         </div>
                     </>
                 ) : (
                     <>
-                        <h3 className="font-display text-xl text-cream">You're sharing your location</h3>
-                        <p className="mt-1 text-[14px] text-cream-dim">Send this link to your contact:</p>
+                        <h3 className="font-display text-xl text-[#292321]">You're sharing your location</h3>
+                        <p className="mt-1 text-sm text-[#71655f]">Send this link to your contact:</p>
 
-                        <div className="mt-3 flex items-center gap-2 rounded-2xl border border-cream/10 bg-dusk-light px-4 py-3">
-                            <span className="flex-1 truncate font-mono text-[12px] text-cream-dim">{share.shareUrl}</span>
-                            <button onClick={copyLink} className="flex-shrink-0 font-mono text-[11px] uppercase text-marigold hover:underline">
+                        <div className="mt-3 flex items-center gap-2 rounded-2xl border border-[#eadfd8] bg-[#faf7f2] px-4 py-3">
+                            <span className="flex-1 truncate font-mono text-[12px] text-[#71655f]">{share.shareUrl}</span>
+                            <button onClick={copyLink} className="flex-shrink-0 font-mono text-[11px] uppercase text-[#c34450] hover:underline">
                                 {copied ? 'Copied' : 'Copy'}
                             </button>
                         </div>
 
-                        <p className="mt-3 font-mono text-[11px] text-cream-dim">
+                        <p className="mt-3 font-mono text-[11px] text-[#827871]">
                             Ends {new Date(share.expiresAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </p>
 
-                        <Button variant="secondary" onClick={stopSharing} className="mt-6 w-full">
+                        <Button variant="secondary" onClick={stopSharing} className="mt-6 w-full !border-[#eadfd8] !bg-[#f8f4f0] !text-[#655d58] hover:!bg-[#f1eae4]">
                             Stop sharing now
                         </Button>
                     </>
