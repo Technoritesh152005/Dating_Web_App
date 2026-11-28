@@ -1,7 +1,6 @@
-import { FastifyPluginAsync } from 'fastify';
 import { z } from 'zod';
 
-export const registerNotificationRoutes: FastifyPluginAsync = async (app) => {
+export const registerNotificationRoutes = async (app) => {
   // Expect a JSON body { token: string }
   const schema = z.object({ token: z.string().min(1) });
 
