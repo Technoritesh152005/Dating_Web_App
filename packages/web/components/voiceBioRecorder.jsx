@@ -98,8 +98,8 @@ export function VoiceBioRecorder({ value, onChange }) {
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <div>
-          <p className="font-mono text-xs font-semibold uppercase tracking-wider text-pearl">Voice Introduction</p>
-          <p className="text-xs text-pearl-dim">Record a short audio introduction (up to 15 seconds).</p>
+          <p className="font-mono text-xs font-semibold uppercase tracking-wider text-[#332d29]">Voice Introduction</p>
+          <p className="text-xs text-[#827871]">Record a short audio introduction (up to 15 seconds).</p>
         </div>
       </div>
 
@@ -108,16 +108,16 @@ export function VoiceBioRecorder({ value, onChange }) {
           <button
             type="button"
             onClick={stopRecording}
-            className="flex items-center justify-center gap-2 rounded-xl border border-saffron bg-saffron/20 px-4 py-3 font-mono text-xs font-bold text-saffron shadow-saffron-glow animate-pulse"
+            className="flex min-h-11 items-center justify-center gap-2 rounded-xl border border-[#e95161] bg-[#fff0f1] px-4 py-3 font-mono text-xs font-bold text-[#c34450] animate-pulse"
           >
-            <span className="h-2.5 w-2.5 rounded-full bg-saffron" />
+            <span className="h-2.5 w-2.5 rounded-full bg-[#e95161]" />
             <span>Stop Recording ({seconds}s / 15s)</span>
           </button>
         ) : (
           <button
             type="button"
             onClick={startRecording}
-            className="flex items-center justify-center gap-2.5 rounded-xl border border-gold/40 bg-gold/10 px-4 py-3 font-mono text-xs font-semibold text-gold transition-colors hover:bg-gold/20"
+            className="flex min-h-11 items-center justify-center gap-2.5 rounded-xl border border-[#eadfd8] bg-[#faf7f2] px-4 py-3 font-mono text-xs font-semibold text-[#655d58] transition-colors hover:bg-[#f8f4f0]"
           >
             <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
@@ -127,12 +127,12 @@ export function VoiceBioRecorder({ value, onChange }) {
         )}
 
         {audioSrc && (
-          <div className="rounded-xl border border-plum-border bg-plum-night/90 p-3">
+          <div className="rounded-xl border border-[#eadfd8] bg-[#faf7f2] p-3">
             <audio controls src={audioSrc} className="w-full h-8" />
           </div>
         )}
 
-        {error && <p className="text-xs text-sindoor-light font-medium">{error}</p>}
+        {error && <p role="alert" className="text-xs font-medium text-[#b73946]">{error}</p>}
       </div>
     </div>
   )

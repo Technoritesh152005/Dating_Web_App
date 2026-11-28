@@ -83,7 +83,10 @@ export function registerSwipesRoutes(app) {
                 : m.userAId))
         const otherProfiles = await app.db.profile.findMany({
             where: { userId: { in: otherUserIds } },
-            include: { photos: { where: { isPrimary: true }, take: 1 } },
+            include: {
+                photos: { where: { isPrimary: true }, take: 1 },
+                user: { select: { lastSeenAt: true } },
+            },
         });
 
         for (const profile of otherProfiles) {
@@ -97,10 +100,13 @@ export function registerSwipesRoutes(app) {
         const profileByUserId = new Map(otherProfiles.map((p) => [p.userId, p]));
         const enrichedMatches = matches.map((match) => {
             const otherUserId = match.userAId === request.userId ? match.userBId : match.userAId;
+            const otherUser = profileByUserId.get(otherUserId) ?? null;
+            const { user: account, ...profile } = otherUser ?? {};
             return {
                 matchId: match.id,
                 matchedAt: match.matchedAt,
-                otherUser: profileByUserId.get(otherUserId) ?? null,
+                otherUser: otherUser ? profile : null,
+                lastSeenAt: account?.lastSeenAt ?? null,
                 icebreakerSuggestion: match.iceBreakerSuggestion,
             };
         });
@@ -124,7 +130,10 @@ export function registerSwipesRoutes(app) {
         const otherUserId = match.userAId === request.userId ? match.userBId : match.userAId;
         const otherUser = await app.db.profile.findUnique({
             where: { userId: otherUserId },
-            include: { photos: { where: { isPrimary: true }, take: 1 } },
+            include: {
+                photos: { where: { isPrimary: true }, take: 1 },
+                user: { select: { lastSeenAt: true } },
+            },
         });
 
         if (otherUser) {
@@ -133,12 +142,15 @@ export function registerSwipesRoutes(app) {
                 url: await generatePresignedReadUrl(photo.key),
             })));
         }
+        const lastSeenAt = otherUser?.user?.lastSeenAt ?? null;
+        if (otherUser) delete otherUser.user;
 
         return reply.send({
             ok: true,
             matchId: match.id,
             otherUserId,
             otherUser,
+            lastSeenAt,
             matchedAt: match.matchedAt,
             iceBreakerSuggestion: match.iceBreakerSuggestion,
         });

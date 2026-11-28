@@ -1,4 +1,5 @@
-import { markOnline, isOnline, markOffline } from './userPresence.js'
+import { generatePresignedReadUrl } from '@dating-app/shared'
+import { markOnline, isOnline, markOffline, refreshOnline } from './userPresence.js'
 
 const MAX_MESSAGE_LENGTH = 4000
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
@@ -30,15 +31,28 @@ async function verifyMatchMembership(db, matchId, userId) {
 }
 
 export function registerChatHandlers(io, socket, { db, redis, logger , scamAnalysisQueue}) {
+    const joinedMatchIds = new Set()
 
     // first mark the user online
-    markOnline(redis, socket.userId, socket.id)
+    const presenceReady = markOnline(redis, socket.userId, socket.id).then(() => true).catch((err) => {
+        logger.error({ err, userId: socket.userId }, 'Failed to mark user online')
+        return false
+    })
     socket.join(`user:${socket.userId}`)
+
+    socket.on('presence-heartbeat', () => {
+        refreshOnline(redis, socket.userId, socket.id).catch((err) => {
+            logger.error({ err, userId: socket.userId }, 'Failed to refresh user presence')
+        })
+    })
 
     // when match is created , suppors alice opens chat we need to create a matchRoom now so that msg gets broadcast to this room only and not to others
     socket.on('join-match', async ({ matchId }, callback) => {
 
         try {
+            if (!await presenceReady) {
+                return callback?.({ ok: false, error: 'Could not update chat presence' })
+            }
             if (!matchId || !isValidUuid(matchId)) {
                 return callback?.({ ok: false, error: 'Invalid match ID' })
             }
@@ -55,12 +69,20 @@ export function registerChatHandlers(io, socket, { db, redis, logger , scamAnaly
             }
 
             socket.join(matchRoom(matchId))
+            joinedMatchIds.add(matchId)
             logger.info({ userId: socket.userId, matchId }, 'User joined match room');
 
-            const otherUserId = match.userAId === socket.userId ? match.userBId : match.userAId;
-            const partnerOnline = await isOnline(redis, otherUserId);
+            const otherUserId = match.userAId === socket.userId ? match.userBId : match.userAId
+            const [partnerOnline, partner] = await Promise.all([
+                isOnline(redis, otherUserId),
+                db.user.findUnique({
+                    where: { id: otherUserId },
+                    select: { lastSeenAt: true },
+                }),
+            ])
 
-            callback?.({ ok: true, partnerOnline })
+            socket.to(matchRoom(matchId)).emit('presence-changes', { online: true })
+            callback?.({ ok: true, partnerOnline, lastSeenAt: partner?.lastSeenAt ?? null })
 
         } catch (err) {
             logger.error({ err, matchId }, 'Error joining match room');
@@ -102,6 +124,10 @@ export function registerChatHandlers(io, socket, { db, redis, logger , scamAnaly
                 });
             }
 
+            const attachmentUrl = attachment?.key
+                ? await generatePresignedReadUrl(attachment.key, 60 * 60)
+                : attachment?.url || null
+
             //   we now store the message before broadcasting
             const msg = await db.message.create({
                 data: {
@@ -119,19 +145,20 @@ export function registerChatHandlers(io, socket, { db, redis, logger , scamAnaly
             // now broadcast msg to everyone // Broadcast to EVERYONE in the room (including the sender - simplest
             // way for the sender's own UI to get the server-confirmed message
             // with its real id/timestamp, rather than trusting its own optimistic copy).
+            const clientMessage = { ...msg, attachmentUrl }
             io.to(matchRoom(matchId)).emit('new-msg', {
                 id: msg.id,
                 matchId: msg.matchId,
                 senderId: msg.senderId,
                 content: msg.content,
-                attachmentUrl: msg.attachmentUrl,
+                attachmentUrl,
                 attachmentKey: msg.attachmentKey,
                 attachmentName: msg.attachmentName,
                 attachmentType: msg.attachmentType,
                 attachmentSize: msg.attachmentSize,
                 createdAt: msg.createdAt
             })
-            callback?.({ ok: true, message: msg })
+            callback?.({ ok: true, message: clientMessage })
 
             //this dont interrupt the message. they r transmitted to their particular match room and saved in db
             const analysisBucket = Math.floor(Date.now() / 60_000)
@@ -189,7 +216,24 @@ export function registerChatHandlers(io, socket, { db, redis, logger , scamAnaly
     })
 
     socket.on('disconnect', async (reason) => {
-        await markOffline(redis, socket.userId, socket.id);
+        const stillOnline = await markOffline(redis, socket.userId, socket.id)
+        if (!stillOnline) {
+            try {
+                const updatedUser = await db.user.update({
+                    where: { id: socket.userId },
+                    data: { lastSeenAt: new Date() },
+                    select: { lastSeenAt: true },
+                })
+                for (const matchId of joinedMatchIds) {
+                    io.to(matchRoom(matchId)).emit('presence-changes', {
+                        online: false,
+                        lastSeenAt: updatedUser.lastSeenAt,
+                    })
+                }
+            } catch (err) {
+                logger.error({ err, userId: socket.userId }, 'Failed to update user last seen')
+            }
+        }
         // leave all rooms to clean up stale memberships
         socket.rooms.forEach(room => {
             if (room !== socket.id) socket.leave(room)

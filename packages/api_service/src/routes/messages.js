@@ -1,6 +1,6 @@
 import { createQueue } from "@dating-app/shared/src/queue.js";
 import { QUEUE_NAMES } from "@dating-app/shared/src/queueNames.js";
-import {generatePresignedReadUrl} from '@dating-app/shared'
+import { generatePresignedReadUrl } from '@dating-app/shared'
 
 const PAGE_SIZE = 50;
 const UUID_REGEX =
@@ -63,8 +63,15 @@ export function registerGetMessageRoutes(app) {
         take: PAGE_SIZE,
       });
 
+      const clientMessages = await Promise.all(messages.reverse().map(async (message) => ({
+        ...message,
+        attachmentUrl: message.attachmentKey
+          ? await generatePresignedReadUrl(message.attachmentKey, 60 * 60)
+          : message.attachmentUrl,
+      })));
+
       return reply.code(200).send({
-        messages: messages.reverse(),
+        messages: clientMessages,
         hasMore: messages.length === PAGE_SIZE,
       });
     },

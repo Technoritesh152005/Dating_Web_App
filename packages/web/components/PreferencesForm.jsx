@@ -63,12 +63,12 @@ export function PreferencesForm() {
     }
 
     return (
-        <section className="mx-auto mt-8 w-full max-w-2xl rounded-card border border-cream/10 bg-dusk/80 p-6">
-            <p className="font-mono text-[11px] uppercase tracking-widest text-marigold">Preferences</p>
-            <h1 className="mt-2 font-display text-4xl text-cream">Who you want to meet</h1>
-            <p className="mt-3 text-cream-dim">These settings control the people shown in Discover.</p>
+        <section className="mx-auto w-full max-w-2xl space-y-0 rounded-3xl border border-white/80 bg-white/85 p-5 shadow-[0_18px_50px_-35px_rgba(74,49,39,0.32)] sm:p-8">
+            <p className="font-mono text-[11px] uppercase tracking-widest text-[#e95161]">Preferences</p>
+            <h1 className="mt-2 font-display text-3xl text-[#292321] sm:text-4xl">Who you want to meet</h1>
+            <p className="mt-3 text-sm text-[#827871]">These settings control the people shown in Discover.</p>
 
-            {error && <p className="mt-4 text-[13px] text-sindoor-light">{error}</p>}
+            {error && <p role="alert" className="mt-4 text-[13px] text-[#b73946]">{error}</p>}
 
             <div className="mt-6 flex flex-col gap-6">
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -100,11 +100,11 @@ export function PreferencesForm() {
                     value={filters.maxDistanceKm}
                     disabled={loading}
                     onChange={(e) => setFilters((current) => ({ ...current, maxDistanceKm: Number(e.target.value) }))}
-                    className="accent-marigold"
+                    className="accent-[#e95161]"
                 />
 
                 <div>
-                    <p className="mb-2 font-mono text-[11px] uppercase tracking-[0.12em] text-cream-dim">Show me</p>
+                    <p className="mb-2 font-mono text-[11px] uppercase tracking-[0.12em] text-[#827871]">Show me</p>
                     <ChoicePills
                         options={GENDER_OPTIONS}
                         value={filters.genderPreference}
